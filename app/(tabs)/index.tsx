@@ -1,6 +1,6 @@
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { FlatList, Pressable, StyleSheet } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -8,11 +8,12 @@ import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { Filter, FilterChips } from '@/src/components/FilterChips';
 import { PlaceCard } from '@/src/components/PlaceCard';
-import { SavedPlace, addSamplePlaces, deleteAllData, listPlaces } from '@/src/db';
+import { SavedPlace, addSamplePlaces, deleteAllData, deletePlace, listPlaces } from '@/src/db';
 
 // The home screen: all saved places, newest first, with filter chips on top.
 export default function PlacesScreen() {
   const theme = Colors[useColorScheme()];
+  const router = useRouter();
   const [places, setPlaces] = useState<SavedPlace[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
 
@@ -25,6 +26,31 @@ export default function PlacesScreen() {
       reload();
     }, [reload])
   );
+
+  const openPlace = (place: SavedPlace) => router.push(`/place/${place.id}` as never);
+
+  // Ask before deleting, so a slip of the finger can't remove a place.
+  const confirmDelete = (place: SavedPlace) => {
+    Alert.alert('Delete this place?', `"${place.name}" will be removed from Spotted.`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await deletePlace(place.id);
+          await reload();
+        },
+      },
+    ]);
+  };
+
+  // Long-press menu.
+  const showMenu = (place: SavedPlace) =>
+    Alert.alert(place.name, undefined, [
+      { text: 'Edit', onPress: () => openPlace(place) },
+      { text: 'Delete', style: 'destructive', onPress: () => confirmDelete(place) },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
 
   const visible = filter === 'all' ? places : places.filter((p) => p.category === filter);
 
@@ -43,7 +69,9 @@ export default function PlacesScreen() {
       <FlatList
         data={visible}
         keyExtractor={(place) => place.id}
-        renderItem={({ item }) => <PlaceCard place={item} />}
+        renderItem={({ item }) => (
+          <PlaceCard place={item} onPress={() => openPlace(item)} onLongPress={() => showMenu(item)} />
+        )}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <View style={styles.empty}>

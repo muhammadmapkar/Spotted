@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -7,12 +7,26 @@ import { CATEGORIES } from '@/src/categories';
 import { SavedPlace } from '@/src/db';
 
 // One rounded card in the My Places list.
-export function PlaceCard({ place }: { place: SavedPlace }) {
+// Tap = open the place. Long-press = show Edit / Delete choices.
+export function PlaceCard({
+  place,
+  onPress,
+  onLongPress,
+}: {
+  place: SavedPlace;
+  onPress: () => void;
+  onLongPress: () => void;
+}) {
   const theme = Colors[useColorScheme()];
   const category = CATEGORIES[place.category];
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.card }]}>
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityRole="button"
+      accessibilityHint="Long-press for edit and delete"
+      style={({ pressed }) => [styles.card, { backgroundColor: theme.card, opacity: pressed ? 0.7 : 1 }]}>
       {/* Coloured stripe on the left shows the category at a glance */}
       <View style={[styles.stripe, { backgroundColor: category.color }]} />
       <View style={styles.body} lightColor="transparent" darkColor="transparent">
@@ -35,7 +49,7 @@ export function PlaceCard({ place }: { place: SavedPlace }) {
           </Text>
         ) : null}
       </View>
-    </View>
+    </Pressable>
   );
 }
 
