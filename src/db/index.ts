@@ -9,4 +9,3 @@ export async function deleteAllData(): Promise<void> {
   const db = await getDb();
   await db.execAsync('DELETE FROM places; DELETE FROM settings;');
 }
-export * from './sampleData';

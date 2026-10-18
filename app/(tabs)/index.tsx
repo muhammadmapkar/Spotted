@@ -8,7 +8,7 @@ import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { Filter, FilterChips } from '@/src/components/FilterChips';
 import { PlaceCard } from '@/src/components/PlaceCard';
-import { SavedPlace, addSamplePlaces, deleteAllData, deletePlace, listPlaces } from '@/src/db';
+import { SavedPlace, deletePlace, listPlaces } from '@/src/db';
 
 // The home screen: all saved places, newest first, with filter chips on top.
 export default function PlacesScreen() {
@@ -59,7 +59,7 @@ export default function PlacesScreen() {
     places.length === 0 ? 'No places yet' : `No ${CATEGORIES[filter as keyof typeof CATEGORIES].label} places yet`;
   const emptyText =
     places.length === 0
-      ? 'Share a reel from Instagram to Spotted, and we will remind you when you are nearby. 📍'
+      ? 'Tap the + button to save a place from a reel, and we will remind you when you are nearby.'
       : 'Places you save in this category will show up here.';
 
   return (
@@ -80,51 +80,41 @@ export default function PlacesScreen() {
             <Text style={[styles.emptyText, { color: theme.mutedText }]}>{emptyText}</Text>
           </View>
         }
-        ListFooterComponent={
-          // Testing helpers. They only appear while developing, never in the store app.
-          __DEV__ ? (
-            <View style={styles.devBox}>
-              <Text style={[styles.devLabel, { color: theme.mutedText }]}>Testing only</Text>
-              <Pressable
-                style={[styles.devButton, { borderColor: theme.border }]}
-                onPress={async () => {
-                  await addSamplePlaces();
-                  await reload();
-                }}>
-                <Text style={styles.devButtonText}>Add 5 sample places</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.devButton, { borderColor: theme.border }]}
-                onPress={async () => {
-                  await deleteAllData();
-                  await reload();
-                }}>
-                <Text style={styles.devButtonText}>Remove all places</Text>
-              </Pressable>
-            </View>
-          ) : null
-        }
       />
+
+      {/* The big round + button that opens Add Place */}
+      <Pressable
+        onPress={() => router.push('/add-place' as never)}
+        accessibilityRole="button"
+        accessibilityLabel="Add a place"
+        style={({ pressed }) => [styles.fab, { backgroundColor: theme.tint, opacity: pressed ? 0.8 : 1 }]}>
+        <Text style={styles.fabText}>+</Text>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  list: { paddingHorizontal: 16, paddingBottom: 32, flexGrow: 1 },
+  list: { paddingHorizontal: 16, paddingBottom: 110, flexGrow: 1 },
   empty: { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 24 },
   emptyEmoji: { fontSize: 48, marginBottom: 12 },
   emptyTitle: { fontSize: 20, fontWeight: '700', marginBottom: 8 },
   emptyText: { fontSize: 15, textAlign: 'center', lineHeight: 22 },
-  devBox: { marginTop: 24, gap: 8 },
-  devLabel: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 },
-  devButton: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderStyle: 'dashed',
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
-  devButtonText: { fontSize: 15, fontWeight: '600' },
+  fabText: { color: '#FFFFFF', fontSize: 32, lineHeight: 36, fontWeight: '400' },
 });
