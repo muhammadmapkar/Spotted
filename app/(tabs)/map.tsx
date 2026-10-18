@@ -1,18 +1,157 @@
-import { StyleSheet } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
+import { Linking, Pressable, StyleSheet } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 
 import { Text, View } from '@/components/Themed';
+import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
+import { CATEGORIES } from '@/src/categories';
+import { SavedPlace, listPlaces } from '@/src/db';
 
-// Placeholder screen. We will build the real Map screen in a later step.
+// Where the map starts if there are no saved places yet: Dubai.
+const DUBAI = { latitude: 25.2048, longitude: 55.2708, latitudeDelta: 0.25, longitudeDelta: 0.25 };
+
+// Opens Google Maps with directions to the place. Plain web link, no key needed.
+// It opens the Google Maps app if it is installed, or the browser otherwise.
+function openDirections(place: SavedPlace) {
+  Linking.openURL(
+    `https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}`
+  );
+}
+
+// The Map tab: every saved place as a pin coloured by its category.
 export default function MapScreen() {
+  const scheme = useColorScheme();
+  const theme = Colors[scheme];
+  const router = useRouter();
+  const mapRef = useRef<MapView>(null);
+  const [places, setPlaces] = useState<SavedPlace[]>([]);
+  const [selected, setSelected] = useState<SavedPlace | null>(null);
+
+  // Reload places every time this tab is shown, then zoom to fit all pins.
+  useFocusEffect(
+    useCallback(() => {
+      listPlaces().then((all) => {
+        setPlaces(all);
+        setSelected(null);
+        if (all.length > 0) {
+          // Wait a moment so the map is ready before moving the camera.
+          setTimeout(() => {
+            mapRef.current?.fitToCoordinates(
+              all.map((p) => ({ latitude: p.latitude, longitude: p.longitude })),
+              { edgePadding: { top: 80, right: 60, bottom: 200, left: 60 }, animated: true }
+            );
+          }, 300);
+        }
+      });
+    }, [])
+  );
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Map</Text>
-      <Text>Coming soon</Text>
+      <MapView
+        ref={mapRef}
+        style={StyleSheet.absoluteFill}
+        initialRegion={DUBAI}
+        userInterfaceStyle={scheme}
+        onPress={() => setSelected(null)} // tap the empty map to close the card
+        toolbarEnabled={false}>
+        {places.map((place) => (
+          <Marker
+            key={place.id}
+            coordinate={{ latitude: place.latitude, longitude: place.longitude }}
+            pinColor={CATEGORIES[place.category].color}
+            onPress={(event) => {
+              event.stopPropagation(); // don't let the map treat this as an empty tap
+              setSelected(place);
+            }}
+          />
+        ))}
+      </MapView>
+
+      {places.length === 0 ? (
+        <View style={[styles.banner, { backgroundColor: theme.card }]}>
+          <Text style={styles.bannerTitle}>No places on the map yet</Text>
+          <Text style={{ color: theme.mutedText }}>Save a place and it will show up here as a pin.</Text>
+        </View>
+      ) : null}
+
+      {selected ? (
+        <View style={[styles.card, { backgroundColor: theme.background, borderColor: theme.border }]}>
+          <View style={styles.cardHeader} lightColor="transparent" darkColor="transparent">
+            <Text style={styles.name} numberOfLines={2}>
+              {selected.name}
+            </Text>
+            <View style={[styles.pill, { backgroundColor: CATEGORIES[selected.category].color }]}>
+              <Text style={styles.pillText}>
+                {CATEGORIES[selected.category].emoji} {CATEGORIES[selected.category].label}
+              </Text>
+            </View>
+          </View>
+
+          <Text style={{ color: theme.mutedText }} numberOfLines={1}>
+            {selected.address}
+          </Text>
+          {selected.note ? <Text style={styles.note}>“{selected.note}”</Text> : null}
+
+          <View style={styles.buttons} lightColor="transparent" darkColor="transparent">
+            {selected.reelUrl ? (
+              <Pressable
+                onPress={() => Linking.openURL(selected.reelUrl!)}
+                style={[styles.button, { borderColor: theme.border }]}>
+                <Text style={styles.buttonText}>▶ Open reel</Text>
+              </Pressable>
+            ) : null}
+            <Pressable
+              onPress={() => openDirections(selected)}
+              style={[styles.button, styles.primary, { backgroundColor: theme.tint, borderColor: theme.tint }]}>
+              <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>Directions</Text>
+            </Pressable>
+          </View>
+
+          <Pressable onPress={() => router.push(`/place/${selected.id}` as never)} style={styles.detailsLink}>
+            <Text style={{ color: theme.tint, fontWeight: '600' }}>Edit place</Text>
+          </Pressable>
+        </View>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 8 },
+  container: { flex: 1 },
+  banner: { position: 'absolute', top: 16, left: 16, right: 16, borderRadius: 14, padding: 16 },
+  bannerTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  card: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 16,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4 },
+  name: { flex: 1, fontSize: 18, fontWeight: '700' },
+  pill: { borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
+  pillText: { color: '#FFFFFF', fontSize: 12, fontWeight: '600' },
+  note: { fontSize: 14, fontStyle: 'italic', marginTop: 8 },
+  buttons: { flexDirection: 'row', gap: 8, marginTop: 14 },
+  button: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primary: {},
+  buttonText: { fontSize: 15, fontWeight: '700' },
+  detailsLink: { minHeight: 44, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
 });
