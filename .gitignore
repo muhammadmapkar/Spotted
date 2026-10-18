@@ -9,3 +9,15 @@ dist/
 
 # Mac junk
 .DS_Store
+
+# From the Expo starter
+web-build/
+expo-env.d.ts
+.kotlin/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.metro-health-check*
+npm-debug.*
