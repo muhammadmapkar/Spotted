@@ -9,7 +9,8 @@ import { CATEGORIES } from '@/src/categories';
 import { Category, addPlace, listPlaces } from '@/src/db';
 import { newSessionToken } from '@/src/places/google';
 import { SEARCH_IS_DEMO, getPlaceDetails, searchPlaces } from '@/src/places/search';
-import { PlaceResult, PlaceSuggestion } from '@/src/places/types';
+import { useUserLocation } from '@/src/location/useUserLocation';
+import { DUBAI_BIAS, PlaceResult, PlaceSuggestion } from '@/src/places/types';
 
 // Add Place: 1) search and pick the place, 2) choose category + note, then save.
 export default function AddPlaceScreen() {
@@ -17,6 +18,10 @@ export default function AddPlaceScreen() {
   const router = useRouter();
   // When a reel is shared to Spotted, its link arrives here as ?reelUrl=...
   const params = useLocalSearchParams<{ reelUrl?: string }>();
+  const userLocation = useUserLocation();
+  // Prefer results near the user. Without location, prefer central Dubai.
+  const lat = userLocation?.latitude;
+  const lon = userLocation?.longitude;
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<PlaceSuggestion[]>([]);
@@ -34,7 +39,8 @@ export default function AddPlaceScreen() {
   useEffect(() => {
     let cancelled = false;
     const timer = setTimeout(() => {
-      searchPlaces(query, sessionToken.current)
+      const bias = lat !== undefined && lon !== undefined ? { latitude: lat, longitude: lon, radiusMeters: 50000 } : DUBAI_BIAS;
+      searchPlaces(query, sessionToken.current, bias)
         .then((found) => {
           if (cancelled) return;
           setResults(found);
@@ -48,7 +54,7 @@ export default function AddPlaceScreen() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [query]);
+  }, [query, lat, lon]);
 
   // The user tapped a result: fetch its full details (map position) then show the form.
   const choose = async (suggestion: PlaceSuggestion) => {

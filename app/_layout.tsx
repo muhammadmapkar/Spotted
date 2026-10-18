@@ -1,10 +1,12 @@
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { getOnboardingDone, resetOnboarding, setOnboardingDone } from '@/src/db';
+import { OnboardingContext } from '@/src/onboarding/OnboardingContext';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -29,28 +31,62 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
+  // Has the user already been through the welcome screens? (null = still checking)
+  const [onboardingDone, setDone] = useState<boolean | null>(null);
   useEffect(() => {
-    if (loaded) {
+    getOnboardingDone()
+      .then(setDone)
+      .catch(() => setDone(false));
+  }, []);
+
+  const finish = useCallback(async () => {
+    await setOnboardingDone();
+    setDone(true);
+  }, []);
+
+  // Testing only (used by a button in Settings while developing).
+  const restart = useCallback(async () => {
+    await resetOnboarding();
+    setDone(false);
+  }, []);
+
+  const ready = loaded && onboardingDone !== null;
+
+  useEffect(() => {
+    if (ready) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [ready]);
 
-  if (!loaded) {
+  if (!ready) {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <OnboardingContext.Provider value={{ finish, restart }}>
+      <RootLayoutNav onboardingDone={onboardingDone} />
+    </OnboardingContext.Provider>
+  );
 }
 
-function RootLayoutNav() {
+function RootLayoutNav({ onboardingDone }: { onboardingDone: boolean }) {
   const colorScheme = useColorScheme();
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="place/[id]" options={{ title: 'Place' }} />
-        <Stack.Screen name="add-place" options={{ title: 'Add place', presentation: 'modal' }} />
+        {/* First launch only: welcome slides, then permissions */}
+        <Stack.Protected guard={!onboardingDone}>
+          <Stack.Screen name="welcome" options={{ headerShown: false }} />
+          <Stack.Screen name="permissions" options={{ headerShown: false, gestureEnabled: false }} />
+        </Stack.Protected>
+
+        {/* The real app */}
+        <Stack.Protected guard={onboardingDone}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="place/[id]" options={{ title: 'Place' }} />
+          <Stack.Screen name="add-place" options={{ title: 'Add place', presentation: 'modal' }} />
+        </Stack.Protected>
       </Stack>
     </ThemeProvider>
   );

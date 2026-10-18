@@ -7,6 +7,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { PRIVACY_POLICY_URL, SUPPORT_EMAIL } from '@/src/config';
 import { DEFAULT_SETTINGS, Settings, deleteAllData, getSettings, saveSettings } from '@/src/db';
+import { useOnboarding } from '@/src/onboarding/OnboardingContext';
 import { addMinutes } from '@/src/settings/time';
 
 const RADIUS_OPTIONS: { value: Settings['radiusMeters']; label: string }[] = [
@@ -20,6 +21,7 @@ const RADIUS_OPTIONS: { value: Settings['radiusMeters']; label: string }[] = [
 export default function SettingsScreen() {
   const theme = Colors[useColorScheme()];
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const { restart } = useOnboarding();
 
   // Load the saved settings every time this tab is shown.
   useFocusEffect(
@@ -167,6 +169,13 @@ export default function SettingsScreen() {
       <Text style={[styles.footer, { color: theme.mutedText }]}>
         Your places and settings are stored only on this phone.
       </Text>
+
+      {/* Testing helper. Only appears while developing, never in the store app. */}
+      {__DEV__ ? (
+        <Pressable onPress={restart} style={[styles.devButton, { borderColor: theme.border }]}>
+          <Text style={{ fontWeight: '600' }}>Testing: show welcome screens again</Text>
+        </Pressable>
+      ) : null}
     </ScrollView>
   );
 }
@@ -233,5 +242,6 @@ const styles = StyleSheet.create({
   linkRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 56 },
   deleteButton: { minHeight: 52, alignItems: 'center', justifyContent: 'center', marginTop: 32 },
   deleteText: { color: '#D92D3A', fontSize: 16, fontWeight: '700' },
+  devButton: { minHeight: 48, borderRadius: 12, borderWidth: 1, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', marginTop: 24 },
   footer: { fontSize: 13, textAlign: 'center', marginTop: 4 },
 });

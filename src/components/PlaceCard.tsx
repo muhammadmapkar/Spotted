@@ -4,16 +4,19 @@ import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
+import { formatDistance } from '@/src/location/distance';
 import { SavedPlace } from '@/src/db';
 
 // One rounded card in the My Places list.
 // Tap = open the place. Long-press = show Edit / Delete choices.
 export function PlaceCard({
   place,
+  distanceMeters,
   onPress,
   onLongPress,
 }: {
   place: SavedPlace;
+  distanceMeters?: number; // only known when location is allowed
   onPress: () => void;
   onLongPress: () => void;
 }) {
@@ -43,6 +46,9 @@ export function PlaceCard({
         <Text style={[styles.address, { color: theme.mutedText }]} numberOfLines={1}>
           {place.address}
         </Text>
+        {distanceMeters !== undefined ? (
+          <Text style={[styles.distance, { color: theme.tint }]}>{formatDistance(distanceMeters)} away</Text>
+        ) : null}
         {place.note ? (
           <Text style={[styles.note, { color: theme.mutedText }]} numberOfLines={2}>
             “{place.note}”
@@ -62,5 +68,6 @@ const styles = StyleSheet.create({
   pill: { borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
   pillText: { color: '#FFFFFF', fontSize: 12, fontWeight: '600' },
   address: { fontSize: 14, marginTop: 4 },
+  distance: { fontSize: 13, fontWeight: '600', marginTop: 6 },
   note: { fontSize: 14, fontStyle: 'italic', marginTop: 8 },
 });

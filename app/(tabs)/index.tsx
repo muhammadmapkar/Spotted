@@ -8,12 +8,16 @@ import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { Filter, FilterChips } from '@/src/components/FilterChips';
 import { PlaceCard } from '@/src/components/PlaceCard';
+import { RemindersBanner } from '@/src/components/RemindersBanner';
+import { distanceMeters } from '@/src/location/distance';
+import { useUserLocation } from '@/src/location/useUserLocation';
 import { SavedPlace, deletePlace, listPlaces } from '@/src/db';
 
 // The home screen: all saved places, newest first, with filter chips on top.
 export default function PlacesScreen() {
   const theme = Colors[useColorScheme()];
   const router = useRouter();
+  const userLocation = useUserLocation(); // null if location is not allowed
   const [places, setPlaces] = useState<SavedPlace[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
 
@@ -64,13 +68,19 @@ export default function PlacesScreen() {
 
   return (
     <View style={styles.container}>
+      <RemindersBanner />
       <FilterChips selected={filter} onSelect={setFilter} />
 
       <FlatList
         data={visible}
         keyExtractor={(place) => place.id}
         renderItem={({ item }) => (
-          <PlaceCard place={item} onPress={() => openPlace(item)} onLongPress={() => showMenu(item)} />
+          <PlaceCard
+            place={item}
+            distanceMeters={userLocation ? distanceMeters(userLocation, item) : undefined}
+            onPress={() => openPlace(item)}
+            onLongPress={() => showMenu(item)}
+          />
         )}
         contentContainerStyle={styles.list}
         ListEmptyComponent={

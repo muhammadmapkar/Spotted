@@ -28,6 +28,10 @@ const CREATE_TABLES = `
     id INTEGER PRIMARY KEY NOT NULL CHECK (id = 1),
     json TEXT NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS meta (
+    key TEXT PRIMARY KEY NOT NULL,
+    value TEXT NOT NULL
+  );
 `;
 
 let dbPromise: Promise<Db> | null = null;

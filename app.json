@@ -39,7 +39,19 @@
       "expo-font",
       "expo-status-bar",
       "expo-web-browser",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Spotted uses your location to remind you when you're near a place you saved — even when the app is closed. Your location stays on your phone.",
+          "locationAlwaysPermission": "Spotted uses your location to remind you when you're near a place you saved — even when the app is closed. Your location stays on your phone.",
+          "locationWhenInUsePermission": "Spotted uses your location to show how far saved places are and to find places near you. Your location stays on your phone.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true
