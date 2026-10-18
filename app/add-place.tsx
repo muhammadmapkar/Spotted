@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
@@ -7,8 +7,9 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { Category, addPlace, listPlaces } from '@/src/db';
-import { PlaceResult } from '@/src/places/types';
-import { SEARCH_IS_DEMO, searchPlaces } from '@/src/places/search';
+import { newSessionToken } from '@/src/places/google';
+import { SEARCH_IS_DEMO, getPlaceDetails, searchPlaces } from '@/src/places/search';
+import { PlaceResult, PlaceSuggestion } from '@/src/places/types';
 
 // Add Place: 1) search and pick the place, 2) choose category + note, then save.
 export default function AddPlaceScreen() {
@@ -18,27 +19,50 @@ export default function AddPlaceScreen() {
   const params = useLocalSearchParams<{ reelUrl?: string }>();
 
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<PlaceResult[]>([]);
+  const [results, setResults] = useState<PlaceSuggestion[]>([]);
+  const [searchError, setSearchError] = useState(false);
+  const [loadingPlace, setLoadingPlace] = useState(false);
+  // One token per search session: Google bills the typing + final pick as one.
+  const sessionToken = useRef(newSessionToken());
   const [selected, setSelected] = useState<PlaceResult | null>(null);
   const [category, setCategory] = useState<Category>('food');
   const [note, setNote] = useState('');
   const [reelUrl, setReelUrl] = useState(params.reelUrl ?? '');
   const [saving, setSaving] = useState(false);
 
-  // Search again every time the text changes.
+  // Search when the user pauses typing (waiting a moment saves Google requests).
   useEffect(() => {
     let cancelled = false;
-    searchPlaces(query).then((found) => {
-      if (!cancelled) setResults(found);
-    });
+    const timer = setTimeout(() => {
+      searchPlaces(query, sessionToken.current)
+        .then((found) => {
+          if (cancelled) return;
+          setResults(found);
+          setSearchError(false);
+        })
+        .catch(() => {
+          if (!cancelled) setSearchError(true);
+        });
+    }, SEARCH_IS_DEMO ? 0 : 350);
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [query]);
 
-  const choose = (place: PlaceResult) => {
-    setSelected(place);
-    if (place.suggestedCategory) setCategory(place.suggestedCategory);
+  // The user tapped a result: fetch its full details (map position) then show the form.
+  const choose = async (suggestion: PlaceSuggestion) => {
+    setLoadingPlace(true);
+    try {
+      const place = await getPlaceDetails(suggestion, sessionToken.current);
+      setSelected(place);
+      if (place.suggestedCategory) setCategory(place.suggestedCategory);
+      sessionToken.current = newSessionToken(); // the session is over, start a new one
+    } catch {
+      Alert.alert('Could not load this place', 'Check your internet connection and try again.');
+    } finally {
+      setLoadingPlace(false);
+    }
   };
 
   const save = async () => {
@@ -114,7 +138,15 @@ export default function AddPlaceScreen() {
             </Pressable>
           ))}
 
-          {query.trim() && results.length === 0 ? (
+          {searchError ? (
+            <Text style={[styles.hint, { color: theme.mutedText }]}>
+              Search is not available right now. Check your internet connection.
+            </Text>
+          ) : null}
+
+          {loadingPlace ? <Text style={[styles.hint, { color: theme.mutedText }]}>Loading…</Text> : null}
+
+          {!searchError && (SEARCH_IS_DEMO || query.trim().length >= 3) && results.length === 0 && query.trim() ? (
             <Text style={[styles.hint, { color: theme.mutedText }]}>No places found. Try another word.</Text>
           ) : null}
         </>
