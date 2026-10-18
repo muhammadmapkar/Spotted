@@ -1,0 +1,11 @@
+# Secrets - never commit
+.env
+.env.local
+
+# Dependencies and build output
+node_modules/
+.expo/
+dist/
+
+# Mac junk
+.DS_Store
