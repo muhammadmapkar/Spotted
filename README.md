@@ -67,24 +67,38 @@ eas submit --platform ios
 
 ```
 spotted/
-├── app/                 # Screens (Expo Router)
+├── app/                      # Screens (Expo Router)
 │   ├── (tabs)/
-│   │   ├── index.tsx    # My Places list
-│   │   ├── map.tsx      # Map
-│   │   └── settings.tsx # Settings
-│   ├── add-place.tsx    # Search + save a place
-│   ├── place/[id].tsx   # Place detail / edit
-│   └── welcome.tsx      # Onboarding
+│   │   ├── index.tsx         # My Places list
+│   │   ├── map.tsx           # Map with coloured pins
+│   │   └── settings.tsx      # Settings
+│   ├── add-place.tsx         # Search + save a place (also opens from a shared reel)
+│   ├── place/[id].tsx        # Place detail / edit / delete
+│   ├── welcome.tsx           # Welcome slides (first launch)
+│   ├── permissions.tsx       # Explains and asks for permissions (first launch)
+│   └── _layout.tsx           # App shell, theme, first-launch logic
 ├── src/
-│   ├── db/              # On-device storage
-│   ├── geofence/        # Location + nearby reminders
-│   ├── places/          # Google Places search
-│   └── components/      # Shared UI pieces
-├── assets/              # Icon, splash, images
-├── SPEC.md
-├── CLAUDE.md
-└── README.md
+│   ├── db/                   # On-device storage (expo-sqlite): places, settings
+│   ├── places/               # Place search (Google, or a built-in demo list without a key)
+│   ├── geofence/             # Nearby reminders: rules, background jobs, notifications
+│   ├── share/                # Receives reels shared from Instagram
+│   ├── permissions/          # Location + notification permissions
+│   ├── location/             # Distance helpers
+│   ├── onboarding/           # First-launch state
+│   └── components/           # Shared UI pieces
+├── docs/PRIVACY_POLICY.md    # Draft privacy policy (publish it, then link it in src/config.ts)
+├── eas.json                  # Build settings for Expo's cloud builds
+├── SPEC.md  CLAUDE.md  README.md
 ```
+
+## Notes
+
+- **No Google key yet?** The app still works: Add Place searches a small built-in list of Dubai places.
+  Put a key in `.env` and the real Google search switches on by itself.
+- **Expo Go vs development build.** Expo Go is fine for screens, list, search and storage. Sharing from
+  Instagram and background reminders only work in a **development build** (see above).
+- **Testing buttons.** In a development build, the bottom of Settings has "Testing" buttons
+  (test reminder, reminder status, show welcome screens again). They are hidden in the store build.
 
 ## Costs
 

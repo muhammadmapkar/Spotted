@@ -10,6 +10,7 @@ import { DEFAULT_SETTINGS, Settings, deleteAllData, getSettings, listPlaces, sav
 import { sendNearbyNotification } from '@/src/geofence/notify';
 import { getReminderStatus } from '@/src/geofence/sync';
 import { useOnboarding } from '@/src/onboarding/OnboardingContext';
+import { openLink } from '@/src/openLink';
 import { addMinutes } from '@/src/settings/time';
 
 const RADIUS_OPTIONS: { value: Settings['radiusMeters']; label: string }[] = [
@@ -28,7 +29,7 @@ export default function SettingsScreen() {
   // Load the saved settings every time this tab is shown.
   useFocusEffect(
     useCallback(() => {
-      getSettings().then(setSettings);
+      getSettings().then(setSettings).catch(() => setSettings(DEFAULT_SETTINGS));
     }, [])
   );
 
@@ -58,7 +59,7 @@ export default function SettingsScreen() {
   };
 
   const openPrivacyPolicy = () => {
-    if (PRIVACY_POLICY_URL) Linking.openURL(PRIVACY_POLICY_URL);
+    if (PRIVACY_POLICY_URL) openLink(PRIVACY_POLICY_URL);
     else Alert.alert('Privacy policy', 'Our privacy policy page is coming soon.');
   };
 

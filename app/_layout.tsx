@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
 import '@/src/geofence/tasks'; // defines the background jobs: must load when the app starts
 import { GeofenceManager } from '@/src/geofence/GeofenceManager';
 import { getOnboardingDone, resetOnboarding, setOnboardingDone } from '@/src/db';
@@ -20,6 +21,31 @@ export {
 export const unstable_settings = {
   // Start on the tabs screen.
   anchor: '(tabs)',
+};
+
+// Spotted's look for headers, back buttons and backgrounds (coral accent, our text colour),
+// in light and dark mode. Without this the app would use Expo's default blue.
+const SpottedLight = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: Colors.light.tint,
+    background: Colors.light.background,
+    card: Colors.light.background,
+    text: Colors.light.text,
+    border: Colors.light.border,
+  },
+};
+const SpottedDark = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    primary: Colors.dark.tint,
+    background: Colors.dark.background,
+    card: Colors.dark.background,
+    text: Colors.dark.text,
+    border: Colors.dark.border,
+  },
 };
 
 // Show reminders even while the app is open.
@@ -87,7 +113,7 @@ function RootLayoutNav({ onboardingDone }: { onboardingDone: boolean }) {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === 'dark' ? SpottedDark : SpottedLight}>
       <Stack>
         {/* First launch only: welcome slides, then permissions */}
         <Stack.Protected guard={!onboardingDone}>

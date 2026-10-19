@@ -23,7 +23,11 @@ export default function PlacesScreen() {
 
   // Reload the list every time this screen is shown.
   const reload = useCallback(async () => {
-    setPlaces(await listPlaces());
+    try {
+      setPlaces(await listPlaces());
+    } catch {
+      setPlaces([]); // if loading fails, show the empty list instead of crashing
+    }
   }, []);
   useFocusEffect(
     useCallback(() => {

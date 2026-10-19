@@ -1,12 +1,13 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { Category, SavedPlace, deletePlace, getPlace, updatePlace } from '@/src/db';
+import { openLink } from '@/src/openLink';
 
 // Place detail / edit screen. You can change the category and the note.
 export default function PlaceScreen() {
@@ -106,7 +107,7 @@ export default function PlaceScreen() {
 
       {place.reelUrl ? (
         <Pressable
-          onPress={() => Linking.openURL(place.reelUrl!)}
+          onPress={() => openLink(place.reelUrl!)}
           style={[styles.secondaryButton, { borderColor: theme.border }]}>
           <Text style={styles.secondaryText}>▶ Open reel</Text>
         </Pressable>

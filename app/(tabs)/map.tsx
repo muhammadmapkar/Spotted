@@ -1,6 +1,6 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { Linking, Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 
 import { Text, View } from '@/components/Themed';
@@ -8,6 +8,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { SavedPlace, listPlaces } from '@/src/db';
+import { openLink } from '@/src/openLink';
 
 // Where the map starts if there are no saved places yet: Dubai.
 const DUBAI = { latitude: 25.2048, longitude: 55.2708, latitudeDelta: 0.25, longitudeDelta: 0.25 };
@@ -15,9 +16,7 @@ const DUBAI = { latitude: 25.2048, longitude: 55.2708, latitudeDelta: 0.25, long
 // Opens Google Maps with directions to the place. Plain web link, no key needed.
 // It opens the Google Maps app if it is installed, or the browser otherwise.
 function openDirections(place: SavedPlace) {
-  Linking.openURL(
-    `https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}`
-  );
+  openLink(`https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}`);
 }
 
 // The Map tab: every saved place as a pin coloured by its category.
@@ -44,7 +43,7 @@ export default function MapScreen() {
             );
           }, 300);
         }
-      });
+      }).catch(() => setPlaces([])); // if loading fails, show an empty map instead of crashing
     }, [])
   );
 
@@ -98,7 +97,7 @@ export default function MapScreen() {
           <View style={styles.buttons} lightColor="transparent" darkColor="transparent">
             {selected.reelUrl ? (
               <Pressable
-                onPress={() => Linking.openURL(selected.reelUrl!)}
+                onPress={() => openLink(selected.reelUrl!)}
                 style={[styles.button, { borderColor: theme.border }]}>
                 <Text style={styles.buttonText}>▶ Open reel</Text>
               </Pressable>

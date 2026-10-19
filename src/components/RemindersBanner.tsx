@@ -1,11 +1,12 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Linking, Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { getSettings } from '@/src/db';
+import { openPhoneSettings } from '@/src/openLink';
 import { PermissionState, getPermissionState, remindersWork } from '@/src/permissions';
 
 // A friendly note shown on My Places when reminders can't work because a
@@ -18,9 +19,13 @@ export function RemindersBanner() {
   useFocusEffect(
     useCallback(() => {
       (async () => {
-        const [settings, state] = await Promise.all([getSettings(), getPermissionState()]);
-        if (!settings.remindersEnabled || remindersWork(state)) return setMissing(null);
-        setMissing(describeMissing(state));
+        try {
+          const [settings, state] = await Promise.all([getSettings(), getPermissionState()]);
+          if (!settings.remindersEnabled || remindersWork(state)) return setMissing(null);
+          setMissing(describeMissing(state));
+        } catch {
+          setMissing(null); // can't tell: show nothing rather than crash
+        }
       })();
     }, [])
   );
@@ -33,7 +38,7 @@ export function RemindersBanner() {
         <Text style={styles.title}>Reminders are off</Text>
         <Text style={[styles.body, { color: theme.mutedText }]}>{missing}</Text>
       </View>
-      <Pressable onPress={() => Linking.openSettings()} style={[styles.button, { backgroundColor: theme.tint }]}>
+      <Pressable onPress={openPhoneSettings} style={[styles.button, { backgroundColor: theme.tint }]}>
         <Text style={styles.buttonText}>Turn on</Text>
       </Pressable>
     </View>
