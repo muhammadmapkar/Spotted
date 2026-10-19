@@ -52,6 +52,22 @@ eas build --profile development --platform android
 
 Install the build on your phone from the link EAS gives you, then run `npx expo start --dev-client`.
 
+## Test on a phone with a standalone APK
+
+A "preview" build is a normal app (an `.apk` file) that works on its own, with no computer running.
+Use it for real-life tests like walking past a saved place and waiting for the reminder.
+
+```bash
+eas build --profile preview --platform android
+```
+
+Open the link EAS gives you on the phone to install it (Android asks you to allow installs from your browser).
+- Add `EXPO_PUBLIC_PLACES_PROXY_URL` as an EAS environment variable, or the APK uses the demo list of Dubai places.
+  (`.env` is not uploaded to EAS.)
+- The "Testing" buttons in Settings are hidden in this build.
+- On the phone: allow location "all the time" and turn off battery saving for Spotted.
+- This uses one of the free monthly builds. A preview APK cannot be uploaded to Google Play (use `production`).
+
 ## Build for the stores
 
 ```bash
