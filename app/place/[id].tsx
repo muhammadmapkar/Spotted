@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Switch, TextInput } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -21,6 +21,8 @@ export default function PlaceScreen() {
   const [category, setCategory] = useState<Category>('food');
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [note, setNote] = useState('');
+  const [muted, setMuted] = useState(false);
+  const [visited, setVisited] = useState(false);
 
   // Load the place when the screen opens.
   useEffect(() => {
@@ -30,11 +32,20 @@ export default function PlaceScreen() {
       setCategory(found.category);
       setNote(found.note ?? '');
       setCollectionIds(found.collectionIds);
+      setMuted(found.muted);
+      setVisited(Boolean(found.visitedAt));
     });
   }, [id]);
 
   const save = async () => {
-    await updatePlace(id, { category, note: note.trim() || undefined, collectionIds });
+    await updatePlace(id, {
+      category,
+      note: note.trim() || undefined,
+      collectionIds,
+      muted,
+      // Keep the original date if it was already marked; set it now if newly marked; clear it if unmarked.
+      visitedAt: visited ? (place?.visitedAt ?? new Date().toISOString()) : undefined,
+    });
     router.back();
   };
 
@@ -97,6 +108,28 @@ export default function PlaceScreen() {
         })}
       </View>
 
+      <Text style={styles.label}>Reminders for this place</Text>
+      <View style={[styles.switchCard, { backgroundColor: theme.card }]}>
+        <View style={styles.switchRow} lightColor="transparent" darkColor="transparent">
+          <View style={styles.switchText} lightColor="transparent" darkColor="transparent">
+            <Text style={styles.switchTitle}>Remind me when I'm near</Text>
+            <Text style={[styles.switchHint, { color: theme.mutedText }]}>
+              Turn off for places you pass all the time.
+            </Text>
+          </View>
+          <Switch value={!muted} onValueChange={(on) => setMuted(!on)} trackColor={{ true: theme.tint }} />
+        </View>
+        <View style={styles.switchRow} lightColor="transparent" darkColor="transparent">
+          <View style={styles.switchText} lightColor="transparent" darkColor="transparent">
+            <Text style={styles.switchTitle}>I've been here ✓</Text>
+            <Text style={[styles.switchHint, { color: theme.mutedText }]}>
+              Spotted stops reminding you about this place.
+            </Text>
+          </View>
+          <Switch value={visited} onValueChange={setVisited} trackColor={{ true: theme.tint }} />
+        </View>
+      </View>
+
       <Text style={styles.label}>Collections</Text>
       <CollectionPicker selectedIds={collectionIds} onChange={setCollectionIds} />
 
@@ -146,6 +179,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chipText: { fontSize: 15, fontWeight: '600' },
+  switchCard: { borderRadius: 14, paddingHorizontal: 16, paddingVertical: 4 },
+  switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64 },
+  switchText: { flex: 1 },
+  switchTitle: { fontSize: 16, fontWeight: '600' },
+  switchHint: { fontSize: 13, marginTop: 2 },
   input: {
     minHeight: 96,
     borderWidth: 1,

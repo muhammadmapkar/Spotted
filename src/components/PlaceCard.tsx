@@ -49,6 +49,11 @@ export function PlaceCard({
         {distanceMeters !== undefined ? (
           <Text style={[styles.distance, { color: theme.tintText }]}>{formatDistance(distanceMeters)} away</Text>
         ) : null}
+        {place.visitedAt || place.muted ? (
+          <Text style={[styles.distance, { color: theme.mutedText }]}>
+            {place.visitedAt ? '✓ Been here' : '🔕 Reminders off'}
+          </Text>
+        ) : null}
         {place.note ? (
           <Text style={[styles.note, { color: theme.mutedText }]} numberOfLines={2}>
             “{place.note}”

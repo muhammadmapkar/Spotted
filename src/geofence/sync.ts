@@ -5,7 +5,7 @@ import { listPlaces } from '../db/places';
 import { Coords } from '../location/distance';
 import { getPermissionState, remindersWork } from '../permissions';
 import { GEOFENCE_TASK, REFRESH_DISTANCE_METERS, REFRESH_TASK } from './constants';
-import { MAX_WATCHED_PLACES, nearestPlaces } from './rules';
+import { MAX_WATCHED_PLACES, nearestPlaces, remindablePlaces } from './rules';
 
 // Where is the user? (null if we can't tell.)
 async function getPosition(): Promise<Coords | null> {
@@ -34,11 +34,13 @@ async function stopWatching(): Promise<void> {
 // permissions and saved places. It never throws, so it can never crash the app.
 export async function syncGeofencing(): Promise<void> {
   try {
-    const [settings, permissions, places] = await Promise.all([
+    const [settings, permissions, allPlaces] = await Promise.all([
       getSettings(),
       getPermissionState(),
       listPlaces(),
     ]);
+    // Muted places and places marked "I've been here" are not watched.
+    const places = remindablePlaces(allPlaces);
 
     // Nothing to do (or not allowed to): make sure we are not watching.
     if (!settings.remindersEnabled || !remindersWork(permissions) || places.length === 0) {

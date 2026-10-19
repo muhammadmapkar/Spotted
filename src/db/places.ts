@@ -4,10 +4,12 @@ import { makeId } from './ids';
 import { NewPlace, SavedPlace } from './types';
 
 // The database stores "nothing" as null; our app prefers undefined.
-type Row = Omit<SavedPlace, 'note' | 'reelUrl' | 'lastNotifiedAt' | 'collectionIds'> & {
+type Row = Omit<SavedPlace, 'note' | 'reelUrl' | 'lastNotifiedAt' | 'collectionIds' | 'muted' | 'visitedAt'> & {
   note: string | null;
   reelUrl: string | null;
   lastNotifiedAt: string | null;
+  muted: number; // 0 or 1
+  visitedAt: string | null;
 };
 
 function toPlace(row: Row, collectionIds: string[]): SavedPlace {
@@ -16,6 +18,8 @@ function toPlace(row: Row, collectionIds: string[]): SavedPlace {
     note: row.note ?? undefined,
     reelUrl: row.reelUrl ?? undefined,
     lastNotifiedAt: row.lastNotifiedAt ?? undefined,
+    muted: row.muted === 1,
+    visitedAt: row.visitedAt ?? undefined,
     collectionIds,
   };
 }
@@ -98,7 +102,7 @@ export async function updatePlace(
   const db = await getDb();
   await db.runAsync(
     `UPDATE places SET googlePlaceId = ?, name = ?, address = ?, latitude = ?, longitude = ?,
-       category = ?, note = ?, reelUrl = ?, lastNotifiedAt = ? WHERE id = ?`,
+       category = ?, note = ?, reelUrl = ?, lastNotifiedAt = ?, muted = ?, visitedAt = ? WHERE id = ?`,
     [
       p.googlePlaceId,
       p.name,
@@ -109,6 +113,8 @@ export async function updatePlace(
       p.note ?? null,
       p.reelUrl ?? null,
       p.lastNotifiedAt ?? null,
+      p.muted ? 1 : 0,
+      p.visitedAt ?? null,
       id,
     ]
   );

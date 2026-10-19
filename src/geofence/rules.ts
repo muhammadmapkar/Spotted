@@ -9,6 +9,12 @@ export const MAX_WATCHED_PLACES = 20;
 // The same place never notifies twice within this time.
 export const REPEAT_HOURS = 24;
 
+// Places that can still send reminders: not muted, and not marked "I've been here".
+// Others are never watched, so they don't use up the 20 slots.
+export function remindablePlaces(places: SavedPlace[]): SavedPlace[] {
+  return places.filter((place) => !place.muted && !place.visitedAt);
+}
+
 // The places to watch: the 20 closest to the user.
 // If we don't know where the user is yet, we use the 20 newest instead.
 export function nearestPlaces(
@@ -48,15 +54,32 @@ export function notifiedRecently(place: SavedPlace, now: Date): boolean {
   return now.getTime() - last < REPEAT_HOURS * 60 * 60 * 1000;
 }
 
+// How many reminders (for any place) were sent in the last 24 hours?
+export function remindersInLast24h(places: SavedPlace[], now: Date): number {
+  return places.filter((place) => notifiedRecently(place, now)).length;
+}
+
 // The final decision: should we show a notification for this place right now?
-export function shouldNotify(place: SavedPlace, now: Date, settings: Settings): boolean {
+// `allPlaces` is needed for the daily limit (it counts the reminders already sent).
+export function shouldNotify(
+  place: SavedPlace,
+  now: Date,
+  settings: Settings,
+  allPlaces: SavedPlace[] = []
+): boolean {
   if (!settings.remindersEnabled) return false;
+  if (place.muted || place.visitedAt) return false;
   if (isQuietTime(now, settings)) return false;
   if (notifiedRecently(place, now)) return false;
+  if (settings.maxRemindersPerDay > 0 && remindersInLast24h(allPlaces, now) >= settings.maxRemindersPerDay) {
+    return false;
+  }
   return true;
 }
 
-// The text of the notification (from SPEC.md).
+// The text of the notification (from SPEC.md). It only mentions a reel if there is one.
 export function notificationBody(place: SavedPlace): string {
-  return `You're near ${place.name} — you saved it from a reel 👀`;
+  return place.reelUrl
+    ? `You're near ${place.name} — you saved it from a reel 👀`
+    : `You're near ${place.name} — it's on your Spotted list 👀`;
 }

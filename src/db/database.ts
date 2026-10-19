@@ -22,7 +22,9 @@ const CREATE_TABLES = `
     note TEXT,
     reelUrl TEXT,
     createdAt TEXT NOT NULL,
-    lastNotifiedAt TEXT
+    lastNotifiedAt TEXT,
+    muted INTEGER NOT NULL DEFAULT 0,
+    visitedAt TEXT
   );
   CREATE TABLE IF NOT EXISTS settings (
     id INTEGER PRIMARY KEY NOT NULL CHECK (id = 1),
@@ -44,15 +46,33 @@ const CREATE_TABLES = `
   );
 `;
 
+// Columns added after the first release. Phones that already have the database get them here,
+// because CREATE TABLE IF NOT EXISTS above never changes a table that already exists.
+const ADDED_COLUMNS: { table: string; column: string; definition: string }[] = [
+  { table: 'places', column: 'muted', definition: 'INTEGER NOT NULL DEFAULT 0' },
+  { table: 'places', column: 'visitedAt', definition: 'TEXT' },
+];
+
+// Creates the tables and adds any missing columns. Safe to run every time.
+async function prepare(db: Db): Promise<void> {
+  await db.execAsync(CREATE_TABLES);
+  for (const { table, column, definition } of ADDED_COLUMNS) {
+    const columns = await db.getAllAsync<{ name: string }>(`PRAGMA table_info(${table})`);
+    if (!columns.some((c) => c.name === column)) {
+      await db.execAsync(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+    }
+  }
+}
+
 let dbPromise: Promise<Db> | null = null;
 
 // Opens the database once and reuses it everywhere.
 export function getDb(): Promise<Db> {
   if (!dbPromise) {
     dbPromise = (async () => {
-      const db = await SQLite.openDatabaseAsync('spotted.db');
-      await db.execAsync(CREATE_TABLES);
-      return db as unknown as Db;
+      const db = (await SQLite.openDatabaseAsync('spotted.db')) as unknown as Db;
+      await prepare(db);
+      return db;
     })();
   }
   return dbPromise;
@@ -60,6 +80,6 @@ export function getDb(): Promise<Db> {
 
 // Only for automatic tests: use a stand-in database instead of the phone's.
 export async function useTestDatabase(db: Db): Promise<void> {
-  await db.execAsync(CREATE_TABLES);
+  await prepare(db);
   dbPromise = Promise.resolve(db);
 }

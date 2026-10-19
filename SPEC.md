@@ -26,7 +26,7 @@ Spotted lets users share a reel straight to the app, confirm which place it is, 
 - Spotted opens the **Add Place** screen with the reel link attached.
 - The app does **not** scrape or read Instagram content. The user confirms the place.
 
-### F1b. Place suggestions from a caption (added after Version 1 planning)
+### F1b. Place suggestions from a caption (built; added after Version 1 planning)
 Goal: save time. The app *suggests* the place, and the user always confirms.
 - **TikTok link:** the app asks TikTok's official public **oEmbed** service for the post's caption (no login, no scraping).
 - **Instagram link:** there is no official way to read a post. The user copies the caption in Instagram and taps **Paste caption** in Add Place.
@@ -57,16 +57,19 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 
 ### F5. Nearby reminders
 - When the user comes within the chosen radius (default **300 m**) of a saved place, show a local notification:
-  **"You're near {place name} — you saved it from a reel 👀"**
+  **"You're near {place name} — you saved it from a reel 👀"** (if the place has no reel attached: **"… — it's on your Spotted list 👀"**)
 - Tapping the notification opens that place's card.
 - Uses OS geofencing. OS limits: **iOS max 20 regions, Android max 100**. The app always monitors the **20 nearest** saved places and refreshes the set on significant location change.
 - No repeat notification for the same place within **24 hours**.
 - Respect **quiet hours** (default 22:00–08:00, no notifications).
+- **Daily limit:** at most 2 reminders in any 24 hours (setting: 1 / 2 / 3 / no limit), so a busy day doesn't spam the user.
+- **Per place:** on the place screen the user can turn reminders off for that place ("Remind me when I'm near") or mark **"I've been here"**. Muted and visited places are not watched and don't use up the 20 slots.
 
 ### F6. Settings
 - Reminders on/off.
 - Radius: 200 m / 300 m / 500 m / 1 km.
 - Quiet hours on/off + times.
+- Most reminders per day: 1 / 2 / 3 / no limit (default 2).
 - "Delete all my data" button (with confirmation).
 - Links: privacy policy, contact support.
 
@@ -142,6 +145,8 @@ interface SavedPlace {
   reelUrl?: string;
   createdAt: string;     // ISO date
   lastNotifiedAt?: string;
+  muted: boolean;              // no reminders for this place
+  visitedAt?: string;          // "I've been here" (reminders stop)
   collectionIds: string[]; // the collections this place is in (can be empty)
 }
 
@@ -151,6 +156,7 @@ interface Settings {
   quietHoursEnabled: boolean;  // default true
   quietStart: string;          // "22:00"
   quietEnd: string;            // "08:00"
+  maxRemindersPerDay: number;  // default 2; 0 = no limit
 }
 ```
 
@@ -173,8 +179,9 @@ interface Settings {
 
 ## 11. Secrets
 
-- Google API key in `.env` as `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` — **never commit `.env`**.
-- Restrict the key in Google Cloud to the app's package name (`com.spotted.app`) and only the needed APIs.
+- **Place search key (Places API):** do NOT ship it inside the app. A key inside the app can be extracted, and Google's "restrict to this Android app" lock does not work for plain web requests. Keep it on the small proxy in `server/places-proxy` and put only the proxy address in `.env` as `EXPO_PUBLIC_PLACES_PROXY_URL`. (For your own testing you may still use `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`.)
+- **Maps SDK key (the map itself):** a separate key, restricted in Google Cloud to the app's package name (`com.spotted.app`) and to Maps SDK only.
+- **Never commit `.env`.**
 - Google Cloud budget alert set (e.g. USD 10/month).
 
 ## 12. Done means (acceptance checklist)
@@ -188,6 +195,8 @@ interface Settings {
 - [ ] "Delete all my data" clears everything.
 - [ ] A place can be saved into collections; collections can be created, renamed, deleted; the filter works.
 - [ ] Pasting or sharing a TikTok/Instagram caption suggests the right place; the user confirms before anything is saved.
+- [ ] A place can be muted or marked "I've been here", and then never sends reminders; the daily limit works.
+- [ ] `npm test` and `npm run typecheck` pass.
 - [ ] No crashes in a 1-week test by 12+ testers.
 - [ ] Battery use acceptable after a full day.
 

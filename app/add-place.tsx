@@ -7,12 +7,18 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { CollectionPicker } from '@/src/components/CollectionPicker';
-import { Category, addPlace, listPlaces } from '@/src/db';
+import { Category, addPlace, listPlaces, updatePlace } from '@/src/db';
 import { newSessionToken } from '@/src/places/google';
-import { SEARCH_IS_DEMO, getPlaceDetails, searchPlaces } from '@/src/places/search';
+import { SEARCH_IS_DEMO, getPlaceDetails, searchPlaces, suggestPlacesFromCaption } from '@/src/places/search';
 import { useUserLocation } from '@/src/location/useUserLocation';
 import { reelLinkFromText } from '@/src/share/links';
+import { fetchTikTokCaption, isTikTokUrl } from '@/src/share/tiktok';
 import { DUBAI_BIAS, PlaceResult, PlaceSuggestion } from '@/src/places/types';
+
+function reelUrlIsTikTok(url: string | undefined): boolean {
+  const link = url ? reelLinkFromText(url) : null;
+  return Boolean(link && isTikTokUrl(link));
+}
 
 // Add Place: 1) search and pick the place, 2) choose category + note, then save.
 export default function AddPlaceScreen() {
@@ -38,6 +44,57 @@ export default function AddPlaceScreen() {
   const [reelUrl, setReelUrl] = useState(params.reelUrl ?? '');
   const [saving, setSaving] = useState(false);
 
+  // Suggestions taken from the caption of the reel (SPEC.md F1b). The user always confirms.
+  const [caption, setCaption] = useState('');
+  const [captionOpen, setCaptionOpen] = useState(Boolean(params.reelUrl));
+  const [readingCaption, setReadingCaption] = useState(false); // fetching a TikTok caption
+  const [suggesting, setSuggesting] = useState(false); // searching for places named in the caption
+  const [suggestions, setSuggestions] = useState<PlaceResult[]>([]);
+
+  // Always the newest "prefer results near here" circle, without re-running the caption search
+  // every time the phone reports a slightly different position (each search costs money).
+  const biasRef = useRef(DUBAI_BIAS);
+  biasRef.current =
+    lat !== undefined && lon !== undefined ? { latitude: lat, longitude: lon, radiusMeters: 50000 } : DUBAI_BIAS;
+
+  // A TikTok link: ask TikTok's official public service for the caption.
+  useEffect(() => {
+    const link = params.reelUrl ? reelLinkFromText(params.reelUrl) : null;
+    if (!link || !isTikTokUrl(link)) return;
+    let cancelled = false;
+    setReadingCaption(true);
+    fetchTikTokCaption(link).then((text) => {
+      if (cancelled) return;
+      if (text) setCaption(text);
+      setReadingCaption(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [params.reelUrl]);
+
+  // When there is a caption (fetched or pasted), look for the place it talks about.
+  useEffect(() => {
+    if (!caption.trim()) {
+      setSuggestions([]);
+      setSuggesting(false);
+      return;
+    }
+    let cancelled = false;
+    setSuggesting(true);
+    const timer = setTimeout(() => {
+      suggestPlacesFromCaption(caption, biasRef.current).then((found) => {
+        if (cancelled) return;
+        setSuggestions(found);
+        setSuggesting(false);
+      });
+    }, 600);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [caption]);
+
   // Search when the user pauses typing (waiting a moment saves Google requests).
   useEffect(() => {
     let cancelled = false;
@@ -59,14 +116,18 @@ export default function AddPlaceScreen() {
     };
   }, [query, lat, lon]);
 
-  // The user tapped a result: fetch its full details (map position) then show the form.
+  // The place is known (with its map position): show the form to finish saving it.
+  const selectPlace = (place: PlaceResult) => {
+    setSelected(place);
+    if (place.suggestedCategory) setCategory(place.suggestedCategory);
+    sessionToken.current = newSessionToken(); // the search session is over, start a new one
+  };
+
+  // The user tapped a search result: fetch its full details (map position) then show the form.
   const choose = async (suggestion: PlaceSuggestion) => {
     setLoadingPlace(true);
     try {
-      const place = await getPlaceDetails(suggestion, sessionToken.current);
-      setSelected(place);
-      if (place.suggestedCategory) setCategory(place.suggestedCategory);
-      sessionToken.current = newSessionToken(); // the session is over, start a new one
+      selectPlace(await getPlaceDetails(suggestion, sessionToken.current));
     } catch {
       Alert.alert('Could not load this place', 'Check your internet connection and try again.');
     } finally {
@@ -85,10 +146,24 @@ export default function AddPlaceScreen() {
       return;
     }
 
-    // Don't save the same place twice.
-    const existing = await listPlaces();
-    if (existing.some((p) => p.googlePlaceId === selected.googlePlaceId)) {
-      Alert.alert('Already saved', `"${selected.name}" is already in your places.`);
+    // Don't save the same place twice. But if this is a NEW reel for a place you already have,
+    // offer to keep the new reel link on it.
+    const existing = (await listPlaces()).find((p) => p.googlePlaceId === selected.googlePlaceId);
+    if (existing) {
+      if (link && link !== existing.reelUrl) {
+        Alert.alert('Already saved', `"${selected.name}" is already in your places. Use this reel link for it instead?`, [
+          { text: 'No, keep as it is', style: 'cancel', onPress: () => router.back() },
+          {
+            text: 'Use this reel',
+            onPress: async () => {
+              await updatePlace(existing.id, { reelUrl: link });
+              router.back();
+            },
+          },
+        ]);
+      } else {
+        Alert.alert('Already saved', `"${selected.name}" is already in your places.`);
+      }
       return;
     }
 
@@ -129,6 +204,51 @@ export default function AddPlaceScreen() {
               </Text>
             </View>
           ) : null}
+          {/* Caption: lets the app suggest the place. Always optional. */}
+          <Pressable onPress={() => setCaptionOpen((open) => !open)} style={styles.captionToggle}>
+            <Text style={{ color: theme.tintText, fontWeight: '600' }}>
+              {captionOpen ? '▾' : '▸'} Find the place from the caption
+            </Text>
+          </Pressable>
+          {captionOpen ? (
+            <>
+              <Text style={[styles.hint, { color: theme.mutedText, marginTop: 0 }]}>
+                {reelUrlIsTikTok(params.reelUrl)
+                  ? 'We read the TikTok caption for you.'
+                  : 'In Instagram, copy the caption, then press and hold below and choose Paste.'}
+              </Text>
+              <TextInput
+                value={caption}
+                onChangeText={setCaption}
+                placeholder="Paste the caption here"
+                placeholderTextColor={theme.mutedText}
+                multiline
+                style={[styles.input, styles.captionInput, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
+              />
+              {readingCaption ? <Text style={[styles.hint, { color: theme.mutedText }]}>Reading the TikTok caption…</Text> : null}
+              {suggesting ? <Text style={[styles.hint, { color: theme.mutedText }]}>Looking for the place…</Text> : null}
+              {suggestions.length > 0 ? (
+                <>
+                  <Text style={styles.label}>Is it one of these?</Text>
+                  {suggestions.map((place) => (
+                    <Pressable
+                      key={place.googlePlaceId}
+                      onPress={() => selectPlace(place)}
+                      style={({ pressed }) => [styles.result, { backgroundColor: theme.card, opacity: pressed ? 0.7 : 1 }]}>
+                      <Text style={styles.resultName}>{place.name}</Text>
+                      <Text style={[styles.resultAddress, { color: theme.mutedText }]}>{place.address}</Text>
+                    </Pressable>
+                  ))}
+                </>
+              ) : null}
+              {caption.trim() && !suggesting && suggestions.length === 0 ? (
+                <Text style={[styles.hint, { color: theme.mutedText }]}>
+                  We could not tell which place it is. Search for it below.
+                </Text>
+              ) : null}
+            </>
+          ) : null}
+
           <Text style={styles.label}>Which place is it?</Text>
           <TextInput
             value={query}
@@ -254,6 +374,8 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: '600', marginTop: 16, marginBottom: 8 },
   hint: { fontSize: 13, marginTop: 8, marginBottom: 8 },
   input: { minHeight: 52, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, fontSize: 16 },
+  captionToggle: { minHeight: 44, justifyContent: 'center', marginTop: 8 },
+  captionInput: { minHeight: 96, paddingTop: 12, textAlignVertical: 'top' },
   noteInput: { minHeight: 96, paddingTop: 12, textAlignVertical: 'top' },
   result: { borderRadius: 14, padding: 16, marginTop: 8, minHeight: 64, justifyContent: 'center' },
   resultName: { fontSize: 17, fontWeight: '700' },

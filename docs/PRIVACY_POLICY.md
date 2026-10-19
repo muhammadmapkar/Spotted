@@ -43,6 +43,11 @@ They are created by the app on your phone. No notification server is involved.
 
 - **Google Places:** when you search for a place, the text you type and your approximate location (to
   prefer nearby results) are sent to Google. Google handles it under its own privacy policy.
+  The requests pass through a small relay server that only forwards them to Google (it adds our access key).
+  The relay does not store your searches or your location.
+- **Captions:** if you paste a caption, or share a TikTok link, the words in the caption that look like a
+  place name are sent to Google in the same way, to suggest the place. For a TikTok link, the link is also sent
+  to TikTok's public service to get the caption. Nothing is sent unless you do this, and you always confirm the place.
 - **Google Maps:** the Map tab is drawn by Google Maps. **Directions** opens Google Maps.
 - **Instagram:** Spotted does not connect to Instagram and does not read reels or any Instagram
   content. It only keeps the link you share or paste. **Open reel** opens that link in Instagram or your browser.

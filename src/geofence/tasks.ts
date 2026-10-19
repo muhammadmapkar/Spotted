@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 
-import { getPlace, updatePlace } from '../db/places';
+import { getPlace, listPlaces, updatePlace } from '../db/places';
 import { getSettings } from '../db/settings';
 import { GEOFENCE_TASK, REFRESH_TASK } from './constants';
 import { sendNearbyNotification } from './notify';
@@ -22,11 +22,13 @@ TaskManager.defineTask(GEOFENCE_TASK, async ({ data, error }) => {
   if (eventType !== Location.GeofencingEventType.Enter || !region?.identifier) return;
 
   try {
-    const [place, settings] = await Promise.all([getPlace(region.identifier), getSettings()]);
+    const [place, settings, allPlaces] = await Promise.all([getPlace(region.identifier), getSettings(), listPlaces()]);
     if (!place) return;
 
     const now = new Date();
-    if (!shouldNotify(place, now, settings)) return; // reminders off, quiet hours, or notified in the last 24 h
+    // No reminder if: reminders off, place muted or visited, quiet hours,
+    // this place notified in the last 24 h, or the daily limit is reached.
+    if (!shouldNotify(place, now, settings, allPlaces)) return;
 
     // Write down the time FIRST, so two quick events can never send two notifications.
     await updatePlace(place.id, { lastNotifiedAt: now.toISOString() });

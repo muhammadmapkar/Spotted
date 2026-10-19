@@ -20,6 +20,13 @@ const RADIUS_OPTIONS: { value: Settings['radiusMeters']; label: string }[] = [
   { value: 1000, label: '1 km' },
 ];
 
+const DAILY_LIMIT_OPTIONS: { value: number; label: string }[] = [
+  { value: 1, label: '1' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+  { value: 0, label: 'No limit' },
+];
+
 // The Settings tab: reminders, radius, quiet hours, delete data, and links.
 export default function SettingsScreen() {
   const theme = Colors[useColorScheme()];
@@ -140,6 +147,38 @@ export default function SettingsScreen() {
             );
           })}
         </View>
+      </View>
+
+      {/* Daily limit */}
+      <Text style={styles.sectionTitle}>Most reminders per day</Text>
+      <View style={[styles.card, { backgroundColor: theme.card, opacity: remindersOff ? 0.5 : 1 }]}>
+        <View style={styles.chips} lightColor="transparent" darkColor="transparent">
+          {DAILY_LIMIT_OPTIONS.map((option) => {
+            const selected = option.value === settings.maxRemindersPerDay;
+            return (
+              <Pressable
+                key={option.value}
+                disabled={remindersOff}
+                onPress={() => change({ maxRemindersPerDay: option.value })}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: selected ? theme.tintStrong : 'transparent',
+                    borderColor: selected ? theme.tintStrong : theme.outline,
+                  },
+                ]}>
+                <Text style={[styles.chipText, { color: selected ? '#FFFFFF' : theme.text }]}>
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Text style={[styles.rowHint, { color: theme.mutedText, marginBottom: 8 }]}>
+          Stops Spotted from buzzing you again and again on a busy day.
+        </Text>
       </View>
 
       {/* Quiet hours */}
