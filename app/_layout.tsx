@@ -8,7 +8,6 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import '@/src/geofence/tasks'; // defines the background jobs: must load when the app starts
 import { GeofenceManager } from '@/src/geofence/GeofenceManager';
 import { getOnboardingDone, resetOnboarding, setOnboardingDone } from '@/src/db';
 import { OnboardingContext } from '@/src/onboarding/OnboardingContext';

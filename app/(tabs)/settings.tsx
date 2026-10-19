@@ -7,7 +7,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { PRIVACY_POLICY_URL, SUPPORT_EMAIL } from '@/src/config';
 import { DEFAULT_SETTINGS, Settings, deleteAllData, getSettings, listPlaces, saveSettings } from '@/src/db';
-import { sendNearbyNotification } from '@/src/geofence/notify';
+import { cancelAllReminders, sendNearbyNotification } from '@/src/geofence/notify';
 import { getReminderStatus } from '@/src/geofence/sync';
 import { useOnboarding } from '@/src/onboarding/OnboardingContext';
 import { openLink } from '@/src/openLink';
@@ -50,6 +50,7 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             await deleteAllData();
+            await cancelAllReminders();
             setSettings(await getSettings());
             Alert.alert('Done', 'All your data has been deleted from this phone.');
           },

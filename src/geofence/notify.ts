@@ -16,6 +16,17 @@ async function ensureChannel(): Promise<void> {
   }
 }
 
+// Remove every reminder that is waiting to appear or is still showing.
+// Used by "Delete all my data". Never throws.
+export async function cancelAllReminders(): Promise<void> {
+  try {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    await Notifications.dismissAllNotificationsAsync();
+  } catch {
+    // Nothing to remove, or notifications are not available: that's fine.
+  }
+}
+
 // Show the "You're near ..." notification. Tapping it opens the place
 // (the place id travels inside the notification as `data`).
 // delaySeconds is only used for testing, so you have time to close the app.

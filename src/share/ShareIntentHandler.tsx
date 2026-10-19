@@ -20,14 +20,16 @@ export function ShareIntentHandler() {
     resetShareIntent(); // so the same share is not handled twice
 
     // A tiny pause makes sure the app's screens are ready before we move.
-    const timer = setTimeout(() => {
+    // IMPORTANT: we must NOT cancel this timer when the effect re-runs. Marking the share
+    // as handled (above) changes `hasShareIntent`, which re-runs the effect, and a cancel
+    // here would stop the screen from ever opening.
+    setTimeout(() => {
       if (link) {
         router.push({ pathname: '/add-place', params: { reelUrl: link } } as never);
       } else {
         Alert.alert('No link found', 'What you shared did not contain a link. Try sharing the reel again.');
       }
     }, 250);
-    return () => clearTimeout(timer);
   }, [hasShareIntent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return null;

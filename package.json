@@ -1,7 +1,7 @@
 {
   "name": "spotted",
   "version": "1.0.0",
-  "main": "expo-router/entry",
+  "main": "index.ts",
   "dependencies": {
     "expo": "^57",
     "expo-constants": "~57.0.22",
