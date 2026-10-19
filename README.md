@@ -63,6 +63,61 @@ eas build --profile production --platform ios
 eas submit --platform ios
 ```
 
+## For developers joining the project
+
+Welcome! Read **SPEC.md** (what we build) and **CLAUDE.md** (the rules) first. They are short.
+
+### Get it running
+1. Accept your GitHub invitation, then install [Node.js](https://nodejs.org) (LTS) and Git.
+2. Get the code and install the packages:
+   ```bash
+   git clone https://github.com/sarahnazirahmed-debug/Spotted.git
+   cd Spotted
+   npm install
+   ```
+3. Secrets: `cp .env.example .env`. The Google key is **optional** (without it the app uses a built-in
+   demo list of Dubai places). If you need the key, ask the owner to send it privately.
+   **Never commit `.env`, keys or passwords.**
+4. Start the app: `npx expo start --dev-client` (needs the Spotted development build on an Android phone;
+   ask the owner for the install file). Expo Go can show the screens, but not Instagram sharing or
+   background reminders.
+5. Before every commit, run these two checks. Both must be clean:
+   ```bash
+   npx tsc --noEmit
+   npx expo-doctor
+   ```
+
+### How we work together
+- **Never work directly on `main`.** Make a branch for each task:
+  ```bash
+  git checkout main && git pull
+  git checkout -b short-name-of-task
+  ```
+- Commit small and often, with a clear message, then push your branch:
+  ```bash
+  git add .
+  git commit -m "Say what you changed"
+  git push -u origin short-name-of-task
+  ```
+- On GitHub, open a **Pull Request** into `main`. The owner reviews and merges it.
+- Keep Version 1 small. Do not build anything listed under "Out of scope" in SPEC.md without asking.
+- Builds (`eas build`) are tied to the owner's Expo account. Ask before starting one, because the free
+  plan has a limited number of builds per month.
+
+### Things that will bite you
+- **Android map:** the Google map **crashes the whole app** if no Google Maps key is built in. That is
+  why `GOOGLE_MAPS_KEY_IN_BUILD` in `src/config.ts` is `false` and the Map tab shows a list instead.
+  Only set it to `true` after a key is built into the app.
+- **Background reminders** need the background jobs defined at start-up. That is why `index.ts` is the
+  app's entry file and imports `src/geofence/tasks` first. Do not move that import.
+- **Native packages** (anything with native code, like maps, location, notifications) need a **new
+  development build** after you add them. JavaScript-only changes do not.
+- **Never scrape Instagram or TikTok, and never read comments.** Use official public services or text the
+  user pastes. This is a store and platform rule, not just a preference.
+- Reminder rules (quiet hours, 24-hour repeat, nearest 20 places) live in `src/geofence/rules.ts`.
+  Change them carefully: they decide when users get notified.
+- `app/(tabs)/settings.tsx` shows "Testing" buttons only in development builds. They are hidden in store builds.
+
 ## Project structure
 
 ```
