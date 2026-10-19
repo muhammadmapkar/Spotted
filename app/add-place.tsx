@@ -6,6 +6,7 @@ import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
+import { CollectionPicker } from '@/src/components/CollectionPicker';
 import { Category, addPlace, listPlaces } from '@/src/db';
 import { newSessionToken } from '@/src/places/google';
 import { SEARCH_IS_DEMO, getPlaceDetails, searchPlaces } from '@/src/places/search';
@@ -32,6 +33,7 @@ export default function AddPlaceScreen() {
   const sessionToken = useRef(newSessionToken());
   const [selected, setSelected] = useState<PlaceResult | null>(null);
   const [category, setCategory] = useState<Category>('food');
+  const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [note, setNote] = useState('');
   const [reelUrl, setReelUrl] = useState(params.reelUrl ?? '');
   const [saving, setSaving] = useState(false);
@@ -101,6 +103,7 @@ export default function AddPlaceScreen() {
         category,
         note: note.trim() || undefined,
         reelUrl: link ?? undefined,
+        collectionIds,
       });
       router.back();
     } catch {
@@ -203,6 +206,9 @@ export default function AddPlaceScreen() {
               );
             })}
           </View>
+
+          <Text style={styles.label}>Save to collection (optional)</Text>
+          <CollectionPicker selectedIds={collectionIds} onChange={setCollectionIds} />
 
           <Text style={styles.label}>Note (optional)</Text>
           <TextInput

@@ -1,4 +1,4 @@
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch } from 'react-native';
 
@@ -25,6 +25,7 @@ export default function SettingsScreen() {
   const theme = Colors[useColorScheme()];
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const { restart } = useOnboarding();
+  const router = useRouter();
 
   // Load the saved settings every time this tab is shown.
   useFocusEffect(
@@ -175,6 +176,12 @@ export default function SettingsScreen() {
             onChange={(time) => change({ quietEnd: time })}
           />
         </View>
+      </View>
+
+      {/* Collections */}
+      <Text style={styles.sectionTitle}>Collections</Text>
+      <View style={[styles.card, { backgroundColor: theme.card }]}>
+        <LinkRow label="Manage collections" onPress={() => router.push('/collections' as never)} />
       </View>
 
       {/* Privacy and help */}

@@ -127,6 +127,7 @@ function RootLayoutNav({ onboardingDone }: { onboardingDone: boolean }) {
         <Stack.Protected guard={onboardingDone}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="place/[id]" options={{ title: 'Place' }} />
+          <Stack.Screen name="collections" options={{ title: 'Collections' }} />
           <Stack.Screen name="add-place" options={{ title: 'Add place', presentation: 'modal' }} />
         </Stack.Protected>
       </Stack>

@@ -26,16 +26,28 @@ Spotted lets users share a reel straight to the app, confirm which place it is, 
 - Spotted opens the **Add Place** screen with the reel link attached.
 - The app does **not** scrape or read Instagram content. The user confirms the place.
 
+### F1b. Place suggestions from a caption (added after Version 1 planning)
+Goal: save time. The app *suggests* the place, and the user always confirms.
+- **TikTok link:** the app asks TikTok's official public **oEmbed** service for the post's caption (no login, no scraping).
+- **Instagram link:** there is no official way to read a post. The user copies the caption in Instagram and taps **Paste caption** in Add Place.
+- **Place clues are found on the phone** (no AI service, no server): lines starting with 📍, phrases like "at …", @tags, and the city or area.
+- The clues are searched with **Google Places**, and the best matches are shown as suggestions.
+- The user taps a suggestion to confirm, then chooses a category and collection (F2, F8).
+- If no clue is found, the normal search box is shown.
+- **Never:** scrape pages, read comments, log in to Instagram/TikTok for the user, or send captions to an AI service (that is Version 2).
+
 ### F2. Confirm and save a place
 - Search box using **Google Places Autocomplete** (results biased to the user's current location).
 - User picks the place → app stores: name, address, latitude/longitude, Google place ID.
 - User picks a category: **Food**, **Shopping**, or **Fun**.
+- Optional: save the place into one or more of the user's own **collections** (see F8).
 - Optional: a short personal note (e.g. "try the pistachio croissant").
 - Reel link saved with the place (tap to reopen the reel).
 
 ### F3. My Places (list)
 - List of saved places, newest first.
 - Filter chips: All / Food / Shopping / Fun.
+- A second row of chips filters by collection (shown only when the user has collections). Category and collection filters combine.
 - Each item shows name, area, category, distance from user (if location allowed).
 - Swipe or long-press to edit or delete.
 
@@ -63,12 +75,22 @@ Spotted lets users share a reel straight to the app, confirm which place it is, 
 - Permission requests come **after** explaining why (location "Always/Allow all the time", notifications).
 - App still works (list + map) if the user refuses background location; reminders are simply off, with a friendly banner explaining how to turn them on.
 
+### F8. Collections
+- Every place keeps its **category** (Food, Shopping, Fun).
+- On top of that, the user can make their own **collections**, like "Dubai brunch spots" or "Date night".
+- A place can be in any number of collections, or none.
+- Collections are chosen when saving a place (Add Place) and can be changed any time (place screen).
+- **Manage collections** (from Settings): create, rename, delete. Deleting a collection never deletes the places in it.
+- Collection names: 1 to 40 characters, unique (ignoring upper/lower case).
+- Collections are personal and stay on the phone. Sharing them with friends is Version 2.
+
 ## 5. Out of scope for Version 1 (later)
 
 - User accounts / login / cloud sync
 - Business offers and payments (Version 2)
-- Shared lists with friends
-- Reading reel content automatically / AI place detection
+- Shared collections with friends
+- Scraping Instagram or TikTok, or reading comments (never; not allowed by the platforms)
+- AI / server-side place detection from captions or comments (Version 2, needs a backend)
 - Web app
 
 ## 6. Screens
@@ -80,6 +102,7 @@ Spotted lets users share a reel straight to the app, confirm which place it is, 
 5. Add Place (search + category + note)
 6. Place detail / edit
 7. Settings — tab
+8. Manage collections (opened from Settings)
 
 ## 7. Tech stack
 
@@ -101,6 +124,12 @@ Spotted lets users share a reel straight to the app, confirm which place it is, 
 ```ts
 type Category = 'food' | 'shopping' | 'fun';
 
+interface Collection {
+  id: string;            // uuid
+  name: string;          // 1-40 characters, unique ignoring case
+  createdAt: string;     // ISO date
+}
+
 interface SavedPlace {
   id: string;            // uuid
   googlePlaceId: string;
@@ -113,6 +142,7 @@ interface SavedPlace {
   reelUrl?: string;
   createdAt: string;     // ISO date
   lastNotifiedAt?: string;
+  collectionIds: string[]; // the collections this place is in (can be empty)
 }
 
 interface Settings {
@@ -129,7 +159,7 @@ interface Settings {
 - **Location (foreground + background):** only to trigger nearby reminders. Never sent to our servers in V1 (we have none).
 - **Notifications:** local only.
 - **Data stored:** saved places and settings, on the phone only.
-- **Third parties:** Google Places receives search text and approximate location to return results.
+- **Third parties:** Google Places receives search text (including place clues taken from a caption) and approximate location to return results. For a TikTok link, TikTok's oEmbed service receives that link to return the caption.
 - Permission text (iOS / Android):
   "Spotted uses your location to remind you when you're near a place you saved — even when the app is closed. Your location stays on your phone."
 - Must provide: privacy policy URL, in-app "Delete all my data".
@@ -156,11 +186,14 @@ interface Settings {
 - [ ] No duplicate notifications for 24 h; quiet hours respected.
 - [ ] App works without background location (reminders off + banner).
 - [ ] "Delete all my data" clears everything.
+- [ ] A place can be saved into collections; collections can be created, renamed, deleted; the filter works.
+- [ ] Pasting or sharing a TikTok/Instagram caption suggests the right place; the user confirms before anything is saved.
 - [ ] No crashes in a 1-week test by 12+ testers.
 - [ ] Battery use acceptable after a full day.
 
 ## 13. Version 2 preview (do not build yet)
 
 - Accounts + cloud sync (Supabase or Firebase).
+- AI place detection: caption (and pasted comments) understood by an AI service, always confirmed by the user.
 - Business portal: businesses send offers **only to users who saved their place and opted in**.
 - Shared lists ("My Dubai brunch spots").

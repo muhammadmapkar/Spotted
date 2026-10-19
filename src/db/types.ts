@@ -2,6 +2,13 @@
 
 export type Category = 'food' | 'shopping' | 'fun';
 
+// One of the user's own lists, like "Dubai brunch spots".
+export interface Collection {
+  id: string;
+  name: string; // 1-40 characters, unique ignoring upper/lower case
+  createdAt: string;
+}
+
 // One place the user saved from a reel.
 export interface SavedPlace {
   id: string; // unique id we make up when saving
@@ -15,10 +22,13 @@ export interface SavedPlace {
   reelUrl?: string;
   createdAt: string; // date and time, e.g. "2026-10-18T19:15:00.000Z"
   lastNotifiedAt?: string; // when we last sent a "you're near" notification
+  collectionIds: string[]; // the collections this place is in (can be empty)
 }
 
 // What the user types in when adding a place (id and dates are filled in for them).
-export type NewPlace = Omit<SavedPlace, 'id' | 'createdAt' | 'lastNotifiedAt'>;
+export type NewPlace = Omit<SavedPlace, 'id' | 'createdAt' | 'lastNotifiedAt' | 'collectionIds'> & {
+  collectionIds?: string[];
+};
 
 export interface Settings {
   remindersEnabled: boolean;

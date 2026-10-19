@@ -6,6 +6,7 @@ import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
+import { CollectionPicker } from '@/src/components/CollectionPicker';
 import { Category, SavedPlace, deletePlace, getPlace, updatePlace } from '@/src/db';
 import { openLink } from '@/src/openLink';
 
@@ -18,6 +19,7 @@ export default function PlaceScreen() {
   const [place, setPlace] = useState<SavedPlace | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [category, setCategory] = useState<Category>('food');
+  const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [note, setNote] = useState('');
 
   // Load the place when the screen opens.
@@ -27,11 +29,12 @@ export default function PlaceScreen() {
       setPlace(found);
       setCategory(found.category);
       setNote(found.note ?? '');
+      setCollectionIds(found.collectionIds);
     });
   }, [id]);
 
   const save = async () => {
-    await updatePlace(id, { category, note: note.trim() || undefined });
+    await updatePlace(id, { category, note: note.trim() || undefined, collectionIds });
     router.back();
   };
 
@@ -93,6 +96,9 @@ export default function PlaceScreen() {
           );
         })}
       </View>
+
+      <Text style={styles.label}>Collections</Text>
+      <CollectionPicker selectedIds={collectionIds} onChange={setCollectionIds} />
 
       <Text style={styles.label}>Note</Text>
       <TextInput

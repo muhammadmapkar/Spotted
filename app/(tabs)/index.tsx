@@ -5,13 +5,14 @@ import { Alert, FlatList, Pressable, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { CATEGORIES } from '@/src/categories';
+import { CollectionFilter } from '@/src/components/CollectionFilter';
 import { Filter, FilterChips } from '@/src/components/FilterChips';
 import { PlaceCard } from '@/src/components/PlaceCard';
 import { RemindersBanner } from '@/src/components/RemindersBanner';
 import { distanceMeters } from '@/src/location/distance';
 import { useUserLocation } from '@/src/location/useUserLocation';
-import { SavedPlace, deletePlace, listPlaces } from '@/src/db';
+import { Collection, SavedPlace, deletePlace, listCollections, listPlaces } from '@/src/db';
+import { filterPlaces } from '@/src/placeFilters';
 
 // The home screen: all saved places, newest first, with filter chips on top.
 export default function PlacesScreen() {
@@ -20,13 +21,22 @@ export default function PlacesScreen() {
   const userLocation = useUserLocation(); // null if location is not allowed
   const [places, setPlaces] = useState<SavedPlace[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [collectionFilter, setCollectionFilter] = useState<string>('all'); // 'all' or a collection id
 
   // Reload the list every time this screen is shown.
   const reload = useCallback(async () => {
     try {
-      setPlaces(await listPlaces());
+      const [loadedPlaces, loadedCollections] = await Promise.all([listPlaces(), listCollections()]);
+      setPlaces(loadedPlaces);
+      setCollections(loadedCollections);
+      // If the collection we were filtering by was deleted, go back to "All lists".
+      setCollectionFilter((current) =>
+        current === 'all' || loadedCollections.some((c) => c.id === current) ? current : 'all'
+      );
     } catch {
       setPlaces([]); // if loading fails, show the empty list instead of crashing
+      setCollections([]);
     }
   }, []);
   useFocusEffect(
@@ -60,20 +70,21 @@ export default function PlacesScreen() {
       { text: 'Cancel', style: 'cancel' },
     ]);
 
-  const visible = filter === 'all' ? places : places.filter((p) => p.category === filter);
+  // Show places that match BOTH the category chip and the collection chip.
+  const visible = filterPlaces(places, filter, collectionFilter);
 
   // Message shown when the list is empty.
-  const emptyTitle =
-    places.length === 0 ? 'No places yet' : `No ${CATEGORIES[filter as keyof typeof CATEGORIES].label} places yet`;
+  const emptyTitle = places.length === 0 ? 'No places yet' : 'No matching places';
   const emptyText =
     places.length === 0
       ? 'Tap the + button to save a place from a reel, and we will remind you when you are nearby.'
-      : 'Places you save in this category will show up here.';
+      : 'Nothing matches these filters. Try another one, or save more places.';
 
   return (
     <View style={styles.container}>
       <RemindersBanner />
       <FilterChips selected={filter} onSelect={setFilter} />
+      <CollectionFilter collections={collections} selected={collectionFilter} onSelect={setCollectionFilter} />
 
       <FlatList
         data={visible}

@@ -17,7 +17,7 @@ Read **SPEC.md** before doing anything. It is the source of truth for what to bu
 - Expo (React Native) + TypeScript, Expo Router for navigation.
 - Store data on the phone only (no backend, no login) in Version 1.
 - Use local notifications only.
-- Never scrape Instagram. Users confirm places manually.
+- Never scrape Instagram or TikTok, and never read comments. Only use official public services (like TikTok oEmbed) or text the user pastes. Users always confirm places.
 - Geofencing: watch at most the 20 nearest saved places; refresh on significant location change.
 - Secrets go in `.env` (never commit it). Keep `.env.example` with empty values.
 - Keep code simple and well-commented so a beginner can follow it.

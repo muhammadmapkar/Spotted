@@ -28,6 +28,16 @@ const CREATE_TABLES = `
     id INTEGER PRIMARY KEY NOT NULL CHECK (id = 1),
     json TEXT NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS collections (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    createdAt TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS place_collections (
+    placeId TEXT NOT NULL,
+    collectionId TEXT NOT NULL,
+    PRIMARY KEY (placeId, collectionId)
+  );
   CREATE TABLE IF NOT EXISTS meta (
     key TEXT PRIMARY KEY NOT NULL,
     value TEXT NOT NULL
