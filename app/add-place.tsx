@@ -10,6 +10,7 @@ import { Category, addPlace, listPlaces } from '@/src/db';
 import { newSessionToken } from '@/src/places/google';
 import { SEARCH_IS_DEMO, getPlaceDetails, searchPlaces } from '@/src/places/search';
 import { useUserLocation } from '@/src/location/useUserLocation';
+import { reelLinkFromText } from '@/src/share/links';
 import { DUBAI_BIAS, PlaceResult, PlaceSuggestion } from '@/src/places/types';
 
 // Add Place: 1) search and pick the place, 2) choose category + note, then save.
@@ -74,9 +75,11 @@ export default function AddPlaceScreen() {
   const save = async () => {
     if (!selected || saving) return;
 
-    const link = reelUrl.trim();
-    if (link && !/^https?:\/\//i.test(link)) {
-      Alert.alert('Check the reel link', 'The link should start with http:// or https://');
+    // The field may contain a whole pasted message: pick out the link and tidy it.
+    const typed = reelUrl.trim();
+    const link = typed ? reelLinkFromText(typed) : null;
+    if (typed && !link) {
+      Alert.alert('Check the reel link', 'We could not find a link there. Paste the full link, starting with https://');
       return;
     }
 
@@ -97,7 +100,7 @@ export default function AddPlaceScreen() {
         longitude: selected.longitude,
         category,
         note: note.trim() || undefined,
-        reelUrl: link || undefined,
+        reelUrl: link ?? undefined,
       });
       router.back();
     } catch {
@@ -115,6 +118,14 @@ export default function AddPlaceScreen() {
 
       {!selected ? (
         <>
+          {params.reelUrl ? (
+            <View style={[styles.attached, { backgroundColor: theme.card }]}>
+              <Text style={{ fontWeight: '600' }}>🔗 Reel link attached</Text>
+              <Text style={{ color: theme.mutedText, fontSize: 13 }} numberOfLines={1}>
+                {params.reelUrl}
+              </Text>
+            </View>
+          ) : null}
           <Text style={styles.label}>Which place is it?</Text>
           <TextInput
             value={query}
@@ -205,6 +216,9 @@ export default function AddPlaceScreen() {
           />
 
           <Text style={styles.label}>Reel link (optional)</Text>
+          <Text style={[styles.hint, { color: theme.mutedText, marginTop: -4 }]}>
+            Copy the link in Instagram, then press and hold here and choose Paste.
+          </Text>
           <TextInput
             value={reelUrl}
             onChangeText={setReelUrl}
@@ -230,6 +244,7 @@ export default function AddPlaceScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 16, paddingBottom: 48 },
+  attached: { borderRadius: 14, padding: 14, marginBottom: 4 },
   label: { fontSize: 14, fontWeight: '600', marginTop: 16, marginBottom: 8 },
   hint: { fontSize: 13, marginTop: 8, marginBottom: 8 },
   input: { minHeight: 52, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, fontSize: 16 },

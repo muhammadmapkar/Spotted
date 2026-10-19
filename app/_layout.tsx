@@ -7,6 +7,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/components/useColorScheme';
 import { getOnboardingDone, resetOnboarding, setOnboardingDone } from '@/src/db';
 import { OnboardingContext } from '@/src/onboarding/OnboardingContext';
+import { ShareIntentHandler } from '@/src/share/ShareIntentHandler';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -88,6 +89,9 @@ function RootLayoutNav({ onboardingDone }: { onboardingDone: boolean }) {
           <Stack.Screen name="add-place" options={{ title: 'Add place', presentation: 'modal' }} />
         </Stack.Protected>
       </Stack>
+
+      {/* Opens Add Place when a reel is shared to Spotted (after onboarding) */}
+      {onboardingDone ? <ShareIntentHandler /> : null}
     </ThemeProvider>
   );
 }
