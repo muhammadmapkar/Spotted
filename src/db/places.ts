@@ -1,3 +1,4 @@
+import { emitDataChanged } from './changes';
 import { getDb } from './database';
 import { NewPlace, SavedPlace } from './types';
 
@@ -45,6 +46,7 @@ export async function addPlace(input: NewPlace): Promise<SavedPlace> {
       place.createdAt,
     ]
   );
+  emitDataChanged();
   return place;
 }
 
@@ -87,10 +89,12 @@ export async function updatePlace(
       id,
     ]
   );
+  emitDataChanged();
 }
 
 // Remove one place.
 export async function deletePlace(id: string): Promise<void> {
   const db = await getDb();
   await db.runAsync('DELETE FROM places WHERE id = ?', [id]);
+  emitDataChanged();
 }

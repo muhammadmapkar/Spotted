@@ -1,3 +1,4 @@
+import * as Notifications from 'expo-notifications';
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -5,6 +6,8 @@ import { useCallback, useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import '@/src/geofence/tasks'; // defines the background jobs: must load when the app starts
+import { GeofenceManager } from '@/src/geofence/GeofenceManager';
 import { getOnboardingDone, resetOnboarding, setOnboardingDone } from '@/src/db';
 import { OnboardingContext } from '@/src/onboarding/OnboardingContext';
 import { ShareIntentHandler } from '@/src/share/ShareIntentHandler';
@@ -18,6 +21,16 @@ export const unstable_settings = {
   // Start on the tabs screen.
   anchor: '(tabs)',
 };
+
+// Show reminders even while the app is open.
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -92,6 +105,9 @@ function RootLayoutNav({ onboardingDone }: { onboardingDone: boolean }) {
 
       {/* Opens Add Place when a reel is shared to Spotted (after onboarding) */}
       {onboardingDone ? <ShareIntentHandler /> : null}
+
+      {/* Watches your saved places and opens one when you tap a reminder */}
+      {onboardingDone ? <GeofenceManager /> : null}
     </ThemeProvider>
   );
 }

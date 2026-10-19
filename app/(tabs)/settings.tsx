@@ -6,7 +6,9 @@ import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { PRIVACY_POLICY_URL, SUPPORT_EMAIL } from '@/src/config';
-import { DEFAULT_SETTINGS, Settings, deleteAllData, getSettings, saveSettings } from '@/src/db';
+import { DEFAULT_SETTINGS, Settings, deleteAllData, getSettings, listPlaces, saveSettings } from '@/src/db';
+import { sendNearbyNotification } from '@/src/geofence/notify';
+import { getReminderStatus } from '@/src/geofence/sync';
 import { useOnboarding } from '@/src/onboarding/OnboardingContext';
 import { addMinutes } from '@/src/settings/time';
 
@@ -68,6 +70,23 @@ export default function SettingsScreen() {
 
   // The radius and quiet-hours controls are greyed out when reminders are off.
   const remindersOff = !settings.remindersEnabled;
+
+  // Testing helper: sends the "You're near ..." notification after 5 seconds,
+  // so you have time to close the app and see the real thing arrive.
+  const sendTestReminder = async () => {
+    const [place] = await listPlaces();
+    if (!place) {
+      Alert.alert('Save a place first', 'The test reminder uses your newest saved place.');
+      return;
+    }
+    await sendNearbyNotification(place, 5);
+    Alert.alert('Test reminder', 'It arrives in 5 seconds. Close the app to see it like a real reminder, then tap it.');
+  };
+
+  // Testing helper: shows what the reminder system is doing right now.
+  const showReminderStatus = async () => {
+    Alert.alert('Reminder status', await getReminderStatus());
+  };
 
   return (
     <ScrollView
@@ -172,9 +191,17 @@ export default function SettingsScreen() {
 
       {/* Testing helper. Only appears while developing, never in the store app. */}
       {__DEV__ ? (
-        <Pressable onPress={restart} style={[styles.devButton, { borderColor: theme.border }]}>
-          <Text style={{ fontWeight: '600' }}>Testing: show welcome screens again</Text>
-        </Pressable>
+        <View lightColor="transparent" darkColor="transparent">
+          <Pressable onPress={sendTestReminder} style={[styles.devButton, { borderColor: theme.border }]}>
+            <Text style={{ fontWeight: '600' }}>Testing: send a test reminder</Text>
+          </Pressable>
+          <Pressable onPress={showReminderStatus} style={[styles.devButton, { borderColor: theme.border, marginTop: 8 }]}>
+            <Text style={{ fontWeight: '600' }}>Testing: check reminder status</Text>
+          </Pressable>
+          <Pressable onPress={restart} style={[styles.devButton, { borderColor: theme.border, marginTop: 8 }]}>
+            <Text style={{ fontWeight: '600' }}>Testing: show welcome screens again</Text>
+          </Pressable>
+        </View>
       ) : null}
     </ScrollView>
   );

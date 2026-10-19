@@ -1,3 +1,4 @@
+import { emitDataChanged } from './changes';
 import { getDb } from './database';
 import { DEFAULT_SETTINGS, Settings } from './types';
 
@@ -20,5 +21,6 @@ export async function saveSettings(changes: Partial<Settings>): Promise<Settings
   await db.runAsync('INSERT OR REPLACE INTO settings (id, json) VALUES (1, ?)', [
     JSON.stringify(updated),
   ]);
+  emitDataChanged();
   return updated;
 }
