@@ -1,12 +1,13 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, UrlTile } from 'react-native-maps';
 
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
+import { USE_OPEN_STREET_MAP } from '@/src/config';
 import { SavedPlace, listPlaces } from '@/src/db';
 import { openLink } from '@/src/openLink';
 
@@ -67,9 +68,20 @@ export default function MapScreen() {
         style={StyleSheet.absoluteFill}
         initialRegion={DUBAI}
         userInterfaceStyle={scheme}
-        customMapStyle={scheme === 'dark' ? DARK_MAP_STYLE : undefined}
+        customMapStyle={USE_OPEN_STREET_MAP ? undefined : scheme === 'dark' ? DARK_MAP_STYLE : undefined}
+        mapType={USE_OPEN_STREET_MAP ? 'none' : 'standard'} // 'none' = draw our own tiles below instead of Google's
         onPress={() => setSelected(null)} // tap the empty map to close the card
         toolbarEnabled={false}>
+        {/* Free OpenStreetMap map pictures (used while we have no Google key) */}
+        {USE_OPEN_STREET_MAP ? (
+          <UrlTile
+            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maximumZ={19}
+            tileSize={256}
+            shouldReplaceMapContent
+          />
+        ) : null}
+
         {places.map((place) => (
           <Marker
             key={place.id}
@@ -82,6 +94,11 @@ export default function MapScreen() {
           />
         ))}
       </MapView>
+
+      {/* OpenStreetMap asks everyone who uses its maps to show this credit */}
+      {USE_OPEN_STREET_MAP ? (
+        <Text style={[styles.credit, { color: '#1F2430' }]}>© OpenStreetMap contributors</Text>
+      ) : null}
 
       {places.length === 0 ? (
         <View style={[styles.banner, { backgroundColor: theme.card }]}>
@@ -134,13 +151,24 @@ export default function MapScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  credit: {
+    position: 'absolute',
+    left: 8,
+    bottom: 6,
+    fontSize: 11,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
   banner: { position: 'absolute', top: 16, left: 16, right: 16, borderRadius: 14, padding: 16 },
   bannerTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
   card: {
     position: 'absolute',
     left: 16,
     right: 16,
-    bottom: 16,
+    bottom: USE_OPEN_STREET_MAP ? 30 : 16, // leaves room for the map credit
     borderRadius: 20,
     borderWidth: 1,
     padding: 16,
