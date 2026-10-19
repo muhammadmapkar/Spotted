@@ -17,3 +17,9 @@ export async function openPhoneSettings(): Promise<void> {
     Alert.alert('Could not open settings', 'Please open your phone settings and find Spotted under Apps.');
   }
 }
+
+// Opens Google Maps with directions to a place. A plain web link, so it needs no key.
+// It opens the Google Maps app if it is installed, or the browser otherwise.
+export function openDirections(place: { latitude: number; longitude: number }): Promise<void> {
+  return openLink(`https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}`);
+}
