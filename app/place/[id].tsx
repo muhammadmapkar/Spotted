@@ -82,8 +82,8 @@ export default function PlaceScreen() {
               style={[
                 styles.chip,
                 {
-                  backgroundColor: selected ? CATEGORIES[key].color : 'transparent',
-                  borderColor: selected ? CATEGORIES[key].color : theme.border,
+                  backgroundColor: selected ? CATEGORIES[key].strongColor : 'transparent',
+                  borderColor: selected ? CATEGORIES[key].strongColor : theme.outline,
                 },
               ]}>
               <Text style={[styles.chipText, { color: selected ? '#FFFFFF' : theme.text }]}>
@@ -102,13 +102,13 @@ export default function PlaceScreen() {
         placeholderTextColor={theme.mutedText}
         multiline
         maxLength={200}
-        style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.card }]}
+        style={[styles.input, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
       />
 
       {place.reelUrl ? (
         <Pressable
           onPress={() => openLink(place.reelUrl!)}
-          style={[styles.secondaryButton, { borderColor: theme.border }]}>
+          style={[styles.secondaryButton, { borderColor: theme.outline }]}>
           <Text style={styles.secondaryText}>▶ Open reel</Text>
         </Pressable>
       ) : null}
@@ -118,7 +118,7 @@ export default function PlaceScreen() {
       </Pressable>
 
       <Pressable onPress={confirmDelete} style={styles.deleteButton}>
-        <Text style={styles.deleteText}>Delete this place</Text>
+        <Text style={[styles.deleteText, { color: theme.danger }]}>Delete this place</Text>
       </Pressable>
     </ScrollView>
   );
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 24,
   },
-  saveText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
+  saveText: { color: '#FFFFFF', fontSize: 19, fontWeight: '700' },
   deleteButton: { minHeight: 52, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
-  deleteText: { color: '#D92D3A', fontSize: 16, fontWeight: '600' },
+  deleteText: { fontSize: 16, fontWeight: '600' },
 });

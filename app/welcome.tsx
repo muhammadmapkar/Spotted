@@ -76,5 +76,5 @@ const styles = StyleSheet.create({
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginVertical: 24 },
   dot: { width: 10, height: 10, borderRadius: 5 },
   button: { marginHorizontal: 24, minHeight: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  buttonText: { color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
+  buttonText: { color: '#FFFFFF', fontSize: 19, fontWeight: '700' },
 });

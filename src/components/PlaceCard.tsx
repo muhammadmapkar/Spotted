@@ -37,7 +37,7 @@ export function PlaceCard({
           <Text style={styles.name} numberOfLines={1}>
             {place.name}
           </Text>
-          <View style={[styles.pill, { backgroundColor: category.color }]}>
+          <View style={[styles.pill, { backgroundColor: category.strongColor }]}>
             <Text style={styles.pillText}>
               {category.emoji} {category.label}
             </Text>
@@ -47,7 +47,7 @@ export function PlaceCard({
           {place.address}
         </Text>
         {distanceMeters !== undefined ? (
-          <Text style={[styles.distance, { color: theme.tint }]}>{formatDistance(distanceMeters)} away</Text>
+          <Text style={[styles.distance, { color: theme.tintText }]}>{formatDistance(distanceMeters)} away</Text>
         ) : null}
         {place.note ? (
           <Text style={[styles.note, { color: theme.mutedText }]} numberOfLines={2}>

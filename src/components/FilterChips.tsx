@@ -9,11 +9,11 @@ import { Category } from '@/src/db';
 export type Filter = 'all' | Category;
 
 const CHIPS: { value: Filter; label: string; color: string }[] = [
-  { value: 'all', label: 'All', color: Colors.light.tint },
+  { value: 'all', label: 'All', color: Colors.light.tintStrong },
   ...(Object.keys(CATEGORIES) as Category[]).map((key) => ({
     value: key as Filter,
     label: CATEGORIES[key].label,
-    color: CATEGORIES[key].color,
+    color: CATEGORIES[key].strongColor,
   })),
 ];
 
@@ -45,7 +45,7 @@ export function FilterChips({
               styles.chip,
               {
                 backgroundColor: isSelected ? chip.color : 'transparent',
-                borderColor: isSelected ? chip.color : theme.border,
+                borderColor: isSelected ? chip.color : theme.outline,
               },
             ]}>
             <Text style={[styles.label, { color: isSelected ? '#FFFFFF' : theme.text }]}>

@@ -66,7 +66,7 @@ export default function PermissionsScreen() {
         <Text style={styles.emoji}>{current.emoji}</Text>
         <Text style={styles.title}>{current.title}</Text>
         <Text style={[styles.text, { color: theme.mutedText }]}>{current.text}</Text>
-        {current.hint ? <Text style={[styles.hint, { color: theme.tint }]}>{current.hint}</Text> : null}
+        {current.hint ? <Text style={[styles.hint, { color: theme.tintText }]}>{current.hint}</Text> : null}
       </View>
 
       <Pressable onPress={ask} disabled={busy} style={[styles.button, { backgroundColor: theme.tint, opacity: busy ? 0.6 : 1 }]}>
@@ -87,6 +87,6 @@ const styles = StyleSheet.create({
   text: { fontSize: 17, lineHeight: 25, textAlign: 'center' },
   hint: { fontSize: 15, fontWeight: '600', textAlign: 'center', marginTop: 16 },
   button: { minHeight: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  buttonText: { color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
+  buttonText: { color: '#FFFFFF', fontSize: 19, fontWeight: '700' },
   skip: { minHeight: 52, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
 });

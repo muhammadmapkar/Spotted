@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -114,6 +115,8 @@ function RootLayoutNav({ onboardingDone }: { onboardingDone: boolean }) {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? SpottedDark : SpottedLight}>
+      {/* Phone status bar (clock, battery): light icons in dark mode, dark icons in light mode */}
+      <StatusBar style="auto" />
       <Stack>
         {/* First launch only: welcome slides, then permissions */}
         <Stack.Protected guard={!onboardingDone}>

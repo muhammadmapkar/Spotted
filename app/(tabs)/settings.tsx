@@ -127,8 +127,8 @@ export default function SettingsScreen() {
                 style={[
                   styles.chip,
                   {
-                    backgroundColor: selected ? theme.tint : 'transparent',
-                    borderColor: selected ? theme.tint : theme.border,
+                    backgroundColor: selected ? theme.tintStrong : 'transparent',
+                    borderColor: selected ? theme.tintStrong : theme.outline,
                   },
                 ]}>
                 <Text style={[styles.chipText, { color: selected ? '#FFFFFF' : theme.text }]}>
@@ -184,7 +184,7 @@ export default function SettingsScreen() {
       </View>
 
       <Pressable onPress={confirmDeleteAll} style={styles.deleteButton}>
-        <Text style={styles.deleteText}>Delete all my data</Text>
+        <Text style={[styles.deleteText, { color: theme.danger }]}>Delete all my data</Text>
       </Pressable>
       <Text style={[styles.footer, { color: theme.mutedText }]}>
         Your places and settings are stored only on this phone.
@@ -193,13 +193,13 @@ export default function SettingsScreen() {
       {/* Testing helper. Only appears while developing, never in the store app. */}
       {__DEV__ ? (
         <View lightColor="transparent" darkColor="transparent">
-          <Pressable onPress={sendTestReminder} style={[styles.devButton, { borderColor: theme.border }]}>
+          <Pressable onPress={sendTestReminder} style={[styles.devButton, { borderColor: theme.outline }]}>
             <Text style={{ fontWeight: '600' }}>Testing: send a test reminder</Text>
           </Pressable>
-          <Pressable onPress={showReminderStatus} style={[styles.devButton, { borderColor: theme.border, marginTop: 8 }]}>
+          <Pressable onPress={showReminderStatus} style={[styles.devButton, { borderColor: theme.outline, marginTop: 8 }]}>
             <Text style={{ fontWeight: '600' }}>Testing: check reminder status</Text>
           </Pressable>
-          <Pressable onPress={restart} style={[styles.devButton, { borderColor: theme.border, marginTop: 8 }]}>
+          <Pressable onPress={restart} style={[styles.devButton, { borderColor: theme.outline, marginTop: 8 }]}>
             <Text style={{ fontWeight: '600' }}>Testing: show welcome screens again</Text>
           </Pressable>
         </View>
@@ -226,14 +226,14 @@ function TimeStepper({
         <Pressable
           onPress={() => onChange(addMinutes(time, -30))}
           accessibilityLabel={`${label} earlier by 30 minutes`}
-          style={[styles.stepButton, { borderColor: theme.border }]}>
+          style={[styles.stepButton, { borderColor: theme.outline }]}>
           <Text style={styles.stepText}>−</Text>
         </Pressable>
         <Text style={styles.time}>{time}</Text>
         <Pressable
           onPress={() => onChange(addMinutes(time, 30))}
           accessibilityLabel={`${label} later by 30 minutes`}
-          style={[styles.stepButton, { borderColor: theme.border }]}>
+          style={[styles.stepButton, { borderColor: theme.outline }]}>
           <Text style={styles.stepText}>+</Text>
         </Pressable>
       </View>
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   time: { fontSize: 18, fontWeight: '700', minWidth: 60, textAlign: 'center' },
   linkRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 56 },
   deleteButton: { minHeight: 52, alignItems: 'center', justifyContent: 'center', marginTop: 32 },
-  deleteText: { color: '#D92D3A', fontSize: 16, fontWeight: '700' },
+  deleteText: { fontSize: 16, fontWeight: '700' },
   devButton: { minHeight: 48, borderRadius: 12, borderWidth: 1, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', marginTop: 24 },
   footer: { fontSize: 13, textAlign: 'center', marginTop: 4 },
 });

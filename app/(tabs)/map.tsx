@@ -13,6 +13,19 @@ import { openLink } from '@/src/openLink';
 // Where the map starts if there are no saved places yet: Dubai.
 const DUBAI = { latitude: 25.2048, longitude: 55.2708, latitudeDelta: 0.25, longitudeDelta: 0.25 };
 
+// A dark look for the map in dark mode (Android). Apple Maps on iPhone switches by itself.
+const DARK_MAP_STYLE = [
+  { elementType: 'geometry', stylers: [{ color: '#1d2330' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#8e96a8' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#14171f' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2c3344' }] },
+  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#a0a6b3' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0e1118' }] },
+  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#232a3a' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#1c2a28' }] },
+  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#232a3a' }] },
+];
+
 // Opens Google Maps with directions to the place. Plain web link, no key needed.
 // It opens the Google Maps app if it is installed, or the browser otherwise.
 function openDirections(place: SavedPlace) {
@@ -54,6 +67,7 @@ export default function MapScreen() {
         style={StyleSheet.absoluteFill}
         initialRegion={DUBAI}
         userInterfaceStyle={scheme}
+        customMapStyle={scheme === 'dark' ? DARK_MAP_STYLE : undefined}
         onPress={() => setSelected(null)} // tap the empty map to close the card
         toolbarEnabled={false}>
         {places.map((place) => (
@@ -82,7 +96,7 @@ export default function MapScreen() {
             <Text style={styles.name} numberOfLines={2}>
               {selected.name}
             </Text>
-            <View style={[styles.pill, { backgroundColor: CATEGORIES[selected.category].color }]}>
+            <View style={[styles.pill, { backgroundColor: CATEGORIES[selected.category].strongColor }]}>
               <Text style={styles.pillText}>
                 {CATEGORIES[selected.category].emoji} {CATEGORIES[selected.category].label}
               </Text>
@@ -98,19 +112,19 @@ export default function MapScreen() {
             {selected.reelUrl ? (
               <Pressable
                 onPress={() => openLink(selected.reelUrl!)}
-                style={[styles.button, { borderColor: theme.border }]}>
+                style={[styles.button, { borderColor: theme.outline }]}>
                 <Text style={styles.buttonText}>▶ Open reel</Text>
               </Pressable>
             ) : null}
             <Pressable
               onPress={() => openDirections(selected)}
-              style={[styles.button, styles.primary, { backgroundColor: theme.tint, borderColor: theme.tint }]}>
+              style={[styles.button, styles.primary, { backgroundColor: theme.tintStrong, borderColor: theme.tintStrong }]}>
               <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>Directions</Text>
             </Pressable>
           </View>
 
           <Pressable onPress={() => router.push(`/place/${selected.id}` as never)} style={styles.detailsLink}>
-            <Text style={{ color: theme.tint, fontWeight: '600' }}>Edit place</Text>
+            <Text style={{ color: theme.tintText, fontWeight: '600' }}>Edit place</Text>
           </Pressable>
         </View>
       ) : null}

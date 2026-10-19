@@ -38,7 +38,7 @@ export function RemindersBanner() {
         <Text style={styles.title}>Reminders are off</Text>
         <Text style={[styles.body, { color: theme.mutedText }]}>{missing}</Text>
       </View>
-      <Pressable onPress={openPhoneSettings} style={[styles.button, { backgroundColor: theme.tint }]}>
+      <Pressable onPress={openPhoneSettings} style={[styles.button, { backgroundColor: theme.tintStrong }]}>
         <Text style={styles.buttonText}>Turn on</Text>
       </Pressable>
     </View>

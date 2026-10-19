@@ -134,7 +134,7 @@ export default function AddPlaceScreen() {
             placeholderTextColor={theme.mutedText}
             autoFocus
             autoCorrect={false}
-            style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.card }]}
+            style={[styles.input, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
           />
           {SEARCH_IS_DEMO ? (
             <Text style={[styles.hint, { color: theme.mutedText }]}>
@@ -175,7 +175,7 @@ export default function AddPlaceScreen() {
               <Text style={[styles.resultAddress, { color: theme.mutedText }]}>{selected.address}</Text>
             </View>
             <Pressable onPress={() => setSelected(null)} style={styles.changeButton}>
-              <Text style={{ color: theme.tint, fontWeight: '600' }}>Change</Text>
+              <Text style={{ color: theme.tintText, fontWeight: '600' }}>Change</Text>
             </Pressable>
           </View>
 
@@ -192,8 +192,8 @@ export default function AddPlaceScreen() {
                   style={[
                     styles.chip,
                     {
-                      backgroundColor: isSelected ? CATEGORIES[key].color : 'transparent',
-                      borderColor: isSelected ? CATEGORIES[key].color : theme.border,
+                      backgroundColor: isSelected ? CATEGORIES[key].strongColor : 'transparent',
+                      borderColor: isSelected ? CATEGORIES[key].strongColor : theme.outline,
                     },
                   ]}>
                   <Text style={[styles.chipText, { color: isSelected ? '#FFFFFF' : theme.text }]}>
@@ -212,7 +212,7 @@ export default function AddPlaceScreen() {
             placeholderTextColor={theme.mutedText}
             multiline
             maxLength={200}
-            style={[styles.input, styles.noteInput, { color: theme.text, borderColor: theme.border, backgroundColor: theme.card }]}
+            style={[styles.input, styles.noteInput, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
           />
 
           <Text style={styles.label}>Reel link (optional)</Text>
@@ -227,7 +227,7 @@ export default function AddPlaceScreen() {
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="url"
-            style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.card }]}
+            style={[styles.input, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
           />
 
           <Pressable
@@ -266,5 +266,5 @@ const styles = StyleSheet.create({
   },
   chipText: { fontSize: 15, fontWeight: '600' },
   saveButton: { minHeight: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginTop: 28 },
-  saveText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
+  saveText: { color: '#FFFFFF', fontSize: 19, fontWeight: '700' },
 });
