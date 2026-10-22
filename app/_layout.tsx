@@ -11,6 +11,7 @@ import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useState } from 'react';
+import { View } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
@@ -19,6 +20,7 @@ import { GeofenceManager } from '@/src/geofence/GeofenceManager';
 import { ThemePreference, getOnboardingDone, getThemePreference, resetOnboarding, setOnboardingDone } from '@/src/db';
 import { OnboardingContext } from '@/src/onboarding/OnboardingContext';
 import { ShareIntentHandler } from '@/src/share/ShareIntentHandler';
+import { AnimatedSplash } from '@/src/splash/AnimatedSplash';
 import { POPPINS } from '@/src/theme/fonts';
 import { SpottedThemeProvider, applyThemePreference } from '@/src/theme/ThemeProvider';
 
@@ -112,6 +114,9 @@ export default function RootLayout() {
     setDone(false);
   }, []);
 
+  // The animated intro plays over the app on every start. The app loads behind it.
+  const [splashDone, setSplashDone] = useState(false);
+
   const ready = loaded && onboardingDone !== null && themePreference !== null;
 
   useEffect(() => {
@@ -127,7 +132,10 @@ export default function RootLayout() {
   return (
     <SpottedThemeProvider initialPreference={themePreference}>
       <OnboardingContext.Provider value={{ finish, restart }}>
-        <RootLayoutNav onboardingDone={onboardingDone} />
+        <View style={{ flex: 1 }}>
+          <RootLayoutNav onboardingDone={onboardingDone} />
+          {splashDone ? null : <AnimatedSplash onFinish={() => setSplashDone(true)} />}
+        </View>
       </OnboardingContext.Provider>
     </SpottedThemeProvider>
   );

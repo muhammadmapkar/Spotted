@@ -30,8 +30,8 @@ test('app icon: solid coral square with the pin (iPhone needs no see-through)', 
   assert.deepStrictEqual(pixel('icon.png', 512, 650).rgba, [255, 255, 255, 255], 'white pin');
 });
 
-test('splash image: coral pin, see-through background and hole', () => {
-  assert.deepStrictEqual(pixel('splash-icon.png', 512, 650).rgba, CORAL);
+test('splash image: white pin (it sits on purple), see-through background and hole', () => {
+  assert.deepStrictEqual(pixel('splash-icon.png', 512, 650).rgba, [255, 255, 255, 255]);
   assert.equal(pixel('splash-icon.png', 5, 5).rgba[3], 0, 'corner is see-through');
   assert.equal(pixel('splash-icon.png', 512, 432).rgba[3], 0, 'the hole is see-through');
 });

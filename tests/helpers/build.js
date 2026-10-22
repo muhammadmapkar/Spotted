@@ -30,6 +30,8 @@ const entryFiles = [
   'src/theme/ThemeProvider.tsx',
   'src/data/mock.ts',
   'src/components/icons/paths.ts',
+  'src/splash/timeline.ts',
+  'src/splash/AnimatedSplash.tsx',
 ];
 
 fs.rmSync(outDir, { recursive: true, force: true });

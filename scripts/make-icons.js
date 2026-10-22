@@ -147,8 +147,8 @@ savePng(path.join(out, 'android-icon-background.png'), S, draw({ size: S, bg: CO
 // 4. Android "themed icon" version: just the pin shape in one colour (Android recolours it).
 savePng(path.join(out, 'android-icon-monochrome.png'), S, draw({ size: S, bg: null, pin: BLACK, pinHeight: 0.5, holeColor: null }));
 
-// 5. Splash screen: coral pin, see-through around it (the background colour is set in app.json).
-savePng(path.join(out, 'splash-icon.png'), S, draw({ size: S, bg: null, pin: CORAL, pinHeight: 0.62, holeColor: null }));
+// 5. Splash screen: white pin, see-through around it. It sits on the purple set in app.json.
+savePng(path.join(out, 'splash-icon.png'), S, draw({ size: S, bg: null, pin: WHITE, pinHeight: 0.62, holeColor: null }));
 
 // 6. Small browser icon.
 savePng(path.join(out, 'favicon.png'), 64, draw({ size: 64, bg: CORAL, pin: WHITE, pinHeight: 0.62, holeColor: CORAL }));

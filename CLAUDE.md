@@ -24,10 +24,9 @@ Read **SPEC.md** before doing anything. It is the source of truth for what to bu
 - Keep code simple and well-commented so a beginner can follow it.
 
 ## Design
-- Clean and friendly. Coral accent `#E8505B`, text `#1F2430`.
-- Category colours: Food coral, Shopping purple, Fun teal.
-- Support light and dark mode. Large tap targets.
-- The redesign (see SPOTTED_BUILD_GUIDE.md) adds a purple theme in `constants/Theme.ts` and the Poppins font. Screens move from `constants/Colors.ts` to the new theme as they are redesigned. Use `useTheme()` from `src/theme/ThemeProvider.tsx`.
+- Clean and friendly. **Purple brand** (light `#6A1FB0`, dark `#A061F0`), Poppins font. SPEC.md section 10 has all the colours. The visual source of truth is `spotted-prototype-reference.html`.
+- Colours are in `constants/Theme.ts`. Read them with `useTheme()` from `src/theme/ThemeProvider.tsx`. Older screens still use the first coral palette in `constants/Colors.ts`; move a screen to the new theme when it is redesigned (see SPOTTED_BUILD_GUIDE.md).
+- Support light and dark mode. Large tap targets (at least 44 x 44). Respect Reduce Motion in every animation.
 - **Never use eyes, faces or any human features** in icons, illustrations or animations.
 - **Do not use emoji in the UI** (new and redesigned screens now; older screens are converted as they are redesigned).
 

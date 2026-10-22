@@ -95,6 +95,7 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 
 ## 6. Screens
 
+0. Animated splash (on every app start; tap to skip)
 1. Welcome (3 slides)
 2. Permissions explainer
 3. My Places (list) — **home tab**
@@ -166,10 +167,17 @@ interface Settings {
 
 ## 10. Design
 
-- Clean, friendly, lots of white space.
-- Accent colour: coral `#E8505B`; text `#1F2430`.
-- Category colours: Food = coral, Shopping = purple, Fun = teal.
-- Rounded cards, large tap targets, works in light and dark mode.
+The visual source of truth is the design prototype (`spotted-prototype-reference.html`): its CSS has the exact colours, sizes and animation timings. The colours live in code in `constants/Theme.ts`.
+
+- **Brand: purple.** Clean, friendly, rounded cards, lots of white space.
+- **Light mode:** page `#F6F2FB`, cards `#FFFFFF`, text `#1C0F2E`, soft text `#5E4F72`, brand and buttons `#6A1FB0`, saved marks and alerts red `#D62839`.
+- **Dark mode:** page `#120A1F`, cards `#1E1231`, text `#F4EEFC`, soft text `#BBABD4`, brand `#A061F0`, buttons `#7B2CD6`, red `#F0475A`.
+- **Font:** Poppins (weights 400 to 800).
+- **Category colours** (the Saved folders): Food orange to red (`#F4A259` to `#D62839`), Shopping pink to purple (`#F15BB5` to `#7209B7`), Fun light blue to blue (`#4CC9F0` to `#3451D1`).
+- Large tap targets (at least 44 x 44), light and dark mode, readable text contrast in both.
+- **Motion:** friendly animations, and every animation respects the phone's Reduce Motion setting.
+- **Never** use eyes, faces or any human features in icons, illustrations or animations. **No emoji** in the UI.
+- Older screens still use the first coral palette (`constants/Colors.ts`) until they are redesigned. The app icon will follow the purple brand later.
 
 ## 11. Secrets
 
