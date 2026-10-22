@@ -17,7 +17,19 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { GeofenceManager } from '@/src/geofence/GeofenceManager';
-import { ThemePreference, getOnboardingDone, getThemePreference, resetOnboarding, setOnboardingDone } from '@/src/db';
+import { AuthContext } from '@/src/auth/AuthContext';
+import { appStage } from '@/src/auth/stage';
+import {
+  ThemePreference,
+  UserProfile,
+  endSession,
+  getOnboardingDone,
+  getSignedInUser,
+  getThemePreference,
+  resetOnboarding,
+  setOnboardingDone,
+  startSession,
+} from '@/src/db';
 import { OnboardingContext } from '@/src/onboarding/OnboardingContext';
 import { ShareIntentHandler } from '@/src/share/ShareIntentHandler';
 import { AnimatedSplash } from '@/src/splash/AnimatedSplash';
@@ -103,6 +115,23 @@ export default function RootLayout() {
       .catch(() => setDone(false));
   }, []);
 
+  // Who is signed in (undefined = still checking, null = nobody). Kept on the phone.
+  const [authUser, setAuthUser] = useState<UserProfile | null | undefined>(undefined);
+  useEffect(() => {
+    getSignedInUser()
+      .then(setAuthUser)
+      .catch(() => setAuthUser(null));
+  }, []);
+  const signIn = useCallback(async (user: UserProfile) => {
+    await startSession(user.phone);
+    setAuthUser(user);
+  }, []);
+  const signOut = useCallback(async () => {
+    await endSession();
+    setAuthUser(null);
+  }, []);
+  const clearLocal = useCallback(() => setAuthUser(null), []);
+
   const finish = useCallback(async () => {
     await setOnboardingDone();
     setDone(true);
@@ -117,7 +146,7 @@ export default function RootLayout() {
   // The animated intro plays over the app on every start. The app loads behind it.
   const [splashDone, setSplashDone] = useState(false);
 
-  const ready = loaded && onboardingDone !== null && themePreference !== null;
+  const ready = loaded && onboardingDone !== null && themePreference !== null && authUser !== undefined;
 
   useEffect(() => {
     if (ready) {
@@ -131,32 +160,40 @@ export default function RootLayout() {
 
   return (
     <SpottedThemeProvider initialPreference={themePreference}>
-      <OnboardingContext.Provider value={{ finish, restart }}>
-        <View style={{ flex: 1 }}>
-          <RootLayoutNav onboardingDone={onboardingDone} />
-          {splashDone ? null : <AnimatedSplash onFinish={() => setSplashDone(true)} />}
-        </View>
-      </OnboardingContext.Provider>
+      <AuthContext.Provider value={{ user: authUser, signIn, signOut, clearLocal }}>
+        <OnboardingContext.Provider value={{ finish, restart }}>
+          <View style={{ flex: 1 }}>
+            <RootLayoutNav signedIn={authUser !== null} onboardingDone={onboardingDone} />
+            {splashDone ? null : <AnimatedSplash onFinish={() => setSplashDone(true)} />}
+          </View>
+        </OnboardingContext.Provider>
+      </AuthContext.Provider>
     </SpottedThemeProvider>
   );
 }
 
-function RootLayoutNav({ onboardingDone }: { onboardingDone: boolean }) {
+function RootLayoutNav({ signedIn, onboardingDone }: { signedIn: boolean; onboardingDone: boolean }) {
   const colorScheme = useColorScheme();
+  const stage = appStage(signedIn, onboardingDone);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? SpottedDark : SpottedLight}>
       {/* Phone status bar (clock, battery): light icons in dark mode, dark icons in light mode */}
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerTitleStyle: { fontFamily: POPPINS.semiBold } }}>
+        {/* Signed out: the sign-in screens (phone, code, details) */}
+        <Stack.Protected guard={stage === 'sign-in'}>
+          <Stack.Screen name="sign-in" options={{ headerShown: false, gestureEnabled: false, animation: 'fade' }} />
+        </Stack.Protected>
+
         {/* First launch only: welcome slides, then permissions */}
-        <Stack.Protected guard={!onboardingDone}>
+        <Stack.Protected guard={stage === 'onboarding'}>
           <Stack.Screen name="welcome" options={{ headerShown: false }} />
           <Stack.Screen name="permissions" options={{ headerShown: false, gestureEnabled: false }} />
         </Stack.Protected>
 
         {/* The real app */}
-        <Stack.Protected guard={onboardingDone}>
+        <Stack.Protected guard={stage === 'app'}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="place/[id]" options={{ title: 'Place' }} />
           <Stack.Screen name="collections" options={{ title: 'Collections' }} />
@@ -164,11 +201,11 @@ function RootLayoutNav({ onboardingDone }: { onboardingDone: boolean }) {
         </Stack.Protected>
       </Stack>
 
-      {/* Opens Add Place when a reel is shared to Spotted (after onboarding) */}
-      {onboardingDone ? <ShareIntentHandler /> : null}
+      {/* Opens Add Place when a reel is shared to Spotted (once signed in and past onboarding) */}
+      {stage === 'app' ? <ShareIntentHandler /> : null}
 
       {/* Watches your saved places and opens one when you tap a reminder */}
-      {onboardingDone ? <GeofenceManager /> : null}
+      {stage === 'app' ? <GeofenceManager /> : null}
     </ThemeProvider>
   );
 }

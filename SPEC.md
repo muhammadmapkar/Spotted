@@ -75,6 +75,15 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 - Permission requests come **after** explaining why (location "Always/Allow all the time", notifications).
 - App still works (list + map) if the user refuses background location; reminders are simply off, with a friendly banner explaining how to turn them on.
 
+### F9. Sign in (local demo)
+Added from the redesign. There is **no server** in Version 1, so this is a demo sign-in that lives only on the phone.
+- **Step 1, phone:** a country code picker (United Arab Emirates +971 first) and the phone number. "Send code".
+- **Step 2, code:** 6 boxes. The SMS is **fake**: the code is always `123456`. Wrong code: the boxes shake and say "That code didn't match. Please try again." There is a "Resend code" countdown and "Change number".
+- **Step 3, details (first time on this phone only):** name and email, then "Start exploring".
+- The signed-in user (phone, name, email) is saved **on the phone only** and stays signed in after a restart.
+- **Delete all my data** also signs the user out and removes the saved profile.
+- The fake SMS sits behind one file (`src/services/auth.ts`). A real SMS service replaces it in Version 2, with a backend.
+
 ### F8. Collections
 - Every place keeps its **category** (Food, Shopping, Fun).
 - On top of that, the user can make their own **collections**, like "Dubai brunch spots" or "Date night".
@@ -86,7 +95,7 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 
 ## 5. Out of scope for Version 1 (later)
 
-- User accounts / login / cloud sync
+- Real accounts: a server, real SMS codes, and cloud sync (Version 2). Version 1 has only the local demo sign-in (F9).
 - Business offers and payments (Version 2)
 - Shared collections with friends
 - Scraping Instagram or TikTok, or reading comments (never; not allowed by the platforms)
@@ -104,6 +113,7 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 6. Place detail / edit
 7. Settings — tab
 8. Manage collections (opened from Settings)
+9. Sign in: phone, code, details (shown when signed out, after the splash)
 
 ## 7. Tech stack
 
@@ -146,6 +156,13 @@ interface SavedPlace {
   collectionIds: string[]; // the collections this place is in (can be empty)
 }
 
+interface UserProfile {
+  phone: string;         // international format, e.g. "+971501234567"
+  name: string;
+  email: string;
+  createdAt: string;     // ISO date
+}
+
 interface Settings {
   remindersEnabled: boolean;   // default true
   radiusMeters: 200 | 300 | 500 | 1000; // default 300
@@ -159,7 +176,7 @@ interface Settings {
 
 - **Location (foreground + background):** only to trigger nearby reminders. Never sent to our servers in V1 (we have none).
 - **Notifications:** local only.
-- **Data stored:** saved places and settings, on the phone only.
+- **Data stored:** saved places, collections, settings, and the demo sign-in profile (phone, name, email), on the phone only.
 - **Third parties:** Google Places receives search text (including place clues taken from a caption) and approximate location to return results. For a TikTok link, TikTok's oEmbed service receives that link to return the caption.
 - Permission text (iOS / Android):
   "Spotted uses your location to remind you when you're near a place you saved — even when the app is closed. Your location stays on your phone."
@@ -196,6 +213,7 @@ The visual source of truth is the design prototype (`spotted-prototype-reference
 - [ ] "Delete all my data" clears everything.
 - [ ] A place can be saved into collections; collections can be created, renamed, deleted; the filter works.
 - [ ] Pasting or sharing a TikTok/Instagram caption suggests the right place; the user confirms before anything is saved.
+- [ ] Sign in works: phone, code (123456 in the demo), details; the user stays signed in after a restart; Delete all my data signs out.
 - [ ] No crashes in a 1-week test by 12+ testers.
 - [ ] Battery use acceptable after a full day.
 

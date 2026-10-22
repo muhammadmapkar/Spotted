@@ -5,12 +5,13 @@ import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch } from 'react
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { PRIVACY_POLICY_URL, SUPPORT_EMAIL } from '@/src/config';
+import { SUPPORT_EMAIL } from '@/src/config';
 import { DEFAULT_SETTINGS, Settings, deleteAllData, getSettings, listPlaces, saveSettings } from '@/src/db';
 import { cancelAllReminders, sendNearbyNotification } from '@/src/geofence/notify';
 import { getReminderStatus } from '@/src/geofence/sync';
 import { useOnboarding } from '@/src/onboarding/OnboardingContext';
-import { openLink } from '@/src/openLink';
+import { useAuth } from '@/src/auth/AuthContext';
+import { openPrivacyPolicy } from '@/src/legal';
 import { addMinutes } from '@/src/settings/time';
 
 const RADIUS_OPTIONS: { value: Settings['radiusMeters']; label: string }[] = [
@@ -25,6 +26,7 @@ export default function SettingsScreen() {
   const theme = Colors[useColorScheme()];
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const { restart } = useOnboarding();
+  const { signOut, clearLocal } = useAuth();
   const router = useRouter();
 
   // Load the saved settings every time this tab is shown.
@@ -52,17 +54,13 @@ export default function SettingsScreen() {
           onPress: async () => {
             await deleteAllData();
             await cancelAllReminders();
+            clearLocal(); // the saved profile is erased too, so the user is signed out
             setSettings(await getSettings());
             Alert.alert('Done', 'All your data has been deleted from this phone.');
           },
         },
       ]
     );
-  };
-
-  const openPrivacyPolicy = () => {
-    if (PRIVACY_POLICY_URL) openLink(PRIVACY_POLICY_URL);
-    else Alert.alert('Privacy policy', 'Our privacy policy page is coming soon.');
   };
 
   const contactSupport = () => {
@@ -209,6 +207,9 @@ export default function SettingsScreen() {
           </Pressable>
           <Pressable onPress={restart} style={[styles.devButton, { borderColor: theme.outline, marginTop: 8 }]}>
             <Text style={{ fontWeight: '600' }}>Testing: show welcome screens again</Text>
+          </Pressable>
+          <Pressable onPress={signOut} style={[styles.devButton, { borderColor: theme.outline, marginTop: 8 }]}>
+            <Text style={{ fontWeight: '600' }}>Testing: sign out</Text>
           </Pressable>
         </View>
       ) : null}

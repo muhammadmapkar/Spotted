@@ -16,7 +16,7 @@ Read **SPEC.md** before doing anything. It is the source of truth for what to bu
 
 ## Tech rules
 - Expo (React Native) + TypeScript, Expo Router for navigation.
-- Store data on the phone only (no backend, no login) in Version 1.
+- Store data on the phone only (no backend) in Version 1. Sign-in is a **local demo**: the SMS is fake (code `123456`) and sits behind `src/services/auth.ts`. Real login, SMS and a server are Version 2.
 - Use local notifications only.
 - Never scrape Instagram or TikTok, and never read comments. Only use official public services (like TikTok oEmbed) or text the user pastes. Users always confirm places.
 - Geofencing: watch at most the 20 nearest saved places; refresh on significant location change.

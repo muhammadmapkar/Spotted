@@ -32,6 +32,11 @@ const entryFiles = [
   'src/components/icons/paths.ts',
   'src/splash/timeline.ts',
   'src/splash/AnimatedSplash.tsx',
+  'src/auth/phone.ts',
+  'src/auth/forms.ts',
+  'src/auth/useSignInFlow.ts',
+  'src/services/auth.ts',
+  'src/auth/stage.ts',
 ];
 
 fs.rmSync(outDir, { recursive: true, force: true });

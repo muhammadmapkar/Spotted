@@ -38,6 +38,12 @@ const CREATE_TABLES = `
     collectionId TEXT NOT NULL,
     PRIMARY KEY (placeId, collectionId)
   );
+  CREATE TABLE IF NOT EXISTS users (
+    phone TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    createdAt TEXT NOT NULL
+  );
   CREATE TABLE IF NOT EXISTS meta (
     key TEXT PRIMARY KEY NOT NULL,
     value TEXT NOT NULL

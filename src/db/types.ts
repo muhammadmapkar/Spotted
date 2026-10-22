@@ -30,6 +30,14 @@ export type NewPlace = Omit<SavedPlace, 'id' | 'createdAt' | 'lastNotifiedAt' | 
   collectionIds?: string[];
 };
 
+// The signed-in person (the demo sign-in). Kept on the phone only.
+export interface UserProfile {
+  phone: string; // international form, e.g. "+971501234567"
+  name: string;
+  email: string;
+  createdAt: string;
+}
+
 export interface Settings {
   remindersEnabled: boolean;
   radiusMeters: 200 | 300 | 500 | 1000;

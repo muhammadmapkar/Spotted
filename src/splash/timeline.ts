@@ -57,7 +57,7 @@ export function splashLayout(width: number, height: number): { scale: number; of
 // The prototype's road: M-30 600 C 70 560, 120 500, 200 495 S 330 420, 420 380.
 // We add a short straight piece at each end so the road still reaches the screen edges on
 // phones that are wider than the design.
-type Point = [number, number];
+export type Point = [number, number];
 const ROAD_START_EXTENSION: [Point, Point] = [[-130, 640], [-30, 600]];
 const ROAD_CURVE_1: [Point, Point, Point, Point] = [[-30, 600], [70, 560], [120, 500], [200, 495]];
 // "S" reflects the previous control point (120, 500) around (200, 495), which gives (280, 490).
@@ -71,7 +71,7 @@ export const ROAD_PATH =
 const lineLength = ([a, b]: [Point, Point]) => Math.hypot(b[0] - a[0], b[1] - a[1]);
 
 // The length of a curve, measured by walking along it in small steps.
-function curveLength([p0, p1, p2, p3]: [Point, Point, Point, Point], steps = 200): number {
+export function curveLength([p0, p1, p2, p3]: [Point, Point, Point, Point], steps = 200): number {
   let length = 0;
   let previous = p0;
   for (let i = 1; i <= steps; i++) {

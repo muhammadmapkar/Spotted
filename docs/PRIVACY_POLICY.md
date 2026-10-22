@@ -11,7 +11,7 @@ This policy explains what the app does with your information, in plain words.
 
 ## The short version
 
-- Your saved places and settings stay **on your phone**. We have no servers and no accounts.
+- Your saved places, settings and sign-in details stay **on your phone**. We have no servers. (When we add real accounts and SMS codes later, this policy will be updated first.)
 - Your location is used **on your phone** to remind you when you are near a saved place. We never receive it.
 - We do not run ads, we do not sell data, and we do not use analytics.
 
@@ -19,6 +19,7 @@ This policy explains what the app does with your information, in plain words.
 
 - The places you save: name, address, map position, Google place ID, your category and note, and the reel link you attached.
 - Your settings: reminders on/off, distance, and quiet hours.
+- Your sign-in details, if you sign in: phone number, name and email. In this version they are kept on your phone only.
 - A note that you finished the welcome screens.
 
 This information never leaves your phone. You can erase all of it any time: **Settings → Delete all my data**.
