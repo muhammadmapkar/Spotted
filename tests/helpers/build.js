@@ -37,6 +37,9 @@ const entryFiles = [
   'src/auth/useSignInFlow.ts',
   'src/services/auth.ts',
   'src/auth/stage.ts',
+  'src/components/tabBarConfig.ts',
+  'src/components/tabBarMath.ts',
+  'src/state/newIn.ts',
 ];
 
 fs.rmSync(outDir, { recursive: true, force: true });

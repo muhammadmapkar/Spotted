@@ -1,61 +1,23 @@
-import { SymbolView } from 'expo-symbols';
 import { Tabs } from 'expo-router';
 
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
+import { SpottedTabBar } from '@/src/components/SpottedTabBar';
+import { INITIAL_TAB } from '@/src/components/tabBarConfig';
 import { POPPINS } from '@/src/theme/fonts';
 
-// The bottom tab bar: My Places, Map, Settings.
+// The bottom bar: Saved . Map . Home (centre) . New In . Profile. Home opens first.
+// The look of the bar itself is in src/components/SpottedTabBar.tsx.
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
-      screenOptions={{
-        tabBarLabelStyle: { fontFamily: POPPINS.medium },
-        headerTitleStyle: { fontFamily: POPPINS.semiBold },
-        tabBarActiveTintColor: Colors[colorScheme].tint,
-        tabBarInactiveTintColor: Colors[colorScheme].tabIconDefault,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'My Places',
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{ ios: 'list.bullet', android: 'list', web: 'list' }}
-              tintColor={color}
-              size={28}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="map"
-        options={{
-          title: 'Map',
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{ ios: 'map', android: 'map', web: 'map' }}
-              tintColor={color}
-              size={28}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{ ios: 'gearshape', android: 'settings', web: 'settings' }}
-              tintColor={color}
-              size={28}
-            />
-          ),
-        }}
-      />
+      initialRouteName={INITIAL_TAB}
+      tabBar={(props) => <SpottedTabBar {...props} />}
+      screenOptions={{ headerTitleStyle: { fontFamily: POPPINS.semiBold } }}>
+      {/* The order here is the order in the bar */}
+      <Tabs.Screen name="saved" options={{ title: 'Saved' }} />
+      <Tabs.Screen name="map" options={{ title: 'Map' }} />
+      <Tabs.Screen name="index" options={{ title: 'Home', headerShown: false }} />
+      <Tabs.Screen name="new" options={{ title: 'New In', headerShown: false }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profile', headerShown: false }} />
     </Tabs>
   );
 }

@@ -44,7 +44,7 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 - Optional: a short personal note (e.g. "try the pistachio croissant").
 - Reel link saved with the place (tap to reopen the reel).
 
-### F3. My Places (list)
+### F3. Saved places (list, in the Saved tab)
 - List of saved places, newest first.
 - Filter chips: All / Food / Shopping / Fun.
 - A second row of chips filters by collection (shown only when the user has collections). Category and collection filters combine.
@@ -107,13 +107,16 @@ Added from the redesign. There is **no server** in Version 1, so this is a demo 
 0. Animated splash (on every app start; tap to skip)
 1. Welcome (3 slides)
 2. Permissions explainer
-3. My Places (list) — **home tab**
+3. Saved (the list of saved places) — tab
 4. Map — tab
 5. Add Place (search + category + note)
 6. Place detail / edit
-7. Settings — tab
+7. Settings (opened from the Profile tab)
 8. Manage collections (opened from Settings)
 9. Sign in: phone, code, details (shown when signed out, after the splash)
+10. Home, New In and Profile — tabs from the redesign (placeholders until they are built)
+
+**The bottom bar:** Saved · Map · **Home** (the raised centre button, opens first) · New In · Profile. A red dot on New In shows until it is opened. Profile shows the user's first initial.
 
 ## 7. Tech stack
 
