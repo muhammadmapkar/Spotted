@@ -18,6 +18,8 @@ const entryFiles = [
   'src/permissions/index.ts',
   'src/location/distance.ts',
   'src/places/search.ts',
+  'src/places/clues.ts',
+  'src/places/fromCaption.ts',
   'src/share/links.ts',
   'src/share/ShareIntentHandler.tsx',
   'src/settings/time.ts',

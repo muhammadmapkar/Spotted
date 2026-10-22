@@ -24,6 +24,12 @@ test('demo search (no Google key): matches words in any order, ignores case', as
   assert.equal((await searchPlaces('zzzz', 't')).length, 0);
 });
 
+test('demo search ignores punctuation (a pasted "Name, Area" line must still match)', async () => {
+  const { searchPlaces } = loadSearch(undefined);
+  assert.deepStrictEqual((await searchPlaces('Arabian Tea House, Al Fahidi Historical District', 't')).map((p) => p.name), ['Arabian Tea House']);
+  assert.deepStrictEqual((await searchPlaces('Kite-Beach!!', 't')).map((p) => p.name), ['Kite Beach']);
+});
+
 test('demo places are sensible: unique ids, all in Dubai', () => {
   const { DEMO_PLACES } = app('src/places/demoPlaces.js');
   const ids = DEMO_PLACES.map((p) => p.googlePlaceId);

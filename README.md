@@ -112,7 +112,8 @@ npm run check          # type-check, then the tests
 ```
 They need **Node 24 or newer** (they use Node's built-in test runner and SQLite, so nothing extra to install).
 
-**What they cover** (48 tests in `tests/`):
+**What they cover** (66 tests in `tests/`):
+- the place-clue finder: reads sample captions and suggests the place (and never guesses wildly);
 - the reminder rules: nearest 20 places, quiet hours (including past midnight), the 24-hour no-repeat rule;
 - the background reminder job and the "refused permissions" cases, against a pretend phone;
 - on-phone storage, collections, settings, and "Delete all my data";
@@ -160,6 +161,7 @@ spotted/
 ├── src/
 │   ├── db/                   # On-device storage (expo-sqlite): places, settings
 │   ├── places/               # Place search (Google, or a built-in demo list without a key)
+│   │                         #   + the place-clue finder that reads a pasted caption (clues.ts)
 │   ├── geofence/             # Nearby reminders: rules, background jobs, notifications
 │   ├── share/                # Receives reels shared from Instagram
 │   ├── permissions/          # Location + notification permissions

@@ -37,10 +37,12 @@ export async function getPlaceDetails(
 
 // Demo search: every word typed must appear in the name or address, in any order.
 function searchDemo(text: string): PlaceSuggestion[] {
-  const words = text.toLowerCase().split(/\s+/).filter(Boolean);
+  // Ignore punctuation, so "Arabian Tea House, Al Fahidi" matches "Arabian Tea House".
+  const plain = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ');
+  const words = plain(text).split(/\s+/).filter(Boolean);
   if (words.length === 0) return [];
   return DEMO_PLACES.filter((place) => {
-    const haystack = `${place.name} ${place.address}`.toLowerCase();
+    const haystack = plain(`${place.name} ${place.address}`);
     return words.every((word) => haystack.includes(word));
   }).slice(0, 8);
 }

@@ -9,6 +9,7 @@ import { CATEGORIES } from '@/src/categories';
 import { CollectionPicker } from '@/src/components/CollectionPicker';
 import { Category, addPlace, listPlaces } from '@/src/db';
 import { newSessionToken } from '@/src/places/google';
+import { suggestFromCaption } from '@/src/places/fromCaption';
 import { SEARCH_IS_DEMO, getPlaceDetails, searchPlaces } from '@/src/places/search';
 import { useUserLocation } from '@/src/location/useUserLocation';
 import { reelLinkFromText } from '@/src/share/links';
@@ -29,6 +30,12 @@ export default function AddPlaceScreen() {
   const [results, setResults] = useState<PlaceSuggestion[]>([]);
   const [searchError, setSearchError] = useState(false);
   const [loadingPlace, setLoadingPlace] = useState(false);
+  // The "paste the caption" helper
+  const [captionOpen, setCaptionOpen] = useState(false);
+  const [caption, setCaption] = useState('');
+  const [captionBusy, setCaptionBusy] = useState(false);
+  const [captionResults, setCaptionResults] = useState<PlaceSuggestion[] | null>(null); // null = not searched yet
+  const [captionError, setCaptionError] = useState(false);
   // One token per search session: Google bills the typing + final pick as one.
   const sessionToken = useRef(newSessionToken());
   const [selected, setSelected] = useState<PlaceResult | null>(null);
@@ -38,12 +45,16 @@ export default function AddPlaceScreen() {
   const [reelUrl, setReelUrl] = useState(params.reelUrl ?? '');
   const [saving, setSaving] = useState(false);
 
+  // Prefer results near the user. Without location, prefer central Dubai.
+  const currentBias = () =>
+    lat !== undefined && lon !== undefined ? { latitude: lat, longitude: lon, radiusMeters: 50000 } : DUBAI_BIAS;
+
   // Search when the user pauses typing (waiting a moment saves Google requests).
+
   useEffect(() => {
     let cancelled = false;
     const timer = setTimeout(() => {
-      const bias = lat !== undefined && lon !== undefined ? { latitude: lat, longitude: lon, radiusMeters: 50000 } : DUBAI_BIAS;
-      searchPlaces(query, sessionToken.current, bias)
+      searchPlaces(query, sessionToken.current, currentBias())
         .then((found) => {
           if (cancelled) return;
           setResults(found);
@@ -73,6 +84,36 @@ export default function AddPlaceScreen() {
       setLoadingPlace(false);
     }
   };
+
+  // The user pasted a caption: find the place it is about, and show the best matches to tap.
+  // Only short place-name clues are searched. The rest of the caption never leaves the phone.
+  const findFromCaption = async () => {
+    if (captionBusy || !caption.trim()) return;
+    setCaptionBusy(true);
+    setCaptionError(false);
+    try {
+      const { suggestions } = await suggestFromCaption(caption, (q) =>
+        searchPlaces(q, sessionToken.current, currentBias())
+      );
+      setCaptionResults(suggestions);
+    } catch {
+      setCaptionResults(null);
+      setCaptionError(true);
+    } finally {
+      setCaptionBusy(false);
+    }
+  };
+
+  // One tappable place in a list of results.
+  const renderResult = (place: PlaceSuggestion) => (
+    <Pressable
+      key={place.googlePlaceId}
+      onPress={() => choose(place)}
+      style={({ pressed }) => [styles.result, { backgroundColor: theme.card, opacity: pressed ? 0.7 : 1 }]}>
+      <Text style={styles.resultName}>{place.name}</Text>
+      <Text style={[styles.resultAddress, { color: theme.mutedText }]}>{place.address}</Text>
+    </Pressable>
+  );
 
   const save = async () => {
     if (!selected || saving) return;
@@ -145,18 +186,55 @@ export default function AddPlaceScreen() {
             </Text>
           ) : null}
 
-          {results.map((place) => (
-            <Pressable
-              key={place.googlePlaceId}
-              onPress={() => choose(place)}
-              style={({ pressed }) => [
-                styles.result,
-                { backgroundColor: theme.card, opacity: pressed ? 0.7 : 1 },
-              ]}>
-              <Text style={styles.resultName}>{place.name}</Text>
-              <Text style={[styles.resultAddress, { color: theme.mutedText }]}>{place.address}</Text>
-            </Pressable>
-          ))}
+          {/* Have the caption from Instagram or TikTok? Paste it and Spotted suggests the place. */}
+          <Pressable
+            onPress={() => setCaptionOpen(!captionOpen)}
+            accessibilityRole="button"
+            style={[styles.captionToggle, { borderColor: theme.outline }]}>
+            <Text style={{ fontWeight: '600' }}>📝 Have the caption? Paste it to find the place</Text>
+            <Text style={{ color: theme.mutedText }}>{captionOpen ? '▲' : '▼'}</Text>
+          </Pressable>
+
+          {captionOpen ? (
+            <View style={styles.captionBox} lightColor="transparent" darkColor="transparent">
+              <TextInput
+                value={caption}
+                onChangeText={setCaption}
+                placeholder="Paste the caption here (press and hold, then Paste)"
+                placeholderTextColor={theme.mutedText}
+                multiline
+                style={[styles.input, styles.captionInput, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
+              />
+              <Pressable
+                onPress={findFromCaption}
+                disabled={captionBusy || !caption.trim()}
+                style={[styles.findButton, { backgroundColor: theme.tintStrong, opacity: captionBusy || !caption.trim() ? 0.5 : 1 }]}>
+                <Text style={styles.findButtonText}>{captionBusy ? 'Looking…' : 'Find the place'}</Text>
+              </Pressable>
+              <Text style={[styles.hint, { color: theme.mutedText }]}>
+                Only the place name is searched. The rest of the caption stays on your phone.
+              </Text>
+
+              {captionError ? (
+                <Text style={[styles.hint, { color: theme.danger }]}>
+                  Could not search right now. Check your internet connection and try again.
+                </Text>
+              ) : null}
+              {captionResults && captionResults.length === 0 ? (
+                <Text style={[styles.hint, { color: theme.mutedText }]}>
+                  We could not find a place in that caption. Try the search box instead.
+                </Text>
+              ) : null}
+              {captionResults && captionResults.length > 0 ? (
+                <View lightColor="transparent" darkColor="transparent">
+                  <Text style={[styles.label, { marginTop: 8 }]}>Best matches. Tap the right one</Text>
+                  {captionResults.map(renderResult)}
+                </View>
+              ) : null}
+            </View>
+          ) : null}
+
+          {results.map(renderResult)}
 
           {searchError ? (
             <Text style={[styles.hint, { color: theme.mutedText }]}>
@@ -250,6 +328,21 @@ export default function AddPlaceScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 16, paddingBottom: 48 },
+  captionToggle: {
+    minHeight: 52,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  captionBox: { marginTop: 8 },
+  captionInput: { minHeight: 120, paddingTop: 12, textAlignVertical: 'top' },
+  findButton: { minHeight: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
+  findButtonText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
   attached: { borderRadius: 14, padding: 14, marginBottom: 4 },
   label: { fontSize: 14, fontWeight: '600', marginTop: 16, marginBottom: 8 },
   hint: { fontSize: 13, marginTop: 8, marginBottom: 8 },
