@@ -112,7 +112,7 @@ npm run check          # type-check, then the tests
 ```
 They need **Node 24 or newer** (they use Node's built-in test runner and SQLite, so nothing extra to install).
 
-**What they cover** (357 tests in `tests/`):
+**What they cover** (397 tests in `tests/`):
 - the place-clue finder: reads sample captions and suggests the place (and never guesses wildly);
 - the reminder rules: nearest 20 places, quiet hours (including past midnight), the 24-hour no-repeat rule;
 - the background reminder job and the "refused permissions" cases, against a pretend phone;
@@ -121,6 +121,7 @@ They need **Node 24 or newer** (they use Node's built-in test runner and SQLite,
 - the Android map safety switch, the place search (demo list and Google), the My Places filters;
 - readable colours in light and dark mode, and the icon files;
 - Influencer page: platform buttons and profile links (app first, website if the app is missing), the top 7 and all-recommendations lists, reel links, month chip, the ring / pop / fan-in animations, and every tap on the real screen;
+- Nearby alerts: the alert words and distances, watching saved Spotted places together with reel places (20 nearest), once a day per place, quiet hours, saving / un-saving updating the watch list, tapping an alert, the banner, the order of permission questions, and the permission texts in app.json;
 - Profile tab: the savings count-up and split, the loyalty discount table and stamp slots, the WhatsApp choice (saved per person, off by default, removed by "Delete all my data"), the nearby-alerts and dark-mode switches, and every tap on the real screen;
 - New In tab: which offers, influencers and places are new (within 15 km, nearest first), the shimmering NEW / JUST JOINED badges, the cards, the sections sliding in, opening the place with its Offers dropdown open, and clearing the red dot;
 - Map tab: which places get a pin (saved = red bookmark, unsaved partner = purple), distances from the user, the 15 km circle, the dark map style, the real Google map vs the drawn preview (never the Google map on Android without a key), and tapping pins;
@@ -192,6 +193,7 @@ spotted/
 │   ├── components/filters/   # The filter bottom sheet
 │   ├── profile/              # Profile tab rules (savings count-up, loyalty stamps and discounts)
 │   ├── newin/                # New In tab rules (new offers, influencers, places)
+│   ├── alerts/               # Nearby alerts: where a tap goes, the in-app banner store, turning alerts on step by step
 │   ├── map/                  # Map tab rules (pins, circle, dark map style); the drawing is in components/map/
 │   ├── saved/                # Saved tab rules (folders, search, filters)
 │   ├── services/savedPlaces.ts  # where saved places are kept on the phone (one file to change for a backend)
@@ -216,6 +218,7 @@ spotted/
 - **Expo Go vs development build.** Expo Go is fine for screens, list, search and storage. Sharing from
   Instagram and background reminders only work in a **development build** (see above).
 - **Menu PDFs.** A place with a `menuPdfUrl` shows that PDF inside the app (`react-native-webview`; on Android it is wrapped in Google's free document viewer, because Android's web view cannot show PDFs by itself). Places without one show the items like a paper menu. The sample places have no PDF yet.
+- **Nearby alerts.** Saved Spotted places and places saved from reels are watched (the 20 nearest, refreshed when you move or save / un-save). Entering a circle sends a local notification ("A place you saved is 1.2 km away" / "Saffron Lane · 5 influencers recommend it"), at most once a day per place, never in quiet hours. Tapping it opens the place. Background location only works in a development or store build (not Expo Go). Location "all the time" is asked only when you turn on "Nearby saved-place alerts" in Profile. The sample places sit around Khalifa City, Abu Dhabi, so to see an alert you can use the "Send test reminder" button in Settings, or set a fake location there with the Android emulator.
 - **Google Maps key (Android).** The Map tab shows a drawn preview on Android until a Google Maps key is built in, because the Google map crashes the app without one. To switch to the real map: (1) create a key in Google Cloud ("Maps SDK for Android" enabled, restricted to package `com.spotted.app`), (2) put it in `.env` as `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` (never commit it) and as an EAS secret for builds, (3) add it to the Android settings in a small `app.config.js` (`android.config.googleMaps.apiKey`), (4) set `GOOGLE_MAPS_KEY_IN_BUILD` to `true` in `src/config.ts`, (5) make a new development build. iPhone uses Apple Maps and needs no key.
 - **Filter sheet.** The purple filter button on Home slides up a sheet (`@gorhom/bottom-sheet`, with `@react-native-community/slider`). It changes one shared filter state, so Home (and, in the next step, the Saved tab) always agree; the list behind it reshuffles as you change things.
 - **Testing buttons.** In a development build, the bottom of Settings has "Testing" buttons

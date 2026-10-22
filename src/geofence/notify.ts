@@ -1,8 +1,9 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
+import { Place, recsFor } from '../data/mock';
 import { SavedPlace } from '../db/types';
-import { notificationBody } from './rules';
+import { alertBody, alertTitle } from './rules';
 
 const CHANNEL_ID = 'default';
 
@@ -27,20 +28,26 @@ export async function cancelAllReminders(): Promise<void> {
   }
 }
 
-// Show the "You're near ..." notification. Tapping it opens the place
-// (the place id travels inside the notification as `data`).
-// delaySeconds is only used for testing, so you have time to close the app.
-export async function sendNearbyNotification(place: SavedPlace, delaySeconds = 0): Promise<void> {
+async function show(title: string, body: string, data: Record<string, string>, delaySeconds: number): Promise<void> {
   await ensureChannel();
   await Notifications.scheduleNotificationAsync({
-    content: {
-      title: 'Spotted',
-      body: notificationBody(place),
-      data: { placeId: place.id },
-    },
+    content: { title, body, data },
     trigger:
       delaySeconds > 0
         ? { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: delaySeconds, channelId: CHANNEL_ID }
         : null,
   });
+}
+
+// "A place you saved is 280 m away" for a place saved from a reel. Tapping it opens the place
+// (the place id travels inside the notification as `data`).
+// delaySeconds is only used for testing, so you have time to close the app.
+export async function sendNearbyNotification(place: SavedPlace, distanceMeters: number | null = null, delaySeconds = 0): Promise<void> {
+  await show(alertTitle(distanceMeters), alertBody(place.name, 0), { placeId: place.id }, delaySeconds);
+}
+
+// "A place you saved is 1.2 km away" / "Saffron Lane . 5 influencers recommend it" for a saved Spotted place.
+// Tapping it opens the Place page.
+export async function sendVenueAlert(place: Place, distanceMeters: number | null, delaySeconds = 0): Promise<void> {
+  await show(alertTitle(distanceMeters), alertBody(place.name, recsFor(place.id).length), { venueId: place.id }, delaySeconds);
 }

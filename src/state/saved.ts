@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
 import { PLACES } from '../data/mock';
+import { emitDataChanged } from '../db/changes';
 import { loadSavedPlaceIds, storeSavedPlaceIds } from '../services/savedPlaces';
 
 // Which sample places the user has saved (by id). It starts with the sample data's saved places.
@@ -27,7 +28,8 @@ export function toggleSaved(placeId: string): boolean {
 let writes: Promise<void> = Promise.resolve();
 function remember(): void {
   const ids = [...saved];
-  writes = writes.then(() => storeSavedPlaceIds(ids)).catch(() => {});
+  // once written, tell the reminder watcher: it picks the 20 nearest places again
+  writes = writes.then(() => storeSavedPlaceIds(ids)).then(emitDataChanged).catch(() => {});
 }
 
 // Load the saved list from the phone (when the app starts). Unknown ids are ignored.

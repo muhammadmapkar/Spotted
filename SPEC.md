@@ -56,9 +56,12 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 - Tap a pin → card with name, note, "Open reel", "Directions" (opens Google Maps / Apple Maps).
 
 ### F5. Nearby reminders
-- When the user comes within the chosen radius (default **300 m**) of a saved place, show a local notification:
-  **"You're near {place name} — you saved it from a reel 👀"**
-- Tapping the notification opens that place's card.
+- When the user comes within the chosen radius (default **300 m**) of a saved place, show a local notification (no emoji):
+  **Title:** "A place you saved is 1.2 km away" (the real distance; "A place you saved is nearby" if the distance is unknown)
+  **Body:** "Saffron Lane · 5 influencers recommend it" (just the name when no influencer recommends it)
+- This works for the saved Spotted places (Saved tab) and for places saved from reels.
+- Tapping the notification opens that place: the Place page for a Spotted place.
+- If the app is open when an alert arrives, a banner slides down from the top instead of the phone's own banner (tap it to open the place; it goes away after 6.5 seconds).
 - Uses OS geofencing. OS limits: **iOS max 20 regions, Android max 100**. The app always monitors the **20 nearest** saved places and refreshes the set on significant location change.
 - No repeat notification for the same place within **24 hours**.
 - Respect **quiet hours** (default 22:00–08:00, no notifications).
@@ -72,7 +75,7 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 
 ### F7. Onboarding
 - 3 short welcome screens: Save from reels → Confirm the place → Get reminded nearby.
-- Permission requests come **after** explaining why (location "Always/Allow all the time", notifications).
+- Permission requests come **after** explaining why: location "while using the app" and notifications. Location "all the time" is asked ONLY when the user turns on "Nearby saved-place alerts" in Profile, after a clear explanation.
 - App still works (list + map) if the user refuses background location; reminders are simply off, with a friendly banner explaining how to turn them on.
 
 ### F9. Sign in (local demo)
@@ -198,7 +201,7 @@ interface Settings {
 - **Data stored:** saved places, collections, settings, and the demo sign-in profile (phone, name, email), on the phone only.
 - **Third parties:** Google Places receives search text (including place clues taken from a caption) and approximate location to return results. For a TikTok link, TikTok's oEmbed service receives that link to return the caption.
 - Permission text (iOS / Android):
-  "Spotted uses your location to remind you when you're near a place you saved — even when the app is closed. Your location stays on your phone."
+  "Spotted uses your location to tell you when a place you saved is nearby, even when the app is closed. Your location stays on your phone." (while using the app: "Spotted uses your location while the app is open, to show how far saved places are and to find places near you. Your location stays on your phone.")
 - Must provide: privacy policy URL, in-app "Delete all my data".
 
 ## 10. Design

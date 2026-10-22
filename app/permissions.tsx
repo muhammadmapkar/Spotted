@@ -5,9 +5,9 @@ import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { useOnboarding } from '@/src/onboarding/OnboardingContext';
-import { requestBackgroundLocation, requestLocation, requestNotifications } from '@/src/permissions';
+import { requestLocation, requestNotifications } from '@/src/permissions';
 
-type Step = 'location' | 'background' | 'notifications';
+type Step = 'location' | 'notifications';
 
 // Explains WHY we need each permission before the phone asks for it.
 // Every step can be skipped, and the app still works if you say no.
@@ -21,20 +21,13 @@ export default function PermissionsScreen() {
     location: {
       emoji: '📍',
       title: 'See places near you',
-      text: 'Spotted uses your location to show how far your saved places are and to find places near you.',
+      text: 'Spotted uses your location while the app is open, to show how far your saved places are and to find places near you. If you later turn on nearby alerts, we will explain and ask once more.',
       button: 'Allow location',
-    },
-    background: {
-      emoji: '🌙',
-      title: 'Remind me when I am nearby',
-      text: "Spotted uses your location to remind you when you're near a place you saved — even when the app is closed. Your location stays on your phone.",
-      hint: 'On the next screen, choose “Allow all the time”.',
-      button: 'Continue',
     },
     notifications: {
       emoji: '🔔',
       title: 'Allow notifications',
-      text: 'This is how Spotted tells you that you are near a place you saved. You will never get messages from us, only these reminders.',
+      text: 'This is how Spotted can tell you that you are near a place you saved, if you turn on nearby alerts. You will never get messages from us, only those alerts.',
       button: 'Allow notifications',
     },
   };
@@ -42,8 +35,8 @@ export default function PermissionsScreen() {
 
   // Go to the next step, or finish after the last one.
   const goNext = async (allowed: boolean) => {
-    if (step === 'location') setStep(allowed ? 'background' : 'notifications');
-    else if (step === 'background') setStep('notifications');
+    void allowed; // each step can be skipped; the app works either way
+    if (step === 'location') setStep('notifications');
     else await finish();
   };
 
@@ -51,11 +44,7 @@ export default function PermissionsScreen() {
     if (busy) return;
     setBusy(true);
     const allowed =
-      step === 'location'
-        ? await requestLocation()
-        : step === 'background'
-          ? await requestBackgroundLocation()
-          : await requestNotifications();
+      step === 'location' ? await requestLocation() : await requestNotifications();
     setBusy(false);
     await goNext(allowed);
   };

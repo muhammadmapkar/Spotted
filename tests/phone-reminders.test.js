@@ -9,6 +9,7 @@ installFakes(fakes);
 const data = app('src/db/index.js');
 const { useTestDatabase } = app('src/db/database.js');
 const permissions = app('src/permissions/index.js');
+const savedService = app('src/services/savedPlaces.js');
 const { syncGeofencing } = app('src/geofence/sync.js');
 const { cancelAllReminders } = app('src/geofence/notify.js');
 app('src/geofence/tasks.js'); // registers the background jobs with the pretend phone
@@ -20,6 +21,7 @@ const enter = (id) => ({ data: { eventType: 1, region: { identifier: id } } });
 test.beforeEach(async () => {
   phone.reset();
   await useTestDatabase(makeTestDb());
+  await savedService.storeSavedPlaceIds([]); // these tests are about places saved from reels; no saved Spotted places
 });
 
 test('refused permissions: nothing is watched, nothing crashes', async () => {
@@ -80,7 +82,8 @@ test('walking into a circle: one notification with the right text; no repeat wit
   await atTime(12, 0, async () => {
     await geofenceJob()(enter(place.id));
     assert.equal(phone.scheduled.length, 1, 'first time: notify');
-    assert.equal(phone.scheduled[0].content.body, `You're near ${place.name} — you saved it from a reel 👀`);
+    assert.equal(phone.scheduled[0].content.title, 'A place you saved is 110 m away', 'the real distance from where the phone is');
+    assert.equal(phone.scheduled[0].content.body, place.name);
     assert.equal(phone.scheduled[0].content.data.placeId, place.id, 'tapping it can open this place');
 
     await geofenceJob()(enter(place.id));
@@ -124,5 +127,119 @@ test('delete all my data: everything is gone, watching stops, waiting reminders 
   assert.deepStrictEqual(await data.getSettings(), data.DEFAULT_SETTINGS);
   assert.equal(phone.scheduled.length, 0, 'waiting reminders are removed');
   await syncGeofencing();
-  assert.equal(phone.started, false, 'nothing left to watch');
+  // The places saved from reels are gone. (The sample saved Spotted places come back with the starting list.)
+  assert.ok((phone.regions ?? []).every((r) => r.identifier.startsWith('venue:')), 'no place saved from a reel is watched any more');
+});
+
+
+// ---- saved Spotted places (the Saved tab) -----------------------------------------------------
+
+const venueEnter = (id) => enter('venue:' + id);
+
+test('saved Spotted places are watched too, as "venue:<id>" circles with the chosen radius', async () => {
+  await savedService.storeSavedPlaceIds(['saffron', 'brew']);
+  await data.saveSettings({ radiusMeters: 500 });
+  await syncGeofencing();
+  assert.equal(phone.started, true);
+  assert.deepStrictEqual(phone.regions.map((r) => r.identifier).sort(), ['venue:brew', 'venue:saffron']);
+  assert.ok(phone.regions.every((r) => r.radius === 500 && r.notifyOnEnter === true && r.notifyOnExit === false));
+  const saffron = phone.regions.find((r) => r.identifier === 'venue:saffron');
+  assert.ok(Math.abs(saffron.latitude - 24.42) < 0.1 && Math.abs(saffron.longitude - 54.58) < 0.1, 'around the sample area');
+});
+
+test('never saved or removed anything yet: the starting saved places are watched', async () => {
+  await savedService.clearSavedPlaceIds();
+  await syncGeofencing();
+  assert.equal(phone.regions.length, 10);
+});
+
+test('reel places and saved Spotted places share the limit of 20; only the nearest 20 are watched', async () => {
+  for (let i = 1; i <= 15; i++) await data.addPlace(newPlace(i));
+  await savedService.storeSavedPlaceIds(['saffron', 'brew', 'taco', 'stack', 'luma', 'forno', 'starlight', 'kaze', 'thread', 'shawarma']);
+  await syncGeofencing();
+  assert.equal(phone.regions.length, 20);
+  assert.equal(phone.updates, true, 'more than 20 in total: movement tracking refreshes the list');
+  // the phone is near Dubai (25.2, 55.27): the 15 reel places there beat the Abu Dhabi ones
+  assert.equal(phone.regions.filter((r) => !r.identifier.startsWith('venue:')).length, 15);
+  assert.equal(phone.regions.filter((r) => r.identifier.startsWith('venue:')).length, 5);
+});
+
+test('saving or un-saving a Spotted place makes the phone watch the new list', async () => {
+  await savedService.storeSavedPlaceIds(['saffron']);
+  await syncGeofencing();
+  assert.equal(phone.regions.length, 1);
+  const store = app('src/state/saved.js');
+  store.resetSaved();
+  let announced = 0;
+  const stop = data.onDataChanged(() => announced++);
+  store.toggleSaved('glow');
+  await store.savedWritesDone();
+  assert.ok(announced >= 1, 'saving announces a change, so the watcher syncs');
+  stop();
+  await syncGeofencing();
+  assert.ok(phone.regions.some((r) => r.identifier === 'venue:glow'));
+});
+
+test('walking into a saved Spotted place: the alert has the right words and opens the Place page', async () => {
+  await savedService.storeSavedPlaceIds(['saffron']);
+  await atTime(12, 0, async () => {
+    await geofenceJob()(venueEnter('saffron'));
+    assert.equal(phone.scheduled.length, 1);
+    const { title, body, data: payload } = phone.scheduled[0].content;
+    assert.match(title, /^A place you saved is (\d+ m|\d+(\.\d)? km) away$/);
+    assert.equal(body, 'Saffron Lane · 5 influencers recommend it');
+    assert.deepStrictEqual(payload, { venueId: 'saffron' });
+  });
+});
+
+test('a saved Spotted place never alerts twice within 24 hours', async () => {
+  await atTime(12, 0, async () => {
+    await geofenceJob()(venueEnter('saffron'));
+    await geofenceJob()(venueEnter('saffron'));
+    assert.equal(phone.scheduled.length, 1, 'the second time is silent');
+    await geofenceJob()(venueEnter('brew'));
+    assert.equal(phone.scheduled.length, 2, 'another place still alerts');
+  });
+  const stamp = await data.getLastAlertAt('saffron');
+  assert.ok(stamp, 'the time is written down');
+  const later = new Date(new Date(stamp).getTime() + 25 * 3600 * 1000);
+  const RealDate = Date;
+  global.Date = class extends RealDate { constructor(...a) { if (a.length) super(...a); else super(later.getTime()); } static now() { return later.getTime(); } };
+  try {
+    phone.scheduled.length = 0;
+    await geofenceJob()(venueEnter('saffron'));
+    assert.equal(phone.scheduled.length, 1, 'but 25 hours later (13:00 the next day) it alerts again');
+  } finally { global.Date = RealDate; }
+});
+
+test('quiet hours, the reminders switch, unknown places and leaving a circle silence saved Spotted places', async () => {
+  await atTime(23, 30, async () => { await geofenceJob()(venueEnter('saffron')); });
+  assert.equal(phone.scheduled.length, 0, 'quiet hours');
+  await atTime(12, 0, async () => {
+    await geofenceJob()({ data: { eventType: 2, region: { identifier: 'venue:saffron' } } });
+    await geofenceJob()(venueEnter('no-such-place'));
+    assert.equal(phone.scheduled.length, 0, 'leaving, and a place that no longer exists');
+    await data.saveSettings({ remindersEnabled: false });
+    await geofenceJob()(venueEnter('saffron'));
+    assert.equal(phone.scheduled.length, 0, 'reminders off');
+  });
+});
+
+test('if the phone cannot tell where the user is, the alert says the place is nearby', async () => {
+  const known = phone.position;
+  phone.position = null;
+  try {
+    await atTime(12, 0, async () => { await geofenceJob()(venueEnter('saffron')); });
+  } finally {
+    phone.position = known;
+  }
+  assert.equal(phone.scheduled.length, 1);
+  assert.equal(phone.scheduled[0].content.title, 'A place you saved is nearby');
+});
+
+test('Delete all my data forgets when places last alerted', async () => {
+  await atTime(12, 0, async () => { await geofenceJob()(venueEnter('saffron')); });
+  assert.ok(await data.getLastAlertAt('saffron'));
+  await data.deleteAllData();
+  assert.equal(await data.getLastAlertAt('saffron'), undefined);
 });

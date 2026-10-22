@@ -22,6 +22,20 @@ export function nearestPlaces(
     .slice(0, limit);
 }
 
+// Anything that can be watched: a place saved from a reel, or a saved Spotted place.
+export interface WatchTarget {
+  identifier: string; // what the phone calls this circle
+  latitude: number;
+  longitude: number;
+}
+
+// The closest `limit` targets (same idea as nearestPlaces, for the mixed list). If we don't know where the
+// user is yet, the first `limit` in the order given are used.
+export function nearestTargets<T extends WatchTarget>(targets: T[], position: Coords | null, limit: number = MAX_WATCHED_PLACES): T[] {
+  if (!position) return targets.slice(0, limit);
+  return [...targets].sort((a, b) => distanceMeters(position, a) - distanceMeters(position, b)).slice(0, limit);
+}
+
 // "22:30" -> minutes since midnight (1350)
 function toMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number);
@@ -41,7 +55,7 @@ export function isQuietTime(now: Date, settings: Settings): boolean {
 }
 
 // Has this place already notified within the last 24 hours?
-export function notifiedRecently(place: SavedPlace, now: Date): boolean {
+export function notifiedRecently(place: { lastNotifiedAt?: string }, now: Date): boolean {
   if (!place.lastNotifiedAt) return false;
   const last = new Date(place.lastNotifiedAt).getTime();
   if (Number.isNaN(last)) return false;
@@ -49,14 +63,36 @@ export function notifiedRecently(place: SavedPlace, now: Date): boolean {
 }
 
 // The final decision: should we show a notification for this place right now?
-export function shouldNotify(place: SavedPlace, now: Date, settings: Settings): boolean {
+export function shouldNotify(place: { lastNotifiedAt?: string }, now: Date, settings: Settings): boolean {
   if (!settings.remindersEnabled) return false;
   if (isQuietTime(now, settings)) return false;
   if (notifiedRecently(place, now)) return false;
   return true;
 }
 
-// The text of the notification (from SPEC.md).
-export function notificationBody(place: SavedPlace): string {
-  return `You're near ${place.name} — you saved it from a reel 👀`;
+// ---- the words of the alert ------------------------------------------------------------------
+
+// 280 -> "280 m", 1234 -> "1.2 km", 12600 -> "13 km"
+export function formatAway(meters: number): string {
+  const rounded = Math.round(meters / 10) * 10;
+  if (rounded < 1000) return `${Math.max(10, rounded)} m`;
+  const km = meters / 1000;
+  return `${km < 10 ? km.toFixed(1) : Math.round(km)} km`;
+}
+
+// The title: "A place you saved is 1.2 km away". If we don't know how far the user is, "...is nearby".
+export function alertTitle(distanceMeters: number | null): string {
+  return distanceMeters === null ? 'A place you saved is nearby' : `A place you saved is ${formatAway(distanceMeters)} away`;
+}
+
+// "5 influencers recommend it", "1 influencer recommends it", or nothing when no influencer does.
+export function influencerLine(count: number): string {
+  if (count <= 0) return '';
+  return count === 1 ? '1 influencer recommends it' : `${count} influencers recommend it`;
+}
+
+// The body: "Saffron Lane · 5 influencers recommend it" (just the name when nobody has recommended it).
+export function alertBody(name: string, influencers: number): string {
+  const line = influencerLine(influencers);
+  return line ? `${name} · ${line}` : name;
 }

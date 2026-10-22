@@ -23,6 +23,7 @@ installFakes({
 const changes = app('src/db/changes.js'); // the real "something changed" announcer
 const { GeofenceManager } = app('src/geofence/GeofenceManager.js');
 const tap = (id, placeId) => ({ notification: { request: { identifier: id, content: { data: { placeId } } } } });
+const tapVenue = (id, venueId) => ({ notification: { request: { identifier: id, content: { data: { venueId } } } } });
 
 test('syncs when the app opens, after changes (once per burst), and when you come back', async () => {
   const screen = await mount(React.createElement(GeofenceManager));
@@ -67,5 +68,14 @@ test('tapping a reminder opens that place, once; bad notifications are ignored',
   await act(async () => { receiveResponse(tap('n3', undefined)); }); // no place id inside
   await wait(500);
   assert.equal(log.push.length, 2, 'no crash and no navigation');
+  await screen.unmount();
+});
+
+test('tapping an alert for a saved Spotted place opens the Place page', async () => {
+  log.push.length = 0;
+  const screen = await mount(React.createElement(GeofenceManager));
+  await act(async () => { receiveResponse(tapVenue('n-venue-1', 'saffron')); });
+  await wait(500);
+  assert.deepStrictEqual(log.push, ['/venue/saffron']);
   await screen.unmount();
 });

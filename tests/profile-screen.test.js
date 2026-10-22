@@ -11,7 +11,15 @@ const data = app('src/db/index.js');
 const { useTestDatabase } = app('src/db/database.js');
 
 const seen = { focus: new Set(), icons: [], labels: [], ring: null, savings: [], list: null, cards: [], toggles: [], texts: [], pressables: [], toast: null };
-const calls = { push: [], signOut: 0, theme: [] };
+const calls = { push: [], signOut: 0, theme: [], alerts: [], openedSettings: 0 };
+const phonePermissions = { location: true, background: true, notifications: true, grant: { location: true, background: true, notifications: true }, asked: [] };
+const permissionsFake = {
+  getPermissionState: async () => ({ location: phonePermissions.location, background: phonePermissions.background, notifications: phonePermissions.notifications }),
+  remindersWork: (p) => p.location && p.background && p.notifications,
+  requestLocation: async () => { phonePermissions.asked.push('location'); if (phonePermissions.grant.location) phonePermissions.location = true; return phonePermissions.grant.location; },
+  requestBackgroundLocation: async () => { phonePermissions.asked.push('background'); if (phonePermissions.grant.background) phonePermissions.background = true; return phonePermissions.grant.background; },
+  requestNotifications: async () => { phonePermissions.asked.push('notifications'); if (phonePermissions.grant.notifications) phonePermissions.notifications = true; return phonePermissions.grant.notifications; },
+};
 const state = { scheme: 'light', reduce: false, user: { phone: '+971501234567', name: 'Aisha Rahman', email: 'aisha@example.com', createdAt: 'x' } };
 const palette = new Proxy({}, { get: () => '#000000' });
 
@@ -24,6 +32,7 @@ installFakes({
     StyleSheet: { create: (x) => x },
     View: (props) => { if (props.accessibilityLabel) seen.labels.push(props.accessibilityLabel); return props.children ?? null; },
     ScrollView: (props) => props.children ?? null,
+    Alert: { alert: (title, message, buttons) => { calls.alerts.push({ title, message, buttons }); } },
     Pressable: (props) => { seen.pressables.push(props); return props.children ?? null; },
     FlatList: (props) => { seen.list = props; return React.createElement(React.Fragment, null, props.data.map((item, index) => React.createElement(React.Fragment, { key: props.keyExtractor(item, index) }, props.renderItem({ item, index })))); },
   },
@@ -40,15 +49,19 @@ installFakes({
   '@/src/components/profile/LoyaltyCardView': { LoyaltyCardView: (props) => { seen.cards.push(props); return null; }, LOYALTY_CARD_WIDTH: 270 },
   '@/src/components/profile/ToggleRow': { ToggleRow: (props) => { seen.toggles.push(props); return null; } },
   '@/src/db': data,
+  '@/src/openLink': { openPhoneSettings: () => { calls.openedSettings++; } },
   '@/src/profile/profileData': app('src/profile/profileData.js'),
   '@/src/profile/useCountUp': app('src/profile/useCountUp.js'),
 });
+installFakes({ '@/src/permissions': permissionsFake, '../permissions': permissionsFake });
+installFakes({ '@/src/alerts/enableAlerts': app('src/alerts/enableAlerts.js') });
 const ProfileScreen = app('app/(tabs)/profile.js').default;
 
 test.beforeEach(async (t) => {
   await useTestDatabase(makeTestDb());
   Object.assign(seen, { icons: [], labels: [], ring: null, savings: [], list: null, cards: [], toggles: [], texts: [], pressables: [], toast: null });
-  Object.assign(calls, { push: [], signOut: 0, theme: [] });
+  Object.assign(calls, { push: [], signOut: 0, theme: [], alerts: [], openedSettings: 0 });
+  Object.assign(phonePermissions, { location: true, background: true, notifications: true, grant: { location: true, background: true, notifications: true }, asked: [] });
   Object.assign(state, { scheme: 'light', reduce: false });
   t.mock.timers.enable({ apis: ['setTimeout', 'setInterval'] });
 });
@@ -62,6 +75,7 @@ async function show() {
   return screen;
 }
 test.afterEach(async () => { for (const screen of open.splice(0)) await screen.unmount(); });
+const flush = async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); };
 const toggle = (title) => [...seen.toggles].reverse().find((t) => t.title === title);
 const latestSavings = () => seen.savings.at(-1);
 
@@ -150,23 +164,85 @@ test('WhatsApp: if saving fails the switch goes back and says so', async () => {
   await screen.unmount();
 });
 
-test('nearby saved-place alerts are the normal app notifications: the same switch as Settings > Nearby reminders', async () => {
+test('nearby alerts are on when the setting is on AND the phone allows them', async () => {
   const screen = await show();
-  assert.equal(toggle('Nearby saved-place alerts').value, true, 'reminders are on by default');
-  await act(async () => { toggle('Nearby saved-place alerts').onChange(false); });
-  assert.equal((await data.getSettings()).remindersEnabled, false);
-  assert.equal(toggle('Nearby saved-place alerts').value, false);
-  assert.ok(!seen.texts.some((t) => /WhatsApp/.test(t) && /Nearby/.test(t)));
+  assert.equal(toggle('Nearby saved-place alerts').value, true);
   assert.equal(toggle('Nearby saved-place alerts').subtitle, 'App notifications, e.g. "A place you saved is 1 km away"');
-  await act(async () => { toggle('Nearby saved-place alerts').onChange(true); });
+  assert.ok(!toggle('Nearby saved-place alerts').subtitle.includes('WhatsApp'), 'these are normal app notifications, not WhatsApp');
+  await screen.unmount();
+});
+
+test('nearby alerts show OFF when the phone does not allow location all the time (even if the setting is on)', async () => {
+  phonePermissions.background = false;
+  const screen = await show();
+  assert.equal((await data.getSettings()).remindersEnabled, true);
+  assert.equal(toggle('Nearby saved-place alerts').value, false);
+  await screen.unmount();
+});
+
+test('nearby alerts show OFF when the setting is off', async () => {
+  await data.saveSettings({ remindersEnabled: false });
+  const screen = await show();
+  assert.equal(toggle('Nearby saved-place alerts').value, false);
+  await screen.unmount();
+});
+
+test('turning nearby alerts OFF saves the setting and asks the phone nothing', async () => {
+  const screen = await show();
+  await act(async () => { toggle('Nearby saved-place alerts').onChange(false); });
+  assert.equal(toggle('Nearby saved-place alerts').value, false);
+  assert.equal((await data.getSettings()).remindersEnabled, false);
+  assert.deepStrictEqual(phonePermissions.asked, []);
+  await screen.unmount();
+});
+
+test('turning nearby alerts ON: our explanation first, then the phone asks for "all the time"', async () => {
+  await data.saveSettings({ remindersEnabled: false });
+  Object.assign(phonePermissions, { background: false });
+  const screen = await show();
+  let pending;
+  await act(async () => { pending = toggle('Nearby saved-place alerts').onChange(true); await flush(); });
+  const explanation = calls.alerts.at(-1);
+  assert.equal(explanation.title, 'Allow location all the time?');
+  assert.match(explanation.message, /even when Spotted is closed/);
+  assert.deepStrictEqual(phonePermissions.asked, [], 'the phone has not been asked yet');
+  explanation.buttons.find((b) => b.text === 'Continue').onPress();
+  await act(async () => { await pending; await flush(); });
+  assert.deepStrictEqual(phonePermissions.asked, ['background']);
+  assert.equal(toggle('Nearby saved-place alerts').value, true);
   assert.equal((await data.getSettings()).remindersEnabled, true);
   await screen.unmount();
 });
 
-test('nearby alerts show what Settings says (reminders already off)', async () => {
+test('saying "Not now" to our explanation leaves the switch off and never asks the phone', async () => {
   await data.saveSettings({ remindersEnabled: false });
+  Object.assign(phonePermissions, { background: false });
   const screen = await show();
+  let pending;
+  await act(async () => { pending = toggle('Nearby saved-place alerts').onChange(true); await flush(); });
+  calls.alerts.at(-1).buttons.find((b) => b.text === 'Not now').onPress();
+  await act(async () => { await pending; await flush(); });
+  assert.deepStrictEqual(phonePermissions.asked, []);
   assert.equal(toggle('Nearby saved-place alerts').value, false);
+  assert.match(seen.toast, /stay off/);
+  await screen.unmount();
+});
+
+test('if the phone refuses "all the time", the switch goes back and offers the phone settings', async () => {
+  await data.saveSettings({ remindersEnabled: false });
+  Object.assign(phonePermissions, { background: false, grant: { location: true, background: false, notifications: true } });
+  const screen = await show();
+  let pending;
+  await act(async () => { pending = toggle('Nearby saved-place alerts').onChange(true); await flush(); });
+  calls.alerts.at(-1).buttons.find((b) => b.text === 'Continue').onPress();
+  await act(async () => { await pending; await flush(); });
+  assert.equal(toggle('Nearby saved-place alerts').value, false);
+  const help = calls.alerts.at(-1);
+  assert.equal(help.title, 'One more step');
+  assert.match(help.message, /Allow all the time/);
+  help.buttons.find((b) => b.text === 'Open phone settings').onPress();
+  assert.equal(calls.openedSettings, 1);
+  assert.equal((await data.getSettings()).remindersEnabled, false);
   await screen.unmount();
 });
 

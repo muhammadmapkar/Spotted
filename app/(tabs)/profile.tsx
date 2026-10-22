@@ -1,9 +1,10 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ALWAYS_EXPLANATION, missingMessage, turnOnNearbyAlerts } from '@/src/alerts/enableAlerts';
 import { useAuth } from '@/src/auth/AuthContext';
 import { displayFromE164 } from '@/src/auth/phone';
 import { RingAvatar } from '@/src/components/influencer/ProfileRing';
@@ -13,6 +14,8 @@ import { LOYALTY_CARD_WIDTH, LoyaltyCardView } from '@/src/components/profile/Lo
 import { SavingsCard } from '@/src/components/profile/SavingsCard';
 import { ToggleRow } from '@/src/components/profile/ToggleRow';
 import { AppText } from '@/src/components/ui/ui';
+import { openPhoneSettings } from '@/src/openLink';
+import { getPermissionState, remindersWork } from '@/src/permissions';
 import { getSettings, getWhatsappOffers, saveSettings, setWhatsappOffers } from '@/src/db';
 import { NEARBY_SUBTITLE, SAVINGS_TOTAL, loyaltyViews, whatsappMessage, whatsappSubtitle } from '@/src/profile/profileData';
 import { useCountUp } from '@/src/profile/useCountUp';
@@ -43,7 +46,10 @@ export default function ProfileScreen() {
   }, [user]);
   useFocusEffect(
     useCallback(() => {
-      getSettings().then((settings) => setNearby(settings.remindersEnabled)).catch(() => {});
+      // "On" means the setting is on AND the phone really allows it (location all the time + notifications).
+      Promise.all([getSettings(), getPermissionState()])
+        .then(([settings, permissions]) => setNearby(settings.remindersEnabled && remindersWork(permissions)))
+        .catch(() => {});
     }, [])
   );
 
@@ -63,9 +69,31 @@ export default function ProfileScreen() {
     if (user) setWhatsappOffers(user.phone, on).catch(() => { setWhatsapp(!on); showToast("Couldn't save that choice"); });
   };
   // Nearby saved-place alerts are normal app notifications (the same switch as "Nearby reminders" in Settings).
-  const changeNearby = (on: boolean) => {
-    setNearby(on);
-    saveSettings({ remindersEnabled: on }).catch(() => { setNearby(!on); showToast("Couldn't save that choice"); });
+  // Turning them ON is when the phone is asked for location "all the time", after a clear explanation.
+  const confirmAlways = () =>
+    new Promise<boolean>((resolve) => {
+      Alert.alert('Allow location all the time?', ALWAYS_EXPLANATION, [
+        { text: 'Not now', style: 'cancel', onPress: () => resolve(false) },
+        { text: 'Continue', onPress: () => resolve(true) },
+      ], { onDismiss: () => resolve(false) });
+    });
+  const changeNearby = async (on: boolean) => {
+    if (!on) {
+      setNearby(false);
+      saveSettings({ remindersEnabled: false }).catch(() => { setNearby(true); showToast("Couldn't save that choice"); });
+      return;
+    }
+    const result = await turnOnNearbyAlerts(confirmAlways).catch(() => 'declined' as const);
+    setNearby(result === 'on');
+    const message = missingMessage(result);
+    if (result === 'need-always' || result === 'need-notifications') {
+      Alert.alert('One more step', message ?? '', [
+        { text: 'Not now', style: 'cancel' },
+        { text: 'Open phone settings', onPress: openPhoneSettings },
+      ]);
+    } else if (message) {
+      showToast(message);
+    }
   };
 
   const cards = loyaltyViews();

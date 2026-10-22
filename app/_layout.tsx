@@ -19,6 +19,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { AlertBannerHost } from '@/src/components/alerts/AlertBanner';
 import { GeofenceManager } from '@/src/geofence/GeofenceManager';
 import { AuthContext } from '@/src/auth/AuthContext';
 import { appStage } from '@/src/auth/stage';
@@ -75,10 +76,11 @@ const SpottedDark = {
   },
 };
 
-// Show reminders even while the app is open.
+// An alert that arrives while the app is open is shown by our own banner (AlertBannerHost), not the phone's.
+// It still goes into the phone's notification list.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowBanner: true,
+    shouldShowBanner: false,
     shouldShowList: true,
     shouldPlaySound: false,
     shouldSetBadge: false,
@@ -226,6 +228,9 @@ function RootLayoutNav({ signedIn, onboardingDone }: { signedIn: boolean; onboar
 
       {/* Watches your saved places and opens one when you tap a reminder */}
       {stage === 'app' ? <GeofenceManager /> : null}
+
+      {/* The banner that slides down when an alert arrives while the app is open */}
+      {stage === 'app' ? <AlertBannerHost /> : null}
     </ThemeProvider>
   );
 }

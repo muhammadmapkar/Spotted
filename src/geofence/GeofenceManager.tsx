@@ -3,12 +3,13 @@ import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 
+import { hrefForAlert } from '../alerts/links';
 import { onDataChanged } from '../db/changes';
 import { syncGeofencing } from './sync';
 
 // Lives inside the app (renders nothing) and does two jobs:
 //  1. Keeps the phone watching the right places, whenever something changes.
-//  2. Opens the place when you tap a "You're near ..." notification.
+//  2. Opens the place when you tap a "A place you saved is ... away" alert.
 export function GeofenceManager() {
   const router = useRouter();
 
@@ -44,10 +45,11 @@ export function GeofenceManager() {
     if (handled.current === identifier) return; // already opened
     handled.current = identifier;
 
-    const placeId = content.data?.placeId;
-    if (typeof placeId === 'string') {
+    // A saved Spotted place opens the Place page; a place saved from a reel opens its own page.
+    const href = hrefForAlert(content.data);
+    if (href) {
       // A tiny pause makes sure the app's screens are ready first.
-      setTimeout(() => router.push(`/place/${placeId}` as never), 250);
+      setTimeout(() => router.push(href as never), 250);
     }
   }, [lastResponse]); // eslint-disable-line react-hooks/exhaustive-deps
 

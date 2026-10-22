@@ -8,7 +8,9 @@ import Colors from '@/constants/Colors';
 import { SUPPORT_EMAIL } from '@/src/config';
 import { resetSaved } from '@/src/state/saved';
 import { DEFAULT_SETTINGS, Settings, deleteAllData, getSettings, listPlaces, saveSettings } from '@/src/db';
-import { cancelAllReminders, sendNearbyNotification } from '@/src/geofence/notify';
+import { placeById } from '@/src/data/mock';
+import { savedVenueIds } from '@/src/geofence/catalogue';
+import { cancelAllReminders, sendNearbyNotification, sendVenueAlert } from '@/src/geofence/notify';
 import { getReminderStatus } from '@/src/geofence/sync';
 import { useOnboarding } from '@/src/onboarding/OnboardingContext';
 import { useAuth } from '@/src/auth/AuthContext';
@@ -78,12 +80,16 @@ export default function SettingsScreen() {
   // so you have time to close the app and see the real thing arrive.
   const sendTestReminder = async () => {
     const [place] = await listPlaces();
-    if (!place) {
-      Alert.alert('Save a place first', 'The test reminder uses your newest saved place.');
+    const [venueId] = await savedVenueIds();
+    const venue = placeById(venueId ?? '');
+    if (!place && !venue) {
+      Alert.alert('Save a place first', 'The test reminder uses one of your saved places.');
       return;
     }
-    await sendNearbyNotification(place, 5);
-    Alert.alert('Test reminder', 'It arrives in 5 seconds. Close the app to see it like a real reminder, then tap it.');
+    // Your newest place saved from a reel, or else the first saved Spotted place.
+    if (place) await sendNearbyNotification(place, 300, 5);
+    else if (venue) await sendVenueAlert(venue, 1200, 5);
+    Alert.alert('Test reminder', 'It arrives in 5 seconds. Close the app to see it like a real reminder, then tap it. (If you keep the app open, the banner slides down from the top.)');
   };
 
   // Testing helper: shows what the reminder system is doing right now.

@@ -49,11 +49,42 @@ test('shouldNotify combines reminders switch, quiet hours and the 24-hour rule',
   assert.equal(rules.shouldNotify(place('a', 0, 0, { lastNotifiedAt: hoursAgo(at(12), 30) }), at(12), SETTINGS), true);
 });
 
-test('notification text matches SPEC.md', () => {
-  assert.equal(
-    rules.notificationBody(place('x', 0, 0, { name: 'Kite Beach' })),
-    "You're near Kite Beach — you saved it from a reel 👀"
-  );
+test('alert text: "A place you saved is 1.2 km away" and "Name . N influencers recommend it"', () => {
+  assert.equal(rules.alertTitle(1234), 'A place you saved is 1.2 km away');
+  assert.equal(rules.alertTitle(280), 'A place you saved is 280 m away');
+  assert.equal(rules.alertTitle(null), 'A place you saved is nearby', 'distance unknown');
+  assert.equal(rules.alertBody('Saffron Lane', 5), 'Saffron Lane · 5 influencers recommend it');
+  assert.equal(rules.alertBody('Saffron Lane', 1), 'Saffron Lane · 1 influencer recommends it');
+  assert.equal(rules.alertBody('Kite Beach', 0), 'Kite Beach', 'no influencer line when nobody has recommended it');
+  assert.ok(!/[\u{1F300}-\u{1FAFF}]/u.test(rules.alertTitle(100) + rules.alertBody('x', 3)), 'no emoji');
+});
+
+test('distances are said the way people say them', () => {
+  assert.equal(rules.formatAway(0), '10 m');
+  assert.equal(rules.formatAway(284), '280 m');
+  assert.equal(rules.formatAway(999), '1.0 km', 'never "1000 m"');
+  assert.equal(rules.formatAway(994), '990 m');
+  assert.equal(rules.formatAway(1000), '1.0 km');
+  assert.equal(rules.formatAway(1249), '1.2 km');
+  assert.equal(rules.formatAway(12600), '13 km');
+});
+
+test('the same rules work for saved Spotted places (24 hours, quiet hours) with only a "last alert" time', () => {
+  assert.equal(rules.shouldNotify({}, at(12), SETTINGS), true);
+  assert.equal(rules.shouldNotify({ lastNotifiedAt: hoursAgo(at(12), 2) }, at(12), SETTINGS), false);
+  assert.equal(rules.shouldNotify({ lastNotifiedAt: hoursAgo(at(12), 25) }, at(12), SETTINGS), true);
+  assert.equal(rules.shouldNotify({}, at(23), SETTINGS), false);
+});
+
+test('nearest 20 works for the mixed list of reel places and saved Spotted places', () => {
+  const targets = [];
+  for (let i = 0; i < 30; i++) targets.push({ identifier: i % 2 ? 'venue:v' + i : 'p' + i, latitude: 25 + i * 0.01, longitude: 55 });
+  const nearest = rules.nearestTargets(targets, { latitude: 25, longitude: 55 });
+  assert.equal(nearest.length, 20);
+  assert.deepStrictEqual(nearest.slice(0, 3).map((t) => t.identifier), ['p0', 'venue:v1', 'p2']);
+  assert.equal(rules.nearestTargets(targets, null)[0].identifier, 'p0', 'unknown position: the first 20 given');
+  assert.equal(rules.nearestTargets(targets.slice(0, 4), { latitude: 25, longitude: 55 }).length, 4);
+  assert.equal(rules.nearestTargets(targets, { latitude: 25, longitude: 55 }, 5).length, 5);
 });
 
 test('nearest 20: picks the closest, never reorders the original list', () => {
