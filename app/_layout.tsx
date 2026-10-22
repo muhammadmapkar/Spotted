@@ -196,7 +196,7 @@ function RootLayoutNav({ signedIn, onboardingDone }: { signedIn: boolean; onboar
         <Stack.Protected guard={stage === 'app'}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="place/[id]" options={{ title: 'Place' }} />
-          <Stack.Screen name="venue/[id]" options={{ title: 'Place' }} />
+          <Stack.Screen name="venue/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
           <Stack.Screen name="influencer/[id]" options={{ title: 'Influencer' }} />
           <Stack.Screen name="settings" options={{ title: 'Settings' }} />
           <Stack.Screen name="collections" options={{ title: 'Collections' }} />

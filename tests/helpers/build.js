@@ -47,6 +47,15 @@ const entryFiles = [
   'src/location/area.ts',
   'src/home/useTypingPlaceholder.ts',
   'app/(tabs)/index.tsx',
+  'src/place/placeData.ts',
+  'app/venue/[id].tsx',
+  'src/components/place/MenuSheet.tsx',
+  'src/components/place/Dropdown.tsx',
+  'src/components/place/PlaceHero.tsx',
+  'src/components/place/ActionRow.tsx',
+  'src/components/place/InfluencerRecs.tsx',
+  'src/components/place/OffersList.tsx',
+  'src/components/place/ShopFront.tsx',
 ];
 
 fs.rmSync(outDir, { recursive: true, force: true });

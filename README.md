@@ -112,7 +112,7 @@ npm run check          # type-check, then the tests
 ```
 They need **Node 24 or newer** (they use Node's built-in test runner and SQLite, so nothing extra to install).
 
-**What they cover** (143 tests in `tests/`):
+**What they cover** (192 tests in `tests/`):
 - the place-clue finder: reads sample captions and suggests the place (and never guesses wildly);
 - the reminder rules: nearest 20 places, quiet hours (including past midnight), the 24-hour no-repeat rule;
 - the background reminder job and the "refused permissions" cases, against a pretend phone;
@@ -120,6 +120,7 @@ They need **Node 24 or newer** (they use Node's built-in test runner and SQLite,
 - sharing a reel: finding and cleaning the link, and opening Add Place (runs the real component in React);
 - the Android map safety switch, the place search (demo list and Google), the My Places filters;
 - readable colours in light and dark mode, and the icon files;
+- Place page: the line under the name, the Google Maps link, influencer recommendations and reel links, offers and their empty messages, PDF vs paper menu (Android viewer, https only, fallback if the PDF fails), the dropdowns' animation, the buttons, and every tap on the real screen;
 - Home: the circles row, search (names, tags, menu items, influencer handles), partner-first ordering, filters and chips, the typing placeholder, the area name, and every tap on the real screen;
 - the bottom bar: tab order, the sliding dot's position, the New In red dot, and that Settings is still reachable from Profile;
 - sign-in: phone numbers, the code boxes, the whole flow (wrong code, resend, first-time versus returning users), and that Delete all my data signs out;
@@ -160,7 +161,7 @@ spotted/
 │   │   ├── index.tsx         # Home: location, saved-place circles, search, Explore feed
 │   │   ├── new.tsx           # New In (placeholder for now)
 │   │   └── profile.tsx       # Profile; Settings opens from here
-│   ├── venue/[id].tsx        # A catalogue place (placeholder until the full Place page)
+│   ├── venue/[id].tsx        # The Place page (hero, Location / Menu / save, influencer and offer dropdowns, menu sheet)
 │   ├── influencer/[id].tsx   # An influencer (placeholder until the full page)
 │   ├── settings.tsx          # Settings (reminders, delete all my data, privacy link)
 │   ├── sign-in.tsx           # Sign in: phone, code, details
@@ -179,6 +180,7 @@ spotted/
 │   ├── theme/                # Light/dark theme provider (useTheme) and the Poppins font mapping
 │   ├── auth/                 # Sign-in: phone rules, the step-by-step flow logic, who is signed in
 │   ├── services/auth.ts      # The FAKE SMS service (code is always 123456). A real provider replaces this one file
+│   ├── place/                # Place page rules (Google Maps link, recommendations, offers, menu viewer choice)
 │   ├── home/                 # Home rules (circles, search, filters, sorting) and the typing placeholder
 │   ├── state/                # Small shared stores: saved places, filters, the New In dot
 │   ├── splash/               # The animated intro (road, banner, pin). timeline.ts has the timings from the prototype
@@ -198,6 +200,7 @@ spotted/
   Put a key in `.env` and the real Google search switches on by itself.
 - **Expo Go vs development build.** Expo Go is fine for screens, list, search and storage. Sharing from
   Instagram and background reminders only work in a **development build** (see above).
+- **Menu PDFs.** A place with a `menuPdfUrl` shows that PDF inside the app (`react-native-webview`; on Android it is wrapped in Google's free document viewer, because Android's web view cannot show PDFs by itself). Places without one show the items like a paper menu. The sample places have no PDF yet.
 - **Testing filters on Home.** In a development build, press and hold the purple filter button on Home to step through sample filters (the real filter sheet comes later).
 - **Testing buttons.** In a development build, the bottom of Settings has "Testing" buttons
   (test reminder, reminder status, show welcome screens again). They are hidden in the store build.

@@ -160,14 +160,14 @@ test('saving a place changes the circles and the bookmark', async () => {
   await screen.unmount();
 });
 
-test('taps: a circle or a card opens the place, an influencer opens the influencer, Menu says so', async () => {
+test('taps: a circle or a card opens the place, an influencer opens the influencer, Menu opens the place with its menu', async () => {
   const screen = await show();
   seen.stories[0].onPress();
   seen.placeCards[3].onPress();
   assert.deepStrictEqual(calls.push, ['/venue/saffron', '/venue/glow']);
   seen.placeCards[0].onMenuPress();
-  assert.equal(calls.alerts.length, 1);
-  assert.equal(calls.alerts[0][0], 'Saffron Lane');
+  assert.equal(calls.push.at(-1), '/venue/saffron?menu=1', 'the Menu button opens the place page with the menu sheet up');
+  assert.equal(calls.alerts.length, 0);
   await type(screen, 'capital');
   seen.influencerCards[0].onPress();
   assert.equal(calls.push.at(-1), '/influencer/capital');

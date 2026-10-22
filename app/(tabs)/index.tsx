@@ -71,7 +71,8 @@ export default function HomeScreen() {
   }, [searching, searchText, filters]);
 
   const openPlace = (place: Place) => router.push(`/venue/${place.id}` as never);
-  const openMenu = (place: Place) => Alert.alert(place.name, 'The menu viewer arrives in a later step.');
+  // The Menu button opens the place page with the menu sheet already up.
+  const openMenu = (place: Place) => router.push(`/venue/${place.id}?menu=1` as never);
 
   // Testing builds only: press and hold the filter button to step through sample filters, so the
   // badge and chips can be seen before the real filter sheet exists.

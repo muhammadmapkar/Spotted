@@ -1,33 +1,128 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { ScrollView, View } from 'react-native';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { PlaceLogo } from '@/src/components/PlaceLogo';
+import { ActionRow } from '@/src/components/place/ActionRow';
+import { Dropdown } from '@/src/components/place/Dropdown';
+import { InfluencerRecs } from '@/src/components/place/InfluencerRecs';
+import { MenuSheet } from '@/src/components/place/MenuSheet';
+import { OffersList } from '@/src/components/place/OffersList';
+import { PlaceHero } from '@/src/components/place/PlaceHero';
+import { Toast } from '@/src/components/place/Toast';
 import { AppText } from '@/src/components/ui/ui';
-import { fmt, placeById } from '@/src/data/mock';
-import { categoryLine } from '@/src/home/homeData';
+import { placeById } from '@/src/data/mock';
+import { mapsUrl, offerCount, placeSubtitle, recommendationsFor, saveToast } from '@/src/place/placeData';
+import { toggleSaved, useSavedIds } from '@/src/state/saved';
 import { useTheme } from '@/src/theme/ThemeProvider';
 
-// A place from the catalogue. A simple placeholder until the full Place page is built (next step).
+// The Place page (prototype: PLACE PAGE). It slides in from the right.
+//   hero picture . name . "Category . AED lo-hi per person . distance"
+//   [Location] [Menu]                                  [bookmark]
+//   Influencer recommendations (open)      Offers (closed)
+// Opening it with ?menu=1 (the Menu button on a Home card) shows the menu straight away.
 export default function VenueScreen() {
   const { palette } = useTheme();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { id, menu } = useLocalSearchParams<{ id: string; menu?: string }>();
   const place = placeById(id);
+  const savedIds = useSavedIds();
+
+  const [recsOpen, setRecsOpen] = useState(true); // recommendations: open by default
+  const [offersOpen, setOffersOpen] = useState(false); // offers: closed by default
+  const [menuOpen, setMenuOpen] = useState(menu === '1');
+  const [toast, setToast] = useState<string | null>(null);
+
+  // The short message disappears after about 2 seconds.
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showToast = useCallback((message: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast(message);
+    toastTimer.current = setTimeout(() => setToast(null), 2300);
+  }, []);
+  useEffect(() => () => { if (toastTimer.current) clearTimeout(toastTimer.current); }, []);
+
+  const recs = useMemo(() => (place ? recommendationsFor(place) : []), [place]);
+
+  const openLink = useCallback(
+    (url: string | null) => {
+      if (!url) return showToast("Couldn't open that link");
+      Linking.openURL(url).catch(() => showToast("Couldn't open that link"));
+    },
+    [showToast]
+  );
+
+  if (!place) {
+    return (
+      <View style={[styles.missing, { backgroundColor: palette.bg }]}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <AppText tone="muted">This place was not found.</AppText>
+        <Pressable onPress={() => router.back()} accessibilityRole="button" style={[styles.backLink, { backgroundColor: palette.chip }]}>
+          <AppText tone="acc" weight="600">Go back</AppText>
+        </Pressable>
+      </View>
+    );
+  }
+
+  const saved = savedIds.has(place.id);
 
   return (
-    <ScrollView style={{ backgroundColor: palette.bg }} contentContainerStyle={{ alignItems: 'center', padding: 24, gap: 6 }}>
-      <Stack.Screen options={{ title: place?.name ?? 'Place' }} />
-      {place ? (
-        <>
-          <PlaceLogo place={place} size={96} shape="square" />
-          <AppText weight="700" size={24} style={{ marginTop: 10 }}>{place.name}</AppText>
-          <AppText tone="muted" size={13}>{categoryLine(place)}</AppText>
-          <AppText tone="muted" size={13}>{fmt(place.dist)}</AppText>
-          <View style={{ height: 16 }} />
-          <AppText tone="muted" size={13} style={{ textAlign: 'center' }}>The full place page arrives in the next step.</AppText>
-        </>
-      ) : (
-        <AppText tone="muted">This place was not found.</AppText>
-      )}
-    </ScrollView>
+    <View style={{ flex: 1, backgroundColor: palette.bg }}>
+      <Stack.Screen options={{ headerShown: false, animation: 'slide_from_right' }} />
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 80 }} showsVerticalScrollIndicator={false}>
+        <PlaceHero place={place} onBack={() => router.back()} />
+
+        <View style={[styles.sheet, { backgroundColor: palette.bg }]}>
+          <AppText weight="800" size={24} accessibilityRole="header">{place.name}</AppText>
+          <AppText tone="muted" size={13} style={{ marginTop: 4 }}>{placeSubtitle(place)}</AppText>
+
+          <ActionRow
+            placeName={place.name}
+            saved={saved}
+            onLocation={() => openLink(mapsUrl(place))}
+            onMenu={() => setMenuOpen(true)}
+            onToggleSave={() => showToast(saveToast(place, toggleSaved(place.id)))}
+          />
+
+          <View style={{ marginTop: 22 }}>
+            <Dropdown
+              title="Influencer recommendations"
+              count={recs.length}
+              icon="star"
+              iconColor="#E07A1F"
+              open={recsOpen}
+              onToggle={() => setRecsOpen((v) => !v)}>
+              <InfluencerRecs
+                recs={recs}
+                onOpenInfluencer={(influencerId) => router.push(`/influencer/${influencerId}` as never)}
+                onOpenReel={(rec) => openLink(rec.reelUrl)}
+              />
+            </Dropdown>
+          </View>
+
+          <View style={{ marginTop: 12 }}>
+            <Dropdown
+              title="Offers"
+              count={offerCount(place)}
+              icon="tag"
+              iconColor={palette.red}
+              open={offersOpen}
+              onToggle={() => setOffersOpen((v) => !v)}>
+              <OffersList place={place} />
+            </Dropdown>
+          </View>
+        </View>
+      </ScrollView>
+
+      <MenuSheet place={place} visible={menuOpen} onClose={() => setMenuOpen(false)} />
+      <Toast message={toast} bottom={insets.bottom + 30} />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  sheet: { marginTop: -18, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 20, paddingHorizontal: 20 },
+  missing: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14 },
+  backLink: { minHeight: 44, paddingHorizontal: 20, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+});

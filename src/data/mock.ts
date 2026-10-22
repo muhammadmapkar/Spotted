@@ -40,6 +40,12 @@ export interface Place {
   menu: MenuItem[];
   partnerOffers: Offer[];
   spottedOffers: Offer[];
+  // Optional extras. Sample places have none of these; real places will (from the backend later).
+  photoUrl?: string; // a photo of the front entrance and signboard
+  menuPdfUrl?: string; // a link to the menu as a PDF (https only)
+  latitude?: number;
+  longitude?: number;
+  googlePlaceId?: string;
 }
 
 export interface Influencer {
@@ -53,6 +59,8 @@ export interface Influencer {
   picks: string[]; // place ids: this month's top picks, best first
   more: string[]; // place ids: other recommendations
   isNew?: boolean; // just joined Spotted
+  profilePicUrl?: string; // their profile picture, when we have it
+  reels?: Record<string, string>; // place id -> link to the reel about that place
 }
 
 // An offer shown in the "New in" tab.
