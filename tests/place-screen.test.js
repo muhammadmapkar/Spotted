@@ -47,7 +47,7 @@ const VenueScreen = app('app/venue/[id].js').default;
 
 test.beforeEach(() => {
   savedStore.resetSaved();
-  Object.assign(params, { id: 'saffron' }); delete params.menu;
+  Object.assign(params, { id: 'saffron' }); delete params.menu; delete params.offers;
   Object.assign(seen, { hero: null, action: null, dropdowns: {}, recs: null, offers: null, menu: null, toast: null, texts: [], pressables: [] });
   Object.assign(calls, { back: 0, push: [], links: [], linkFails: false });
 });
@@ -127,6 +127,15 @@ test('arriving from the Menu button on a Home card shows the menu at once', asyn
   params.menu = '1';
   const screen = await show(t);
   assert.equal(seen.menu.visible, true);
+  await screen.unmount();
+});
+
+test('arriving from an offer on New In opens the Offers dropdown and folds the recommendations', async (t) => {
+  params.offers = '1';
+  const screen = await show(t);
+  assert.equal(seen.dropdowns['Offers'].open, true);
+  assert.equal(seen.dropdowns['Influencer recommendations'].open, false);
+  assert.equal(seen.menu.visible, false, 'the menu stays closed');
   await screen.unmount();
 });
 

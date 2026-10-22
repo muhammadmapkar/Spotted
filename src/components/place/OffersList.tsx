@@ -12,20 +12,26 @@ const BADGE_COLORS = {
   dark: { esaad: ['#113D2A', '#9FE3C2'], fazaa: ['#14284A', '#AFCBF5'] },
 } as const;
 
-function OfferRow({ offer, first }: { offer: Offer; first: boolean }) {
-  const { palette, scheme } = useTheme();
+// The coloured source badge (Esaad, Fazaa, or the title of a Spotted offer). Also used on the New In tab.
+export function SourceBadge({ offer }: { offer: Offer }) {
+  const { scheme } = useTheme();
   const badge = offerBadge(offer);
+  return badge.kind === 'spotted' ? (
+    <LinearGradient colors={['#6A1FB0', '#9D4EDD']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.badge}>
+      <AppText tone="onBrand" weight="800" size={10} style={styles.badgeText}>{badge.label}</AppText>
+    </LinearGradient>
+  ) : (
+    <View style={[styles.badge, { backgroundColor: BADGE_COLORS[scheme][badge.kind][0] }]}>
+      <AppText weight="800" size={10} style={[styles.badgeText, { color: BADGE_COLORS[scheme][badge.kind][1] }]}>{badge.label}</AppText>
+    </View>
+  );
+}
+
+function OfferRow({ offer, first }: { offer: Offer; first: boolean }) {
+  const { palette } = useTheme();
   return (
     <View style={[styles.offer, !first && { borderTopWidth: 1, borderTopColor: palette.line }]}>
-      {badge.kind === 'spotted' ? (
-        <LinearGradient colors={['#6A1FB0', '#9D4EDD']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.badge}>
-          <AppText tone="onBrand" weight="800" size={10} style={styles.badgeText}>{badge.label}</AppText>
-        </LinearGradient>
-      ) : (
-        <View style={[styles.badge, { backgroundColor: BADGE_COLORS[scheme][badge.kind][0] }]}>
-          <AppText weight="800" size={10} style={[styles.badgeText, { color: BADGE_COLORS[scheme][badge.kind][1] }]}>{badge.label}</AppText>
-        </View>
-      )}
+      <SourceBadge offer={offer} />
       <AppText size={13} style={{ flex: 1 }}>{offer.text}</AppText>
     </View>
   );

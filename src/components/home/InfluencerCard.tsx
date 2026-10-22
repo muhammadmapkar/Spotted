@@ -1,15 +1,20 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { Animated, useRiseIn } from '@/src/components/motion';
 import { AppText } from '@/src/components/ui/ui';
 import { Influencer } from '@/src/data/mock';
 import { pickCount, platformText } from '@/src/home/homeData';
+import { safeWebUrl } from '@/src/place/placeData';
 import { cardShadow } from '@/src/theme/shadows';
 import { useTheme } from '@/src/theme/ThemeProvider';
 
-// A round profile picture: the influencer's colours with their first letter (never a face or photo of a person).
+// A round profile picture: their picture when we have one, otherwise their colours with their first letter.
 export function InfluencerAvatar({ influencer, size = 46 }: { influencer: Influencer; size?: number }) {
+  const picture = safeWebUrl(influencer.profilePicUrl);
+  if (picture) {
+    return <Image source={{ uri: picture }} accessibilityIgnoresInvertColors style={{ width: size, height: size, borderRadius: size / 2 }} />;
+  }
   return (
     <LinearGradient
       colors={influencer.gradient}

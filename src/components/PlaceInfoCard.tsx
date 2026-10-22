@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { NewBadge } from '@/src/components/NewBadge';
 import { Icon } from '@/src/components/icons/Icon';
 import { Animated, useRiseIn } from '@/src/components/motion';
 import { AppText } from '@/src/components/ui/ui';
@@ -21,12 +22,14 @@ export function PlaceInfoCard({
   index = 0,
   onPress,
   onMenuPress,
+  justJoined = false,
 }: {
   place: Place;
   saved: boolean;
   index?: number; // position in the list: later cards appear a little later
   onPress: () => void;
   onMenuPress: () => void;
+  justJoined?: boolean; // show the shimmering "JUST JOINED" badge (New In tab)
 }) {
   const { palette, scheme } = useTheme();
   const rise = useRiseIn(Math.min(index, 8) * 70);
@@ -69,6 +72,7 @@ export function PlaceInfoCard({
             <AppText tone="muted" size={12}>{fmt(place.dist)}</AppText>
           </View>
           <View style={styles.badges}>
+            {justJoined ? <NewBadge label="JUST JOINED" /> : null}
             {place.partner ? (
               <LinearGradient colors={['#6A1FB0', '#9D4EDD']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.badge}>
                 <AppText tone="onBrand" weight="700" size={10}>Spotted Partner</AppText>

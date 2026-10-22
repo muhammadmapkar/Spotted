@@ -21,16 +21,17 @@ import { useTheme } from '@/src/theme/ThemeProvider';
 //   [Location] [Menu]                                  [bookmark]
 //   Influencer recommendations (open)      Offers (closed)
 // Opening it with ?menu=1 (the Menu button on a Home card) shows the menu straight away.
+// Opening it with ?offers=1 (an offer on the New In tab) opens the Offers dropdown and folds the recommendations.
 export default function VenueScreen() {
   const { palette } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { id, menu } = useLocalSearchParams<{ id: string; menu?: string }>();
+  const { id, menu, offers } = useLocalSearchParams<{ id: string; menu?: string; offers?: string }>();
   const place = placeById(id);
   const savedIds = useSavedIds();
 
-  const [recsOpen, setRecsOpen] = useState(true); // recommendations: open by default
-  const [offersOpen, setOffersOpen] = useState(false); // offers: closed by default
+  const [recsOpen, setRecsOpen] = useState(offers !== '1'); // recommendations: open by default (folded when we came for an offer)
+  const [offersOpen, setOffersOpen] = useState(offers === '1'); // offers: closed by default (open when we came for an offer)
   const [menuOpen, setMenuOpen] = useState(menu === '1');
   const [toast, setToast] = useState<string | null>(null);
 
