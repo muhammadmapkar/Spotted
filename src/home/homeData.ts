@@ -7,6 +7,8 @@ export const NEAR_KM = 15; // "near you" means within 15 km
 export const HOT_RING_KM = 5; // closer than this gets the bright animated ring
 export const MAX_STORIES = 10;
 export const ANY_BUDGET = 500; // the slider's top value means "any budget"
+export const MIN_BUDGET = 20;
+export const BUDGET_STEP = 10;
 
 // ---- filters ---------------------------------------------------------------------------------
 
@@ -29,6 +31,21 @@ export function passesFilters(place: Place, f: Filters): boolean {
   if (f.offers && !hasOffers(place)) return false;
   return true;
 }
+
+// What the sheet shows above the slider: "Any budget" or "Up to AED 150".
+export const budgetLabel = (budget: number): string => (budget >= ANY_BUDGET ? 'Any budget' : `Up to AED ${budget}`);
+
+// The slider hands us any number; make it a whole step between AED 20 and AED 500.
+export function snapBudget(value: number): number {
+  const stepped = Math.round(value / BUDGET_STEP) * BUDGET_STEP;
+  return Math.min(ANY_BUDGET, Math.max(MIN_BUDGET, stepped));
+}
+
+// The text on the big button of the filter sheet: "Show 12 places" ("Show 1 place").
+export const showPlacesLabel = (count: number): string => `Show ${count} ${count === 1 ? 'place' : 'places'}`;
+
+// How many nearby places pass the filters (the live number on the sheet's button).
+export const nearbyMatchCount = (places: Place[], filters: Filters): number => withinNear(places).filter((p) => passesFilters(p, filters)).length;
 
 // The removable chips under the search bar. `clear` is what to change to remove that filter.
 export interface FilterChip {

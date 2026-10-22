@@ -11,11 +11,21 @@ const filtersStore = app('src/state/filters.js');
 const savedStore = app('src/state/saved.js');
 
 // What the screen showed on its latest drawing.
-const seen = { stories: [], placeCards: [], influencerCards: [], searchBar: null, chips: null, texts: [], flatLists: [] };
+const seen = { sheet: null, stories: [], placeCards: [], influencerCards: [], searchBar: null, chips: null, texts: [], flatLists: [] };
 const calls = { push: [], alerts: [] };
 const record = (key) => (props) => { seen[key].push(props); return null; };
 const text = (props) => { seen.texts.push(props.children); return null; };
 const palette = new Proxy({}, { get: () => '#000000' });
+
+// both lists (the circles row and the main list) are drawn the same way
+function listFake(props) {
+  if (!props.horizontal) { // the main list is drawn first: start a fresh record
+    seen.stories.length = 0; seen.placeCards.length = 0; seen.influencerCards.length = 0; seen.texts.length = 0; seen.chips = null;
+    seen.flatLists = [props];
+  }
+  const items = (props.data ?? []).map((item, index) => React.createElement(React.Fragment, { key: props.keyExtractor(item, index) }, props.renderItem({ item, index })));
+  return React.createElement(React.Fragment, null, props.ListHeaderComponent, items);
+}
 
 installFakes({
   'expo-router': { useIsFocused: () => true, useRouter: () => ({ push: (path) => calls.push.push(path) }) },
@@ -23,18 +33,13 @@ installFakes({
     Alert: { alert: (...args) => calls.alerts.push(args) },
     StyleSheet: { create: (x) => x },
     View: (props) => props.children ?? null,
-    FlatList: (props) => {
-      if (!props.horizontal) { // the main list is drawn first: start a fresh record
-        seen.stories.length = 0; seen.placeCards.length = 0; seen.influencerCards.length = 0; seen.texts.length = 0; seen.chips = null;
-        seen.flatLists = [props];
-      }
-      const items = (props.data ?? []).map((item, index) => React.createElement(React.Fragment, { key: props.keyExtractor(item, index) }, props.renderItem({ item, index })));
-      return React.createElement(React.Fragment, null, props.ListHeaderComponent, items);
-    },
+    FlatList: listFake,
   },
   'react-native-safe-area-context': { useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) },
   '@/src/theme/ThemeProvider': { useTheme: () => ({ palette, scheme: 'light' }) },
   '@/src/components/ui/ui': { AppText: text },
+  '@/src/components/motion': { Animated: { FlatList: listFake }, useListLayout: () => 'LIST_LAYOUT' },
+  '@/src/components/filters/FilterSheet': { FilterSheet: (props) => { seen.sheet = props; return null; } },
   '@/src/components/home/SavedStory': { SavedStory: record('stories') },
   '@/src/components/PlaceInfoCard': { PlaceInfoCard: record('placeCards') },
   '@/src/components/home/InfluencerCard': { InfluencerCard: record('influencerCards') },
@@ -171,21 +176,24 @@ test('taps: a circle or a card opens the place, an influencer opens the influenc
   await type(screen, 'capital');
   seen.influencerCards[0].onPress();
   assert.equal(calls.push.at(-1), '/influencer/capital');
-  seen.searchBar.onFilterPress();
-  assert.equal(calls.alerts.at(-1)[0], 'Filters', 'the filter sheet is a later step');
   await screen.unmount();
 });
 
-test('testing builds: holding the filter button steps through sample filters', async () => {
+test('the filter button opens the filter sheet, which counts nearby places for its button', async () => {
   const screen = await show();
-  assert.equal(typeof seen.searchBar.onFilterLongPress, 'function');
-  await act(async () => { seen.searchBar.onFilterLongPress(); });
-  assert.equal(seen.searchBar.filterCount, 1);
-  await act(async () => { seen.searchBar.onFilterLongPress(); });
-  assert.equal(seen.searchBar.filterCount, 2);
-  await act(async () => { seen.searchBar.onFilterLongPress(); });
-  assert.equal(seen.searchBar.filterCount, 2);
-  await act(async () => { seen.searchBar.onFilterLongPress(); });
-  assert.equal(seen.searchBar.filterCount, 0, 'the last step turns them all off');
+  const presented = [];
+  seen.sheet.sheetRef.current = { present: () => presented.push('present') };
+  seen.searchBar.onFilterPress();
+  assert.deepStrictEqual(presented, ['present']);
+  assert.equal(seen.sheet.matchCount(app('src/home/homeData.js').NO_FILTERS), 15, 'all 15 nearby places');
+  assert.equal(seen.sheet.matchCount({ ...app('src/home/homeData.js').NO_FILTERS, dist: 5, cat: 'Food' }), 4);
+  assert.equal(seen.searchBar.onLongPress, undefined);
   await screen.unmount();
 });
+
+test('the results glide to their new places when a filter changes', async () => {
+  const screen = await show();
+  assert.equal(seen.flatLists[0].itemLayoutAnimation, 'LIST_LAYOUT');
+  await screen.unmount();
+});
+

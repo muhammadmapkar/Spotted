@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, LinearTransition, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 
 // Small entrance animations from the prototype. All of them skip straight to the end under Reduce Motion.
 
@@ -34,6 +34,13 @@ export function useFanIn(delayMs = 0) {
     opacity: progress.value,
     transform: [{ translateX: 120 * (1 - progress.value) }, { rotate: `${6 * (1 - progress.value)}deg` }],
   }));
+}
+
+// How the rows of a list move when the results change (a filter is switched): they glide to their
+// new places over 0.3 s. Pass it to <Animated.FlatList itemLayoutAnimation={...}>. Off with Reduce Motion.
+export function useListLayout() {
+  const reduceMotion = useReducedMotion();
+  return reduceMotion ? undefined : LinearTransition.duration(300);
 }
 
 export { Animated };

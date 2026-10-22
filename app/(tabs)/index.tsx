@@ -1,22 +1,25 @@
 import { useIsFocused, useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
-import { Alert, FlatList, StyleSheet, View } from 'react-native';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { FilterSheet } from '@/src/components/filters/FilterSheet';
 import { FilterChipsRow } from '@/src/components/home/FilterChipsRow';
 import { HomeSearchBar } from '@/src/components/home/HomeSearchBar';
 import { InfluencerCard } from '@/src/components/home/InfluencerCard';
 import { LocationRow } from '@/src/components/home/LocationRow';
 import { SavedStory } from '@/src/components/home/SavedStory';
+import { Animated, useListLayout } from '@/src/components/motion';
 import { PlaceInfoCard } from '@/src/components/PlaceInfoCard';
 import { AppText } from '@/src/components/ui/ui';
 import { Influencer, PLACES, Place } from '@/src/data/mock';
 import {
   Filters,
   NEAR_KM,
-  NO_FILTERS,
   activeFilterChips,
   exploreFeed,
+  nearbyMatchCount,
   resultsTitle,
   searchHome,
   storiesFor,
@@ -38,6 +41,7 @@ export default function HomeScreen() {
   const { palette } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const listLayout = useListLayout(); // rows glide when the results change
   const isFocused = useIsFocused();
   const savedIds = useSavedIds();
   const filters = useFilters();
@@ -74,15 +78,9 @@ export default function HomeScreen() {
   // The Menu button opens the place page with the menu sheet already up.
   const openMenu = (place: Place) => router.push(`/venue/${place.id}?menu=1` as never);
 
-  // Testing builds only: press and hold the filter button to step through sample filters, so the
-  // badge and chips can be seen before the real filter sheet exists.
-  const previewStep = useRef(0);
-  const previews: Partial<Filters>[] = [{ budget: 50 }, { dist: 5, cat: 'Food' }, { infl: true, offers: true }, NO_FILTERS];
-  const cyclePreview = () => {
-    resetFilters();
-    setFilters(previews[previewStep.current % previews.length]);
-    previewStep.current += 1;
-  };
+  // The filter sheet slides up from the bottom (it changes the same shared filters the chips show).
+  const sheetRef = useRef<BottomSheetModal>(null);
+  const matchCount = useCallback((f: Filters) => nearbyMatchCount(PLACES, f), []);
 
   const header = (
     <View>
@@ -116,8 +114,7 @@ export default function HomeScreen() {
           onChangeText={setQuery}
           typedExample={typedExample}
           filterCount={chips.length}
-          onFilterPress={() => Alert.alert('Filters', 'The filter sheet arrives in a later step.')}
-          onFilterLongPress={__DEV__ ? cyclePreview : undefined}
+          onFilterPress={() => sheetRef.current?.present()}
           accessibilityLabel="Search places, food, shops or influencers"
         />
         <FilterChipsRow chips={chips} onClear={(chip) => setFilters(chip.clear)} />
@@ -126,8 +123,10 @@ export default function HomeScreen() {
   );
 
   return (
-    <FlatList
+    <>
+    <Animated.FlatList
       style={{ flex: 1, backgroundColor: palette.bg }}
+      itemLayoutAnimation={listLayout}
       data={rows}
       keyExtractor={(row) => row.key}
       ListHeaderComponent={header}
@@ -171,6 +170,8 @@ export default function HomeScreen() {
         );
       }}
     />
+    <FilterSheet sheetRef={sheetRef} matchCount={matchCount} />
+    </>
   );
 }
 

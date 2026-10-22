@@ -18,7 +18,6 @@ export function HomeSearchBar({
   typedExample,
   filterCount,
   onFilterPress,
-  onFilterLongPress,
   placeholder,
   accessibilityLabel,
 }: {
@@ -27,7 +26,6 @@ export function HomeSearchBar({
   typedExample?: string; // the letters typed so far; leave out to use a plain placeholder
   filterCount: number;
   onFilterPress: () => void;
-  onFilterLongPress?: () => void;
   placeholder?: string;
   accessibilityLabel: string;
 }) {
@@ -83,7 +81,6 @@ export function HomeSearchBar({
 
       <Pressable
         onPress={onFilterPress}
-        onLongPress={onFilterLongPress}
         accessibilityRole="button"
         accessibilityLabel={filterCount > 0 ? `Filters, ${filterCount} on` : 'Filters'}
         style={[styles.filterButton, { backgroundColor: palette.btn }]}>

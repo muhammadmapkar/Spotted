@@ -11,7 +11,10 @@ import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useState } from 'react';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
@@ -162,10 +165,15 @@ export default function RootLayout() {
     <SpottedThemeProvider initialPreference={themePreference}>
       <AuthContext.Provider value={{ user: authUser, signIn, signOut, clearLocal }}>
         <OnboardingContext.Provider value={{ finish, restart }}>
-          <View style={{ flex: 1 }}>
-            <RootLayoutNav signedIn={authUser !== null} onboardingDone={onboardingDone} />
-            {splashDone ? null : <AnimatedSplash onFinish={() => setSplashDone(true)} />}
-          </View>
+          {/* The filter sheet needs these two wrappers around the whole app */}
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <BottomSheetModalProvider>
+              <View style={{ flex: 1 }}>
+                <RootLayoutNav signedIn={authUser !== null} onboardingDone={onboardingDone} />
+                {splashDone ? null : <AnimatedSplash onFinish={() => setSplashDone(true)} />}
+              </View>
+            </BottomSheetModalProvider>
+          </GestureHandlerRootView>
         </OnboardingContext.Provider>
       </AuthContext.Provider>
     </SpottedThemeProvider>

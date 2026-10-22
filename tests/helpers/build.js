@@ -63,6 +63,7 @@ const entryFiles = [
   'src/components/influencer/TopCard.tsx',
   'src/components/influencer/RecommendationRow.tsx',
   'src/components/motion.ts',
+  'src/components/filters/FilterSheet.tsx',
 ];
 
 fs.rmSync(outDir, { recursive: true, force: true });
