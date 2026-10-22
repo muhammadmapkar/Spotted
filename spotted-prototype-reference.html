@@ -1,0 +1,1458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Spotted app prototype</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#6A1FB0}a:hover{color:#4A148C}
+.wrap,.wrap *{box-sizing:border-box}
+.wrap button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit}
+.wrap input{font:inherit}
+.wrap svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.wrap svg.i.s{width:16px;height:16px}
+.wrap svg.i.xs{width:13px;height:13px}
+.ctl{display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:22px;background:#fff;border:1px solid #DCCDEE;font-size:13px;font-weight:600;color:#2A1640}
+.ctl.on{background:#6A1FB0;border-color:#6A1FB0;color:#fff}
+.ph{--bg:#F6F2FB;--surface:#FFFFFF;--surface2:#EFE7F8;--text:#1C0F2E;--muted:#5E4F72;--line:#E2D7F0;--brand:#6A1FB0;--btn:#6A1FB0;--acc:#6A1FB0;--red:#D62839;--chip:#EDE3F8;--navbg:rgba(255,255,255,.94);--map-land:#EFE8F6;--map-road:#FFFFFF;--map-minor:#E3D8EF;--map-water:#C9DDF5;--map-park:#D6EBD3;--shadow:0 6px 20px rgba(60,20,110,.10)}
+.ph.dark{--bg:#120A1F;--surface:#1E1231;--surface2:#2A1A44;--text:#F4EEFC;--muted:#BBABD4;--line:#36254F;--brand:#A061F0;--btn:#7B2CD6;--acc:#CDA8FF;--red:#F0475A;--chip:#2C1B47;--navbg:rgba(24,14,40,.95);--map-land:#1B1130;--map-road:#33234F;--map-minor:#24173B;--map-water:#14284A;--map-park:#16301F;--shadow:0 6px 20px rgba(0,0,0,.35)}
+.ph{position:relative;width:390px;height:844px;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Poppins',system-ui,sans-serif;border-radius:44px;transition:background .3s,color .3s}
+.scroll{position:absolute;left:0;right:0;top:0;bottom:84px;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.scroll::-webkit-scrollbar,.hs::-webkit-scrollbar,.layer::-webkit-scrollbar{display:none}
+.hs{display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x mandatory;padding:4px 20px 8px}
+.hs>*{scroll-snap-align:start;flex:none}
+.muted{color:var(--muted)}
+.h1{font-size:26px;font-weight:700;margin:0;letter-spacing:-.3px}
+.h2{font-size:17px;font-weight:700;margin:0}
+.sec{padding:0 20px}
+.fade-up{animation:up .5s cubic-bezier(.2,.8,.2,1) both}
+/* splash */
+.splash{position:absolute;inset:0;display:block;width:100%;height:100%;overflow:hidden;background:radial-gradient(120% 70% at 30% 28%,#A14CE8 0%,#7B2CBF 38%,#5A189A 70%,#3C096C 100%);animation:fadeIn .5s ease both;z-index:50}
+.rod{position:absolute;top:0;left:118px;width:154px;height:12px;border-radius:0 0 6px 6px;background:linear-gradient(#2A0B46,#4B1677);box-shadow:0 4px 10px rgba(20,0,40,.4)}
+.bn-sway{position:absolute;top:8px;left:135px;width:120px;height:440px;transform-origin:60px 0;animation:sway 1.4s ease-in-out 2.05s both}
+.bn-unroll{position:absolute;inset:0;animation:unroll 1.15s cubic-bezier(.45,.05,.3,1) .9s both;filter:drop-shadow(0 10px 14px rgba(30,0,60,.45))}
+.bn-folds{position:absolute;inset:0;background:repeating-linear-gradient(180deg,rgba(0,0,0,.18) 0 6px,rgba(255,255,255,.08) 6px 14px,rgba(0,0,0,0) 14px 30px);animation:folds 1.6s ease-out 1s both;clip-path:polygon(0 0,100% 0,100% 100%,50% 90%,0 100%)}
+.bn-roll{position:absolute;left:-5px;top:0;width:130px;height:22px;border-radius:11px;background:linear-gradient(180deg,#FF7B7B 0%,#E5383B 45%,#8E1015 100%);box-shadow:0 6px 12px rgba(30,0,60,.4);animation:rollDown 1.15s cubic-bezier(.45,.05,.3,1) .9s both}
+.bn-pin{position:absolute;left:33px;top:150px;width:54px;height:66px;animation:pinPop .6s cubic-bezier(.3,1.4,.5,1) 2.15s both}
+.road-base{stroke-dasharray:900;animation:roadDraw 1.1s cubic-bezier(.5,0,.3,1) .25s both}
+.road-dash{animation:fadeIn .5s ease 1.2s both}
+.word{position:absolute;left:0;right:0;top:600px;text-align:center;font-size:62px;font-weight:800;color:#fff;letter-spacing:-1px;text-shadow:0 6px 18px rgba(30,0,60,.45);animation:rise .7s cubic-bezier(.2,.8,.2,1) 2.6s both}
+.tagline{position:absolute;left:0;right:0;top:690px;text-align:center;font-size:15px;color:#EBDDFB;animation:rise .7s cubic-bezier(.2,.8,.2,1) 2.85s both}
+.skip{position:absolute;bottom:34px;left:0;right:0;text-align:center;font-size:12px;color:#E4D4F8;animation:fadeIn .4s ease 3.2s both}
+/* sign in */
+.auth-top{position:relative;height:300px;overflow:hidden;background:radial-gradient(120% 90% at 30% 20%,#A14CE8,#6A1FB0 55%,#3C096C)}
+.auth-sheet{position:absolute;left:0;right:0;top:268px;bottom:0;background:var(--bg);border-radius:30px 30px 0 0;padding:30px 24px;animation:sheetUp .55s cubic-bezier(.2,.8,.2,1) both}
+.field{display:flex;align-items:center;gap:10px;height:56px;border-radius:16px;background:var(--surface);border:1.5px solid var(--line);padding:0 14px}
+.field:focus-within{border-color:var(--brand)}
+.field input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font-size:16px}
+.lbl{display:block;font-size:13px;font-weight:600;margin:0 0 8px}
+.cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:56px;border-radius:18px;background:var(--btn) !important;color:#fff !important;font-weight:600;font-size:16px;box-shadow:0 10px 24px rgba(106,31,176,.35);transition:transform .15s}
+.cta:active{transform:scale(.97)}
+.otp{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.otp.err{animation:shake .45s}
+.box{height:56px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700}
+.box.filled{border-color:var(--brand);animation:pop .25s ease both}
+.box.active{border-color:var(--brand);box-shadow:0 0 0 3px rgba(160,97,240,.25)}
+.otp input{position:absolute;inset:0;opacity:0;width:100%;height:100%;border:0}
+/* home */
+.loc{display:flex;align-items:center;gap:10px;padding:22px 20px 10px}
+.loc-ic{width:40px;height:40px;border-radius:14px;background:var(--chip);color:var(--red);display:flex;align-items:center;justify-content:center}
+.story{position:relative;width:74px;display:flex;flex-direction:column;align-items:center;gap:8px;animation:pop .5s cubic-bezier(.3,1.4,.5,1) both}
+.ring{position:absolute;top:0;left:3px;width:68px;height:68px;border-radius:50%}
+.ring.hot{background:conic-gradient(#FF4D6D,#C77DFF,#7B2CBF,#FF9E00,#FF4D6D);animation:spin 3s linear infinite,glow 1.8s ease-in-out infinite}
+.ring.soft{background:conic-gradient(#9C88BF,#6A4C93,#C9B8E6,#9C88BF);opacity:.75;animation:spin 7s linear infinite}
+.logo{position:relative;margin-top:4px;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;letter-spacing:-.5px;box-shadow:0 0 0 3px var(--bg)}
+.story-lbl{font-size:11px;font-weight:500;color:var(--muted);white-space:nowrap}
+.story-lbl.hot{color:var(--acc);font-weight:700}
+.search{position:relative;display:flex;align-items:center;gap:10px;height:54px;border-radius:18px;background:var(--surface);border:1.5px solid var(--line);padding:0 8px 0 16px;box-shadow:var(--shadow);transition:transform .25s,border-color .25s}
+.search:focus-within{transform:scale(1.02);border-color:var(--brand)}
+.search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font-size:15px}
+.search input::placeholder{color:var(--muted)}
+.fbtn{position:relative;width:42px;height:42px;border-radius:13px;background:var(--btn) !important;color:#fff !important;display:flex;align-items:center;justify-content:center}
+.fcount{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:16px;background:var(--chip);color:var(--acc);font-size:12px;font-weight:600}
+.chip.sel{background:var(--btn) !important;color:#fff !important}
+.card{display:flex;align-items:stretch;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:10px;box-shadow:var(--shadow);animation:up .5s cubic-bezier(.2,.8,.2,1) both}
+.card.partner{border-color:rgba(160,97,240,.65);box-shadow:0 0 0 3px rgba(160,97,240,.15),var(--shadow)}
+.card-main{flex:1;min-width:0;display:flex !important;gap:12px;align-items:center}
+.thumb{position:relative;width:76px;height:76px;flex:none;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.thumb-mono{color:#fff;font-weight:800;font-size:22px}
+.thumb-awn{position:absolute;left:0;right:0;top:0;height:14px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.85) 0 10px,rgba(255,255,255,0) 10px 20px)}
+.card-body{display:flex;flex-direction:column;gap:3px;min-width:0}
+.card-name{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px}
+.badge.partner{background:linear-gradient(90deg,#6A1FB0,#9D4EDD);color:#fff}
+.badge.infl{background:#FFE9D6;color:#8A3B00}
+.ph.dark .badge.infl{background:#4A2A12;color:#FFD3AE}
+.badge.new{background:linear-gradient(90deg,#D62839,#FF6B6B,#D62839);background-size:160px 100%;color:#fff;animation:shimmer 1.6s linear infinite}
+.menu-btn{width:56px;flex:none;display:flex !important;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:14px;background:var(--chip) !important;color:var(--acc) !important;font-size:10px;font-weight:700}
+.saved-mark{color:var(--red)}
+.saved-mark svg{fill:currentColor}
+/* nav */
+.nav{position:absolute;left:0;right:0;bottom:0;height:84px;background:var(--navbg);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:0 0 14px;z-index:15}
+.nb{position:relative;display:flex !important;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:600;color:var(--muted) !important}
+.nb.on{color:var(--acc) !important}
+.nb.on svg{animation:bounce .45s ease}
+.nb-home{width:58px;height:58px;border-radius:50%;margin-top:-26px;background:linear-gradient(145deg,#9D4EDD,#5A189A);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 22px rgba(90,24,154,.45);border:4px solid var(--bg);transition:transform .25s}
+.nb.on .nb-home{transform:scale(1.07)}
+.nb-dot{position:absolute;top:8px;right:22px;width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px var(--bg)}
+.nav-ind{position:absolute;bottom:12px;width:6px;height:6px;border-radius:50%;background:var(--acc);transition:left .35s cubic-bezier(.3,1.4,.5,1)}
+.me{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#9D4EDD,#D62839);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+/* layers */
+.layer{position:absolute;inset:0;background:var(--bg);overflow-y:auto;scrollbar-width:none;z-index:20;animation:pageIn .4s cubic-bezier(.2,.8,.2,1) both;padding-bottom:40px}
+.back{position:absolute;top:18px;left:16px;z-index:3;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.92) !important;color:#1C0F2E !important;display:flex !important;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.hero{position:relative;height:270px;overflow:hidden}
+.hero-in{position:absolute;inset:0;animation:zoomOut 6s ease-out both}
+.act{display:flex !important;align-items:center;gap:8px;height:46px;padding:0 16px;border-radius:15px;font-size:13px;font-weight:600}
+.act.pin{background:#FDE3E6 !important;color:#B3182A !important}
+.ph.dark .act.pin{background:#4A1520 !important;color:#FFB3BD !important}
+.act.pin svg{animation:bounce 1.6s ease 1s 2}
+.act.menu{background:var(--chip) !important;color:var(--acc) !important}
+.act.save{margin-left:auto;width:46px;padding:0;justify-content:center;background:var(--chip) !important;color:var(--acc) !important}
+.act.save.on{background:#FDE3E6 !important;color:#D62839 !important}
+.act.save.on svg{fill:currentColor;animation:bounce .4s ease}
+.dd-h{display:flex !important;align-items:center;gap:10px;width:100%;padding:16px;border-radius:18px;background:var(--surface) !important;border:1px solid var(--line) !important}
+.dd-h.open{border-radius:18px 18px 0 0}
+.cnt{min-width:24px;height:22px;padding:0 7px;border-radius:11px;background:var(--chip);color:var(--acc);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.chev{margin-left:auto;transition:transform .3s}
+.chev.open{transform:rotate(180deg)}
+.dd{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.2,.8,.2,1)}
+.dd.open{grid-template-rows:1fr}
+.dd-in{overflow:hidden}
+.dd-body{background:var(--surface);border:1px solid var(--line);border-top:0;border-radius:0 0 18px 18px;padding:4px 14px 10px}
+.rec{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.rec:first-child{border-top:0}
+.av{width:46px;height:46px;flex:none;border-radius:50%;display:flex !important;align-items:center;justify-content:center;color:#fff !important;font-weight:700;font-size:18px}
+.reel{width:30px;height:30px;margin:6px auto 0;border-radius:10px;display:flex !important;align-items:center;justify-content:center;background:linear-gradient(135deg,#F58529,#DD2A7B,#8134AF) !important;color:#fff !important}
+.reel.yt{background:#E52D27 !important}
+.reel.tt{background:#111 !important}
+.dish{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:3px 0}
+.price{font-weight:700;color:var(--acc);white-space:nowrap}
+.offer{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+.src{flex:none;font-size:10px;font-weight:800;padding:4px 8px;border-radius:8px;letter-spacing:.3px}
+.src.esaad{background:#DFF3EA;color:#0B6B43}
+.src.fazaa{background:#E2ECFB;color:#1B4F9C}
+.src.spotted{background:linear-gradient(90deg,#6A1FB0,#9D4EDD);color:#fff}
+.ph.dark .src.esaad{background:#113D2A;color:#9FE3C2}
+.ph.dark .src.fazaa{background:#14284A;color:#AFCBF5}
+.sub{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);padding:12px 0 2px}
+/* sheets */
+.scrim{position:absolute;inset:0;background:rgba(15,5,30,.5);z-index:30;animation:fadeIn .25s both;display:block;width:100%}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:31;background:var(--bg);border-radius:28px 28px 0 0;padding:10px 20px 26px;animation:sheetUp .45s cubic-bezier(.2,.8,.2,1) both;max-height:92%;overflow-y:auto;scrollbar-width:none}
+.grab{width:42px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 14px}
+.x{width:44px;height:44px;border-radius:50%;background:var(--chip) !important;color:var(--text) !important;display:flex !important;align-items:center;justify-content:center}
+.pdf{background:#FFFDF8;color:#2B1D12;border-radius:6px;padding:26px 24px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-family:Georgia,serif}
+.pdf-row{display:flex;align-items:baseline;gap:8px;font-size:14px;padding:7px 0}
+.pdf-dots{flex:1;border-bottom:1.5px dotted #B9A58C;transform:translateY(-4px)}
+.range{width:100%;accent-color:#7B2CD6;height:28px}
+.tg{width:50px;height:30px;flex:none;border-radius:15px;background:var(--line) !important;position:relative;transition:background .25s}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.25);transition:transform .3s cubic-bezier(.3,1.4,.5,1)}
+.tg.on{background:#7B2CD6 !important}
+.tg.wa.on{background:#1F8F4E !important}
+.tg.on::after{transform:translateX(20px)}
+.row{display:flex;align-items:center;gap:12px}
+.tile{position:relative;display:flex !important;flex-direction:column;justify-content:space-between;height:150px;padding:16px;border-radius:22px;color:#fff !important;overflow:hidden;animation:pop .45s cubic-bezier(.3,1.4,.5,1) both}
+.minis{display:flex}
+.mini{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;border:2.5px solid rgba(255,255,255,.9);margin-right:-10px}
+/* map */
+.map{position:absolute;left:0;right:0;top:0;bottom:84px;overflow:hidden;background:var(--map-land)}
+.ml{fill:var(--map-land)}.mw{fill:var(--map-water)}.mp{fill:var(--map-park)}
+.mr{stroke:var(--map-road);fill:none;stroke-linecap:round}
+.mm{stroke:var(--map-minor);fill:none}
+.radius{position:absolute;left:35px;top:220px;width:320px;height:320px;border-radius:50%;border:2px dashed rgba(160,97,240,.8);background:rgba(160,97,240,.10)}
+.me-dot{position:absolute;left:186px;top:371px;width:18px;height:18px;border-radius:50%;background:#2F80ED;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.me-ping{position:absolute;left:186px;top:371px;width:18px;height:18px;border-radius:50%;background:#2F80ED;animation:ping 1.8s ease-out infinite}
+.mpin{position:absolute;width:44px;height:48px;margin-left:-22px;margin-top:-44px;display:flex !important;align-items:flex-end;justify-content:center;animation:pinPop .5s cubic-bezier(.3,1.4,.5,1) both}
+.bm{width:22px;height:30px;background:linear-gradient(90deg,#FF6B6B,#D62839 55%,#9E1222);clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%);display:flex;justify-content:center;padding-top:6px;filter:drop-shadow(0 3px 3px rgba(0,0,0,.3))}
+.bm i{display:block;width:7px;height:7px;border-radius:50%;background:#fff}
+.mpin.sel .bm,.mpin.sel svg{transform:scale(1.3);transform-origin:bottom center}
+.map-card{position:absolute;left:14px;right:14px;bottom:98px;z-index:5;background:var(--surface);border-radius:22px;padding:12px;box-shadow:0 14px 34px rgba(20,0,50,.3);animation:up .35s cubic-bezier(.2,.8,.2,1) both}
+.legend{display:flex;gap:12px;font-size:11px;font-weight:600;color:var(--muted);align-items:center}
+/* new + profile */
+.oc{width:250px;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow);animation:up .5s both}
+.oc-top{height:88px;position:relative;display:flex;align-items:flex-end;padding:12px}
+.ic{width:120px;display:flex !important;flex-direction:column;align-items:center;gap:8px;text-align:center !important;padding:14px 8px;border-radius:20px;background:var(--surface) !important;border:1px solid var(--line) !important}
+.save-card{position:relative;border-radius:24px;padding:20px;color:#fff;background:radial-gradient(120% 120% at 0% 0%,#9D4EDD,#5A189A 60%,#3C096C);overflow:hidden;box-shadow:0 14px 30px rgba(90,24,154,.35)}
+.coin{position:absolute;width:12px;height:12px;border-radius:50%;background:#FFD166;opacity:0;animation:coin 1.4s ease-out both}
+.lc{width:270px;border-radius:22px;padding:16px;color:#fff;box-shadow:var(--shadow)}
+.stamps{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:12px 0}
+.stp{aspect-ratio:1;border-radius:50%;border:2px dashed rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center}
+.stp.on{border:0;background:#fff;color:#5A189A;animation:stamp .45s cubic-bezier(.3,1.4,.5,1) both}
+.stp.next{border-style:solid;border-color:#FFD166;animation:glowY 1.4s ease-in-out infinite}
+.notif{position:absolute;top:12px;left:10px;right:10px;z-index:40;display:flex !important;gap:12px;align-items:center;padding:12px 14px;border-radius:22px;background:rgba(255,255,255,.96) !important;color:#1C0F2E !important;box-shadow:0 14px 34px rgba(20,0,50,.3);animation:notif .55s cubic-bezier(.3,1.3,.5,1) both}
+.ph.dark .notif{background:rgba(42,26,68,.97) !important;color:#F4EEFC !important}
+.toast{position:absolute;left:50%;bottom:104px;transform:translateX(-50%);z-index:45;padding:12px 18px;border-radius:16px;background:#1C0F2E;color:#fff;font-size:13px;font-weight:500;white-space:nowrap;box-shadow:0 10px 26px rgba(0,0,0,.3);animation:up .3s both}
+.appic{width:42px;height:42px;flex:none;border-radius:12px;background:linear-gradient(145deg,#9D4EDD,#5A189A);display:flex;align-items:flex-start;justify-content:center}
+.appic i{display:block;width:14px;height:22px;background:#E5383B;clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%)}
+.ptile{display:flex !important;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:14px;background:var(--surface) !important;border:1px solid var(--line) !important;font-size:13px;font-weight:600;animation:pop .4s both}
+.top7{width:236px;border-radius:22px;background:var(--surface);border:1px solid var(--line);overflow:hidden;box-shadow:var(--shadow);animation:fanIn .6s cubic-bezier(.2,.8,.2,1) both}
+.rank{position:absolute;left:12px;bottom:-6px;font-size:54px;font-weight:800;color:#fff;line-height:1;text-shadow:0 4px 14px rgba(0,0,0,.35)}
+.prof-ring{position:relative;width:96px;height:96px;flex:none;border-radius:50%;padding:4px;background:conic-gradient(#FF4D6D,#C77DFF,#7B2CBF,#FF9E00,#FF4D6D);animation:pop .6s cubic-bezier(.3,1.4,.5,1) both}
+.prof-ring>span{width:100%;height:100%;border-radius:50%;border:3px solid var(--bg);display:flex;align-items:center;justify-content:center;color:#fff;font-size:34px;font-weight:800}
+.caret{display:inline-block;width:2px;height:16px;background:var(--acc);margin-left:1px;vertical-align:middle;animation:caret 1s steps(1) infinite}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes roadDraw{from{stroke-dashoffset:900}to{stroke-dashoffset:0}}
+@keyframes unroll{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes rollDown{0%{transform:translateY(-8px);opacity:1}88%{opacity:1}100%{transform:translateY(420px);opacity:0}}
+@keyframes sway{0%{transform:rotate(0) skewX(0)}18%{transform:rotate(2.4deg) skewX(-1.8deg)}42%{transform:rotate(-1.7deg) skewX(1.2deg)}66%{transform:rotate(.9deg) skewX(-.4deg)}84%{transform:rotate(-.3deg)}100%{transform:rotate(0) skewX(0)}}
+@keyframes folds{0%{opacity:.7;background-position:0 0}100%{opacity:0;background-position:0 90px}}
+@keyframes pinPop{0%{transform:translateY(-30px) scale(.2);opacity:0}60%{transform:translateY(4px) scale(1.15);opacity:1}100%{transform:none;opacity:1}}
+@keyframes rise{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(255,77,109,.6)}50%{box-shadow:0 0 16px 5px rgba(255,77,109,.4)}}
+@keyframes glowY{0%,100%{box-shadow:0 0 0 0 rgba(255,209,102,.7)}50%{box-shadow:0 0 12px 3px rgba(255,209,102,.6)}}
+@keyframes pop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.07);opacity:1}100%{transform:none;opacity:1}}
+@keyframes up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@keyframes fanIn{from{transform:translateX(120px) rotate(6deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes pageIn{from{transform:translateX(100%)}to{transform:none}}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes zoomOut{from{transform:scale(1.16)}to{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+@keyframes shimmer{from{background-position:-80px 0}to{background-position:80px 0}}
+@keyframes stamp{0%{transform:scale(1.9) rotate(-25deg);opacity:0}70%{transform:scale(.9) rotate(4deg);opacity:1}100%{transform:none;opacity:1}}
+@keyframes notif{from{transform:translateY(-140%)}to{transform:none}}
+@keyframes ping{0%{transform:scale(1);opacity:.55}100%{transform:scale(3.4);opacity:0}}
+@keyframes bounce{0%{transform:scale(1)}40%{transform:scale(1.28)}70%{transform:scale(.9)}100%{transform:scale(1)}}
+@keyframes caret{50%{opacity:0}}
+@keyframes coin{0%{opacity:0;transform:translate(0,0) scale(.4)}20%{opacity:1}100%{opacity:0;transform:translate(var(--cx),var(--cy)) scale(1)}}
+</style>
+</helmet>
+<div class="wrap" style="width: 470px; height: 980px; display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 18px 0 0; font-family: 'Poppins', system-ui, sans-serif; background: transparent;">
+  <div style="display: flex; gap: 8px; align-items: center;">
+    <button class="ctl {{lightOn}}" onClick="{{setLight}}" aria-pressed="{{isLight}}">
+      <svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      Light
+    </button>
+    <button class="ctl {{darkOn}}" onClick="{{setDark}}" aria-pressed="{{dark}}">
+      <svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>
+      Dark
+    </button>
+    <button class="ctl" onClick="{{replay}}">
+      <svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>
+      Replay intro
+    </button>
+    <button class="ctl" onClick="{{restart}}">Restart</button>
+  </div>
+
+  <div style="padding: 12px; border-radius: 56px; background: linear-gradient(145deg, #2B2238, #0E0A14); box-shadow: 0 30px 60px rgba(40, 10, 80, 0.35), inset 0 0 0 2px #3D3350;">
+    <div class="ph {{themeClass}}">
+
+      <!-- ============ SPLASH ============ -->
+      <sc-if value="{{isSplash}}" hint-placeholder-val="{{true}}">
+        <button class="splash" onClick="{{skipSplash}}" aria-label="Spotted intro, tap to skip">
+          <svg style="position: absolute; inset: 0;" width="390" height="844" viewBox="0 0 390 844" aria-hidden="true">
+            <path class="road-base" d="M-30 600 C 70 560, 120 500, 200 495 S 330 420, 420 380" stroke="#C59BF2" stroke-width="92" fill="none" stroke-linecap="round" opacity="0.55"></path>
+            <path class="road-base" d="M-30 600 C 70 560, 120 500, 200 495 S 330 420, 420 380" stroke="#2A0C4A" stroke-width="80" fill="none" stroke-linecap="round"></path>
+            <path class="road-base" d="M-30 600 C 70 560, 120 500, 200 495 S 330 420, 420 380" stroke="#3B1466" stroke-width="56" fill="none" stroke-linecap="round" opacity="0.6"></path>
+            <path class="road-dash" d="M-30 600 C 70 560, 120 500, 200 495 S 330 420, 420 380" stroke="#FFFFFF" stroke-width="4" fill="none" stroke-dasharray="16 14" opacity="0.9"></path>
+          </svg>
+          <span class="rod"></span>
+          <span class="bn-sway">
+            <span class="bn-unroll">
+              <svg width="120" height="440" viewBox="0 0 120 440" style="display: block;" aria-hidden="true">
+                <defs>
+                  <linearGradient id="bnG" x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0" stop-color="#FF6B6B"></stop>
+                    <stop offset="0.45" stop-color="#E5383B"></stop>
+                    <stop offset="1" stop-color="#9E1222"></stop>
+                  </linearGradient>
+                </defs>
+                <path d="M0 0H120V440L60 392L0 440Z" fill="url(#bnG)"></path>
+                <rect x="10" y="0" width="5" height="400" fill="#FFFFFF" opacity="0.28"></rect>
+                <rect x="104" y="0" width="16" height="420" fill="#000000" opacity="0.12"></rect>
+              </svg>
+              <span class="bn-folds"></span>
+            </span>
+            <span class="bn-roll"></span>
+            <span class="bn-pin">
+              <svg width="54" height="66" viewBox="0 0 54 66" aria-hidden="true">
+                <path d="M27 64C27 64 4 40 4 25A23 23 0 0 1 50 25C50 40 27 64 27 64Z" fill="#FFFFFF"></path>
+                <path d="M27 64C27 64 4 40 4 25A23 23 0 0 1 27 2Z" fill="#000000" opacity="0.06"></path>
+                <circle cx="27" cy="25" r="9" fill="#C1121F"></circle>
+              </svg>
+            </span>
+          </span>
+          <span class="word">Spotted</span>
+          <span class="tagline">Saved it on a reel. Find it on the road.</span>
+          <span class="skip">Tap to skip</span>
+        </button>
+      </sc-if>
+
+      <!-- ============ SIGN IN ============ -->
+      <sc-if value="{{isAuth}}" hint-placeholder-val="{{false}}">
+        <div style="position: absolute; inset: 0;">
+          <div class="auth-top">
+            <svg style="position: absolute; inset: 0;" width="390" height="300" viewBox="0 0 390 300" aria-hidden="true">
+              <path class="road-base" d="M-20 250 C 80 230, 140 200, 210 205 S 330 160, 410 140" stroke="#2A0C4A" stroke-width="46" fill="none" stroke-linecap="round"></path>
+              <path class="road-dash" d="M-20 250 C 80 230, 140 200, 210 205 S 330 160, 410 140" stroke="#FFFFFF" stroke-width="3" fill="none" stroke-dasharray="12 10"></path>
+            </svg>
+            <span class="rod" style="left: 160px; width: 70px; height: 8px;"></span>
+            <svg style="position: absolute; left: 172px; top: 4px; animation: pop .6s cubic-bezier(.3,1.4,.5,1) both;" width="46" height="150" viewBox="0 0 46 150" aria-hidden="true">
+              <path d="M0 0H46V150L23 132L0 150Z" fill="#E5383B"></path>
+              <path d="M23 92C23 92 12 80 12 72A11 11 0 0 1 34 72C34 80 23 92 23 92Z" fill="#FFFFFF"></path>
+              <circle cx="23" cy="72" r="4" fill="#C1121F"></circle>
+            </svg>
+          </div>
+          <div class="auth-sheet">
+            <sc-if value="{{isSignin}}" hint-placeholder-val="{{true}}">
+              <div style="display: flex; flex-direction: column; gap: 18px;">
+                <div>
+                  <h1 class="h1">Welcome to Spotted</h1>
+                  <p class="muted" style="margin: 6px 0 0; font-size: 14px;">Sign in with your phone number to start saving places.</p>
+                </div>
+                <div>
+                  <label class="lbl" for="ph-in">Phone number</label>
+                  <div class="field">
+                    <span style="display: flex; align-items: center; gap: 6px; font-weight: 600; padding-right: 10px; border-right: 1.5px solid var(--line); height: 28px;">
+                      <span style="width: 22px; height: 15px; border-radius: 3px; overflow: hidden; display: grid; grid-template-columns: 6px 1fr;">
+                        <span style="background: #E31B23;"></span>
+                        <span style="display: grid; grid-template-rows: repeat(3, 1fr);"><span style="background: #00843D;"></span><span style="background: #FFFFFF;"></span><span style="background: #111111;"></span></span>
+                      </span>
+                      +971
+                      <svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                    </span>
+                    <input id="ph-in" type="tel" inputmode="numeric" placeholder="50 123 4567" value="{{phone}}" onChange="{{onPhone}}" autocomplete="tel">
+                  </div>
+                  <p class="muted" style="margin: 8px 0 0; font-size: 12px;">We'll text you a 6-digit code to confirm it's you.</p>
+                </div>
+                <button class="cta" onClick="{{sendCode}}">Send code</button>
+                <p class="muted" style="margin: 0; font-size: 11px; text-align: center;">By continuing you agree to Spotted's Terms and Privacy Policy.</p>
+              </div>
+            </sc-if>
+            <sc-if value="{{isOtp}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; flex-direction: column; gap: 18px;">
+                <button onClick="{{backToPhone}}" style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--acc); height: 32px;">
+                  <svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"></path></svg>
+                  Change number
+                </button>
+                <div>
+                  <h1 class="h1">Enter the code</h1>
+                  <p class="muted" style="margin: 6px 0 0; font-size: 14px;">Sent by SMS to {{phoneDisplay}}</p>
+                </div>
+                <div class="otp {{otpErrClass}}">
+                  <sc-for list="{{otpBoxes}}" as="b" hint-placeholder-count="6">
+                    <span class="box {{b.cls}}">{{b.ch}}</span>
+                  </sc-for>
+                  <input type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="6-digit code" value="{{otp}}" onChange="{{onOtp}}" autofocus>
+                </div>
+                <sc-if value="{{otpErr}}" hint-placeholder-val="{{false}}">
+                  <p style="margin: -6px 0 0; font-size: 13px; color: var(--red); font-weight: 600;">That code didn't match. Please try again.</p>
+                </sc-if>
+                <div class="row" style="justify-content: space-between; font-size: 13px;">
+                  <span class="muted">Resend code in 0:28</span>
+                  <button onClick="{{fillDemo}}" style="font-weight: 600; color: var(--acc); height: 36px;">Use demo code 123456</button>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{isDetails}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div>
+                  <h1 class="h1">Almost there</h1>
+                  <p class="muted" style="margin: 6px 0 0; font-size: 14px;">Tell us your name and email.</p>
+                </div>
+                <div>
+                  <label class="lbl" for="nm-in">Name</label>
+                  <div class="field"><input id="nm-in" type="text" placeholder="Your name" value="{{name}}" onChange="{{onName}}" autocomplete="name"></div>
+                </div>
+                <div>
+                  <label class="lbl" for="em-in">Email</label>
+                  <div class="field"><input id="em-in" type="email" placeholder="you@example.com" value="{{email}}" onChange="{{onEmail}}" autocomplete="email"></div>
+                </div>
+                <button class="cta" onClick="{{enterApp}}">Start exploring</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ APP ============ -->
+      <sc-if value="{{isApp}}" hint-placeholder-val="{{false}}">
+        <div style="position: absolute; inset: 0;">
+
+          <!-- HOME -->
+          <sc-if value="{{tabHome}}" hint-placeholder-val="{{true}}">
+            <div class="scroll">
+              <div class="loc fade-up">
+                <span class="loc-ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg></span>
+                <span style="display: flex; flex-direction: column;">
+                  <span class="muted" style="font-size: 11px; font-weight: 500;">You're in</span>
+                  <span style="font-size: 16px; font-weight: 700;">Khalifa City, Abu Dhabi</span>
+                </span>
+              </div>
+
+              <div class="sec row" style="justify-content: space-between; margin-top: 10px;">
+                <h2 class="h2">Saved places near you</h2>
+                <span class="chip" style="height: 26px;">Within 15 km</span>
+              </div>
+              <div class="hs" style="margin-top: 12px;">
+                <sc-for list="{{stories}}" as="s" hint-placeholder-count="5">
+                  <button class="story" style="animation-delay: {{s.delay}};" onClick="{{s.open}}" aria-label="{{s.aria}}">
+                    <span class="ring {{s.ring}}"></span>
+                    <span class="logo" style="background: {{s.bg}};">{{s.mono}}</span>
+                    <span class="story-lbl {{s.ring}}">{{s.distLabel}}</span>
+                  </button>
+                </sc-for>
+              </div>
+
+              <div class="sec" style="margin-top: 16px;">
+                <div class="search">
+                  <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--muted);"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+                  <sc-if value="{{showTyped}}" hint-placeholder-val="{{true}}">
+                    <span aria-hidden="true" style="position: absolute; left: 46px; top: 15px; pointer-events: none; font-size: 15px; color: var(--muted);">Try '{{typed}}'<span class="caret"></span></span>
+                  </sc-if>
+                  <input type="search" aria-label="Search places, food, shops or influencers" value="{{query}}" onChange="{{onQuery}}">
+                  <button class="fbtn" onClick="{{openFilters}}" aria-label="Filters">
+                    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg>
+                    <sc-if value="{{hasFilters}}" hint-placeholder-val="{{false}}"><span class="fcount">{{filterCount}}</span></sc-if>
+                  </button>
+                </div>
+                <sc-if value="{{hasFilters}}" hint-placeholder-val="{{false}}">
+                  <div class="chips" style="margin-top: 10px;">
+                    <sc-for list="{{filterChips}}" as="fc" hint-placeholder-count="2">
+                      <button class="chip" onClick="{{fc.clear}}" aria-label="Remove filter {{fc.label}}">{{fc.label}}<svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+
+              <sc-if value="{{isSearching}}" hint-placeholder-val="{{false}}">
+                <div class="sec" style="margin-top: 18px; display: flex; flex-direction: column; gap: 12px;">
+                  <sc-if value="{{hasInflResults}}" hint-placeholder-val="{{false}}">
+                    <h2 class="h2">Influencers</h2>
+                    <sc-for list="{{inflResults}}" as="ir" hint-placeholder-count="1">
+                      <button class="card" style="display: flex; align-items: center; gap: 12px; width: 100%;" onClick="{{ir.open}}">
+                        <span class="av" style="background: {{ir.bg}};">{{ir.initial}}</span>
+                        <span style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0;">
+                          <span style="font-weight: 700; font-size: 15px;">@{{ir.handle}}</span>
+                          <span class="meta">{{ir.platformText}} · {{ir.followers}} followers</span>
+                        </span>
+                        <span class="badge infl">{{ir.pickCount}} picks</span>
+                      </button>
+                    </sc-for>
+                  </sc-if>
+                  <h2 class="h2">{{resultTitle}}</h2>
+                  <sc-for list="{{results}}" as="c" hint-placeholder-count="3">
+                    <div class="card {{c.cardClass}}" style="animation-delay: {{c.delay}};">
+                      <button class="card-main" onClick="{{c.open}}">
+                        <span class="thumb" style="background: {{c.bg}};"><span class="thumb-awn"></span><span class="thumb-mono">{{c.mono}}</span></span>
+                        <span class="card-body">
+                          <span class="row" style="gap: 6px;"><span class="card-name">{{c.name}}</span><sc-if value="{{c.isSaved}}" hint-placeholder-val="{{false}}"><span class="saved-mark"><svg class="i xs" viewBox="0 0 24 24" aria-label="Saved" role="img"><path d="M6 3h12v18l-6-4-6 4z"></path></svg></span></sc-if></span>
+                          <span class="meta">{{c.cat}} · {{c.price}} pp</span>
+                          <span class="meta"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path></svg>{{c.distLabel}}</span>
+                          <span class="badges">
+                            <sc-if value="{{c.partner}}" hint-placeholder-val="{{false}}"><span class="badge partner">Spotted Partner</span></sc-if>
+                            <sc-if value="{{c.hasRecs}}" hint-placeholder-val="{{false}}"><span class="badge infl"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg>Spotted by {{c.recN}}</span></sc-if>
+                          </span>
+                        </span>
+                      </button>
+                      <button class="menu-btn" onClick="{{c.openMenu}}" aria-label="Open menu for {{c.name}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path><path d="M10 13h6M10 17h6"></path></svg>Menu</button>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{noResults}}" hint-placeholder-val="{{false}}">
+                    <p class="muted" style="text-align: center; font-size: 14px; padding: 20px 0;">Nothing nearby matches that yet. Try another word or loosen your filters.</p>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{notSearching}}" hint-placeholder-val="{{true}}">
+                <div class="sec" style="margin-top: 22px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px;">
+                  <div>
+                    <h2 class="h2">Explore nearby</h2>
+                    <p class="muted" style="margin: 2px 0 0; font-size: 12px;">Every place within 15 km, Spotted Partners first</p>
+                  </div>
+                  <sc-for list="{{feed}}" as="c" hint-placeholder-count="4">
+                    <div class="card {{c.cardClass}}" style="animation-delay: {{c.delay}};">
+                      <button class="card-main" onClick="{{c.open}}">
+                        <span class="thumb" style="background: {{c.bg}};"><span class="thumb-awn"></span><span class="thumb-mono">{{c.mono}}</span></span>
+                        <span class="card-body">
+                          <span class="row" style="gap: 6px;"><span class="card-name">{{c.name}}</span><sc-if value="{{c.isSaved}}" hint-placeholder-val="{{false}}"><span class="saved-mark"><svg class="i xs" viewBox="0 0 24 24" aria-label="Saved" role="img"><path d="M6 3h12v18l-6-4-6 4z"></path></svg></span></sc-if></span>
+                          <span class="meta">{{c.cat}} · {{c.price}} pp</span>
+                          <span class="meta"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path></svg>{{c.distLabel}}</span>
+                          <span class="badges">
+                            <sc-if value="{{c.partner}}" hint-placeholder-val="{{false}}"><span class="badge partner">Spotted Partner</span></sc-if>
+                            <sc-if value="{{c.hasRecs}}" hint-placeholder-val="{{false}}"><span class="badge infl"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg>Spotted by {{c.recN}}</span></sc-if>
+                          </span>
+                        </span>
+                      </button>
+                      <button class="menu-btn" onClick="{{c.openMenu}}" aria-label="Open menu for {{c.name}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path><path d="M10 13h6M10 17h6"></path></svg>Menu</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- SAVED -->
+          <sc-if value="{{tabSaved}}" hint-placeholder-val="{{false}}">
+            <div class="scroll">
+              <div class="sec fade-up" style="padding-top: 24px;">
+                <h1 class="h1">Saved</h1>
+                <p class="muted" style="margin: 2px 0 14px; font-size: 13px;">{{savedTotal}} places you've spotted</p>
+                <div class="search">
+                  <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--muted);"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+                  <input type="search" placeholder="Search your saved places…" aria-label="Search your saved places" value="{{savedQuery}}" onChange="{{onSavedQuery}}">
+                  <button class="fbtn" onClick="{{openFilters}}" aria-label="Filters">
+                    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg>
+                    <sc-if value="{{hasFilters}}" hint-placeholder-val="{{false}}"><span class="fcount">{{filterCount}}</span></sc-if>
+                  </button>
+                </div>
+                <sc-if value="{{hasFilters}}" hint-placeholder-val="{{false}}">
+                  <div class="chips" style="margin-top: 10px;">
+                    <sc-for list="{{filterChips}}" as="fc" hint-placeholder-count="2">
+                      <button class="chip" onClick="{{fc.clear}}" aria-label="Remove filter {{fc.label}}">{{fc.label}}<svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+
+              <sc-if value="{{showFolders}}" hint-placeholder-val="{{true}}">
+                <div class="sec" style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding-bottom: 24px;">
+                  <sc-for list="{{folders}}" as="fd" hint-placeholder-count="4">
+                    <button class="tile" style="background: {{fd.bg}}; animation-delay: {{fd.delay}};" onClick="{{fd.open}}">
+                      <span class="minis">
+                        <sc-for list="{{fd.minis}}" as="mi" hint-placeholder-count="3"><span class="mini" style="background: {{mi.bg}};">{{mi.mono}}</span></sc-for>
+                      </span>
+                      <span style="display: flex; flex-direction: column;">
+                        <span style="font-size: 18px; font-weight: 700;">{{fd.name}}</span>
+                        <span style="font-size: 12px; opacity: .9;">{{fd.countLabel}}</span>
+                      </span>
+                    </button>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{showSavedList}}" hint-placeholder-val="{{false}}">
+                <div class="sec" style="margin-top: 18px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px;">
+                  <div class="row" style="justify-content: space-between;">
+                    <sc-if value="{{inFolder}}" hint-placeholder-val="{{false}}">
+                      <button onClick="{{closeFolder}}" class="row" style="gap: 4px; font-weight: 700; font-size: 17px; height: 40px;">
+                        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"></path></svg>{{folderName}}
+                      </button>
+                    </sc-if>
+                    <sc-if value="{{notInFolder}}" hint-placeholder-val="{{true}}"><h2 class="h2">Results</h2></sc-if>
+                    <span class="muted" style="font-size: 12px;">{{savedListCount}}</span>
+                  </div>
+                  <sc-for list="{{savedList}}" as="c" hint-placeholder-count="3">
+                    <div class="card {{c.cardClass}}" style="animation-delay: {{c.delay}};">
+                      <button class="card-main" onClick="{{c.open}}">
+                        <span class="thumb" style="background: {{c.bg}};"><span class="thumb-awn"></span><span class="thumb-mono">{{c.mono}}</span></span>
+                        <span class="card-body">
+                          <span class="card-name">{{c.name}}</span>
+                          <span class="meta">{{c.cat}} · {{c.price}} pp</span>
+                          <span class="meta"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path></svg>{{c.distLabel}}</span>
+                          <span class="badges">
+                            <sc-if value="{{c.partner}}" hint-placeholder-val="{{false}}"><span class="badge partner">Spotted Partner</span></sc-if>
+                            <sc-if value="{{c.hasRecs}}" hint-placeholder-val="{{false}}"><span class="badge infl">Spotted by {{c.recN}}</span></sc-if>
+                          </span>
+                        </span>
+                      </button>
+                      <button class="menu-btn" onClick="{{c.openMenu}}" aria-label="Open menu for {{c.name}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path><path d="M10 13h6M10 17h6"></path></svg>Menu</button>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{savedEmpty}}" hint-placeholder-val="{{false}}">
+                    <p class="muted" style="text-align: center; font-size: 14px; padding: 20px 0;">No saved places match. Try another word or clear a filter.</p>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- MAP -->
+          <sc-if value="{{tabMap}}" hint-placeholder-val="{{false}}">
+            <div class="map">
+              <svg style="position: absolute; inset: 0;" width="390" height="760" viewBox="0 0 390 760" aria-hidden="true">
+                <rect class="ml" x="0" y="0" width="390" height="760"></rect>
+                <path class="mw" d="M0 610 C 60 590, 120 640, 170 690 S 260 760, 300 760 L 0 760 Z"></path>
+                <rect class="mp" x="250" y="250" width="90" height="70" rx="14"></rect>
+                <rect class="mp" x="40" y="300" width="70" height="90" rx="14"></rect>
+                <circle class="mp" cx="300" cy="560" r="36"></circle>
+                <path class="mm" stroke-width="6" d="M0 120H390M0 200H390M0 470H390M0 540H390M70 0V760M150 0V760M240 0V760M320 0V760"></path>
+                <path class="mr" stroke-width="16" d="M-10 420 C 90 400, 150 380, 200 380 S 320 330, 400 300"></path>
+                <path class="mr" stroke-width="14" d="M180 -10 C 190 120, 175 260, 195 380 S 220 640, 210 770"></path>
+                <path class="mr" stroke-width="10" d="M-10 170 C 120 190, 260 140, 400 90"></path>
+                <path class="mr" stroke-width="10" d="M30 770 C 90 600, 260 560, 400 620"></path>
+              </svg>
+              <span class="radius"></span>
+              <span class="me-ping"></span>
+              <span class="me-dot"></span>
+              <sc-for list="{{pins}}" as="pn" hint-placeholder-count="6">
+                <button class="mpin {{pn.selClass}}" style="left: {{pn.x}}px; top: {{pn.y}}px; animation-delay: {{pn.delay}};" onClick="{{pn.pick}}" aria-label="{{pn.aria}}">
+                  <sc-if value="{{pn.isSaved}}" hint-placeholder-val="{{true}}"><span class="bm"><i></i></span></sc-if>
+                  <sc-if value="{{pn.isPartnerOnly}}" hint-placeholder-val="{{false}}">
+                    <svg width="28" height="36" viewBox="0 0 28 36" style="filter: drop-shadow(0 3px 3px rgba(0,0,0,.3));" aria-hidden="true"><path d="M14 35S1 21 1 13A13 13 0 0 1 27 13C27 21 14 35 14 35Z" fill="#7B2CD6"></path><circle cx="14" cy="13" r="5" fill="#FFFFFF"></circle></svg>
+                  </sc-if>
+                </button>
+              </sc-for>
+              <div style="position: absolute; top: 18px; left: 14px; right: 14px; padding: 12px 14px; border-radius: 18px; background: var(--surface); box-shadow: var(--shadow); animation: up .4s both;">
+                <div class="row" style="justify-content: space-between;">
+                  <span style="font-weight: 700; font-size: 15px;">Map</span>
+                  <span class="chip" style="height: 26px;">15 km around you</span>
+                </div>
+                <div class="legend" style="margin-top: 8px;">
+                  <span class="row" style="gap: 6px;"><span class="bm" style="width: 12px; height: 16px; padding: 0;"></span>Saved</span>
+                  <span class="row" style="gap: 6px;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #7B2CD6;"></span>Spotted Partner</span>
+                  <span class="row" style="gap: 6px;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #2F80ED; border: 2px solid #fff;"></span>You</span>
+                </div>
+              </div>
+              <sc-if value="{{hasMapSel}}" hint-placeholder-val="{{false}}">
+                <div class="map-card">
+                  <div class="row">
+                    <span class="thumb" style="width: 60px; height: 60px; background: {{mapSel.bg}};"><span class="thumb-awn"></span><span class="thumb-mono" style="font-size: 18px;">{{mapSel.mono}}</span></span>
+                    <span style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0;">
+                      <span class="card-name">{{mapSel.name}}</span>
+                      <span class="meta">{{mapSel.cat}} · {{mapSel.price}} pp</span>
+                      <span class="meta">{{mapSel.distLabel}}</span>
+                    </span>
+                    <button class="act menu" style="background: var(--btn) !important; color: #fff !important;" onClick="{{mapSel.open}}">Open</button>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- NEW IN -->
+          <sc-if value="{{tabNew}}" hint-placeholder-val="{{false}}">
+            <div class="scroll">
+              <div class="sec fade-up" style="padding-top: 24px;">
+                <h1 class="h1">New in</h1>
+                <p class="muted" style="margin: 2px 0 0; font-size: 13px;">Fresh within 15 km of you</p>
+              </div>
+
+              <div class="sec row" style="margin-top: 22px; gap: 8px;">
+                <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--red);"><path d="M3 12V4h8l10 10-8 8z"></path><circle cx="7.5" cy="8.5" r="1.5"></circle></svg>
+                <h2 class="h2">New offers</h2>
+              </div>
+              <div class="hs" style="margin-top: 10px;">
+                <sc-for list="{{newOffers}}" as="o" hint-placeholder-count="2">
+                  <button class="oc" style="animation-delay: {{o.delay}};" onClick="{{o.open}}">
+                    <span class="oc-top" style="background: {{o.bg}};">
+                      <span class="thumb-awn" style="height: 16px;"></span>
+                      <span class="badge new" style="position: absolute; top: 24px; right: 12px;">NEW</span>
+                      <span class="src {{o.srcClass}}" style="position: relative;">{{o.src}}</span>
+                    </span>
+                    <span style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px 14px;">
+                      <span style="font-weight: 700; font-size: 15px;">{{o.text}}</span>
+                      <span class="meta">{{o.name}} · {{o.distLabel}}</span>
+                      <span style="font-size: 12px; font-weight: 600; color: var(--red);">{{o.ends}}</span>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+
+              <div class="sec row" style="margin-top: 22px; gap: 8px;">
+                <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--acc);"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg>
+                <h2 class="h2">New influencers on Spotted</h2>
+              </div>
+              <div class="hs" style="margin-top: 10px;">
+                <sc-for list="{{newInfl}}" as="ni" hint-placeholder-count="2">
+                  <button class="ic" style="animation: pop .5s cubic-bezier(.3,1.4,.5,1) both; animation-delay: {{ni.delay}};" onClick="{{ni.open}}">
+                    <span class="av" style="width: 62px; height: 62px; font-size: 24px; background: {{ni.bg}};">{{ni.initial}}</span>
+                    <span style="font-size: 12px; font-weight: 700;">@{{ni.handle}}</span>
+                    <span class="badge new">JUST JOINED</span>
+                  </button>
+                </sc-for>
+              </div>
+
+              <div class="sec row" style="margin-top: 22px; gap: 8px;">
+                <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--acc);"><path d="M3 11 12 4l9 7"></path><path d="M5 10v10h14V10"></path></svg>
+                <h2 class="h2">New places on Spotted</h2>
+              </div>
+              <div class="sec" style="margin-top: 10px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px;">
+                <sc-for list="{{newPlaces}}" as="c" hint-placeholder-count="3">
+                  <div class="card partner" style="animation-delay: {{c.delay}};">
+                    <button class="card-main" onClick="{{c.open}}">
+                      <span class="thumb" style="background: {{c.bg}};"><span class="thumb-awn"></span><span class="thumb-mono">{{c.mono}}</span></span>
+                      <span class="card-body">
+                        <span class="card-name">{{c.name}}</span>
+                        <span class="meta">{{c.cat}} · {{c.price}} pp</span>
+                        <span class="meta">{{c.distLabel}}</span>
+                        <span class="badges"><span class="badge new">JUST JOINED</span><span class="badge partner">Spotted Partner</span></span>
+                      </span>
+                    </button>
+                    <button class="menu-btn" onClick="{{c.openMenu}}" aria-label="Open menu for {{c.name}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path><path d="M10 13h6M10 17h6"></path></svg>Menu</button>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- PROFILE -->
+          <sc-if value="{{tabProfile}}" hint-placeholder-val="{{false}}">
+            <div class="scroll">
+              <div class="sec fade-up" style="padding-top: 28px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px;">
+                <span class="prof-ring"><span style="background: linear-gradient(135deg, #9D4EDD, #D62839);">{{meInitial}}</span></span>
+                <span style="font-size: 21px; font-weight: 700; margin-top: 6px;">{{meName}}</span>
+                <span class="muted" style="font-size: 13px;">{{meEmail}}</span>
+                <span class="row" style="gap: 6px; font-size: 13px; font-weight: 600;">{{phoneDisplay}}<span style="display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: #1F8F4E; color: #fff; align-items: center; justify-content: center;"><svg class="i xs" viewBox="0 0 24 24" role="img" aria-label="Verified" style="stroke-width: 3;"><path d="m5 12 5 5 9-10"></path></svg></span></span>
+              </div>
+
+              <div class="sec" style="margin-top: 20px;">
+                <div class="save-card">
+                  <span class="coin" style="left: 70%; top: 40%; --cx: 40px; --cy: -60px; animation-delay: .9s;"></span>
+                  <span class="coin" style="left: 72%; top: 45%; --cx: 70px; --cy: -20px; animation-delay: 1s;"></span>
+                  <span class="coin" style="left: 68%; top: 42%; --cx: -20px; --cy: -70px; animation-delay: 1.1s;"></span>
+                  <span class="coin" style="left: 70%; top: 50%; --cx: 50px; --cy: 30px; animation-delay: 1.05s;"></span>
+                  <div style="font-size: 13px; opacity: .9;">You've saved with Spotted</div>
+                  <div style="font-size: 40px; font-weight: 800; letter-spacing: -1px; margin: 2px 0 12px;">AED {{savedCount}}</div>
+                  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+                    <sc-for list="{{savingsBreak}}" as="sb" hint-placeholder-count="3">
+                      <div style="padding: 10px; border-radius: 14px; background: rgba(255,255,255,.14);">
+                        <div style="font-size: 11px; opacity: .9;">{{sb.label}}</div>
+                        <div style="font-size: 15px; font-weight: 700;">AED {{sb.v}}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sec row" style="margin-top: 24px; justify-content: space-between;">
+                <h2 class="h2">My loyalty cards</h2>
+                <span class="muted" style="font-size: 12px;">Swipe</span>
+              </div>
+              <div class="hs" style="margin-top: 10px;">
+                <sc-for list="{{loyalty}}" as="lc" hint-placeholder-count="2">
+                  <button class="lc" style="background: {{lc.bg}};" onClick="{{lc.open}}">
+                    <span class="row" style="gap: 10px;">
+                      <span class="mini" style="margin: 0; width: 40px; height: 40px; background: rgba(255,255,255,.2);">{{lc.mono}}</span>
+                      <span style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 700; font-size: 15px;">{{lc.name}}</span>
+                        <span style="font-size: 12px; opacity: .9;">{{lc.stampsLabel}}</span>
+                      </span>
+                    </span>
+                    <span class="stamps">
+                      <sc-for list="{{lc.slots}}" as="st" hint-placeholder-count="6">
+                        <span class="stp {{st.cls}}" style="animation-delay: {{st.delay}};">
+                          <sc-if value="{{st.on}}" hint-placeholder-val="{{false}}"><svg width="14" height="18" viewBox="0 0 14 18" aria-hidden="true"><path d="M0 0H14V18L7 14L0 18Z" fill="#D62839"></path></svg></sc-if>
+                        </span>
+                      </sc-for>
+                    </span>
+                    <span class="row" style="justify-content: space-between; font-size: 12px;">
+                      <span>Now <b style="font-size: 16px;">{{lc.now}}% off</b></span>
+                      <span style="opacity: .9;">{{lc.nextLabel}}</span>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+
+              <div class="sec" style="margin-top: 24px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 28px;">
+                <h2 class="h2">Notifications</h2>
+                <div class="row" style="padding: 14px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line);">
+                  <span style="width: 40px; height: 40px; border-radius: 12px; background: #DDF5E6; color: #1F8F4E; display: flex; align-items: center; justify-content: center;"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.5-4A8 8 0 1 1 8 18.5z"></path><path d="M9 10.5c.5 1.6 1.9 3 3.5 3.5"></path></svg></span>
+                  <span style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                    <span style="font-weight: 600; font-size: 14px;">Get new offers on WhatsApp</span>
+                    <span class="muted" style="font-size: 12px;">New deals within 15 km, sent to {{phoneDisplay}}</span>
+                  </span>
+                  <button class="tg wa {{waClass}}" onClick="{{toggleWa}}" aria-label="Get new offers on WhatsApp" aria-pressed="{{wa}}"></button>
+                </div>
+                <div class="row" style="padding: 14px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line);">
+                  <span style="width: 40px; height: 40px; border-radius: 12px; background: var(--chip); color: var(--acc); display: flex; align-items: center; justify-content: center;"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"></path><path d="M10 20a2 2 0 0 0 4 0"></path></svg></span>
+                  <span style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                    <span style="font-weight: 600; font-size: 14px;">Nearby saved-place alerts</span>
+                    <span class="muted" style="font-size: 12px;">App notifications, e.g. "A place you saved is 1 km away"</span>
+                  </span>
+                  <button class="tg on" onClick="{{testNotif}}" aria-label="Show a sample nearby alert" aria-pressed="true"></button>
+                </div>
+                <div class="row" style="padding: 14px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line);">
+                  <span style="width: 40px; height: 40px; border-radius: 12px; background: var(--chip); color: var(--acc); display: flex; align-items: center; justify-content: center;"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></span>
+                  <span style="display: flex; flex-direction: column; flex: 1;"><span style="font-weight: 600; font-size: 14px;">Dark mode</span></span>
+                  <button class="tg {{darkTg}}" onClick="{{toggleDark}}" aria-label="Dark mode" aria-pressed="{{dark}}"></button>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- BOTTOM NAV -->
+          <nav class="nav" aria-label="Main">
+            <span class="nav-ind" style="left: {{navDot}}px;"></span>
+            <button class="nb {{navSaved}}" onClick="{{goSaved}}">
+              <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"></path></svg>Saved
+            </button>
+            <button class="nb {{navMap}}" onClick="{{goMap}}">
+              <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"></path><path d="M9 4v14M15 6v14"></path></svg>Map
+            </button>
+            <button class="nb {{navHome}}" onClick="{{goHome}}" aria-label="Home">
+              <span class="nb-home"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 24px; height: 24px;"><path d="M3 11 12 4l9 7"></path><path d="M5 10v10h14V10"></path><path d="M10 20v-6h4v6"></path></svg></span>
+            </button>
+            <button class="nb {{navNew}}" onClick="{{goNew}}">
+              <sc-if value="{{showNewDot}}" hint-placeholder-val="{{true}}"><span class="nb-dot"></span></sc-if>
+              <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"></path></svg>New In
+            </button>
+            <button class="nb {{navProfile}}" onClick="{{goProfile}}">
+              <span class="me">{{meInitial}}</span>Profile
+            </button>
+          </nav>
+
+          <!-- PLACE PAGE -->
+          <sc-if value="{{showPlace}}" hint-placeholder-val="{{false}}">
+            <div class="layer">
+              <div class="hero">
+                <div class="hero-in">
+                  <svg width="390" height="270" viewBox="0 0 390 270" style="display: block;" role="img" aria-label="Front entrance and signboard of {{P.name}}">
+                    <rect x="0" y="0" width="390" height="270" fill="#F3E6FF"></rect>
+                    <rect x="0" y="0" width="390" height="270" fill="{{P.c2}}" opacity="0.28"></rect>
+                    <rect x="30" y="30" width="330" height="240" fill="#FFF8F0"></rect>
+                    <rect x="30" y="30" width="330" height="20" fill="#E9DCCB"></rect>
+                    <rect x="70" y="58" width="250" height="50" rx="10" fill="{{P.c1}}"></rect>
+                    <rect x="76" y="64" width="238" height="38" rx="7" fill="none" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="1.5"></rect>
+                    <text x="195" y="91" text-anchor="middle" font-family="Poppins, sans-serif" font-size="21" font-weight="800" fill="#FFFFFF">{{P.name}}</text>
+                    <rect x="30" y="122" width="33" height="34" fill="{{P.c1}}"></rect><rect x="63" y="122" width="33" height="34" fill="#FFFFFF"></rect>
+                    <rect x="96" y="122" width="33" height="34" fill="{{P.c1}}"></rect><rect x="129" y="122" width="33" height="34" fill="#FFFFFF"></rect>
+                    <rect x="162" y="122" width="33" height="34" fill="{{P.c1}}"></rect><rect x="195" y="122" width="33" height="34" fill="#FFFFFF"></rect>
+                    <rect x="228" y="122" width="33" height="34" fill="{{P.c1}}"></rect><rect x="261" y="122" width="33" height="34" fill="#FFFFFF"></rect>
+                    <rect x="294" y="122" width="33" height="34" fill="{{P.c1}}"></rect><rect x="327" y="122" width="33" height="34" fill="#FFFFFF"></rect>
+                    <path d="M30 156 q16.5 14 33 0 q16.5 14 33 0 q16.5 14 33 0 q16.5 14 33 0 q16.5 14 33 0 q16.5 14 33 0 q16.5 14 33 0 q16.5 14 33 0 q16.5 14 33 0 q16.5 14 33 0" fill="{{P.c1}}" opacity="0.9"></path>
+                    <rect x="52" y="180" width="96" height="76" rx="6" fill="#BFD8EE"></rect>
+                    <path d="M58 186 L95 186 L64 250 L58 250 Z" fill="#FFFFFF" opacity="0.45"></path>
+                    <rect x="242" y="180" width="96" height="76" rx="6" fill="#BFD8EE"></rect>
+                    <path d="M248 186 L285 186 L254 250 L248 250 Z" fill="#FFFFFF" opacity="0.45"></path>
+                    <rect x="165" y="176" width="60" height="94" rx="4" fill="#5B3A29"></rect>
+                    <rect x="171" y="182" width="48" height="56" rx="3" fill="#BFD8EE" opacity="0.8"></rect>
+                    <circle cx="212" cy="246" r="3" fill="#F1C40F"></circle>
+                    <rect x="12" y="232" width="26" height="30" rx="4" fill="#8D5A3B"></rect>
+                    <circle cx="25" cy="222" r="17" fill="#3F8F4E"></circle>
+                    <rect x="352" y="232" width="26" height="30" rx="4" fill="#8D5A3B"></rect>
+                    <circle cx="365" cy="222" r="17" fill="#3F8F4E"></circle>
+                    <rect x="0" y="262" width="390" height="8" fill="#D8CBBE"></rect>
+                  </svg>
+                </div>
+                <button class="back" onClick="{{back}}" aria-label="Back"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"></path></svg></button>
+                <sc-if value="{{P.partner}}" hint-placeholder-val="{{false}}"><span class="badge partner" style="position: absolute; top: 28px; right: 16px; font-size: 11px; padding: 6px 10px;">Spotted Partner</span></sc-if>
+              </div>
+
+              <div class="sec" style="margin-top: -18px; position: relative; background: var(--bg); border-radius: 24px 24px 0 0; padding-top: 20px;">
+                <h1 class="h1" style="font-size: 24px;">{{P.name}}</h1>
+                <p class="muted" style="margin: 4px 0 0; font-size: 13px;">{{P.cat}} · {{P.price}} per person · {{P.distLabel}}</p>
+                <div class="row" style="margin-top: 16px; gap: 10px;">
+                  <button class="act pin" onClick="{{P.openMaps}}" aria-label="Open {{P.name}} in Google Maps">
+                    <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="fill: #D62839; stroke: #D62839;"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5" style="fill: #fff; stroke: #fff;"></circle></svg>Location
+                  </button>
+                  <button class="act menu" onClick="{{P.openMenu}}">
+                    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path><path d="M10 13h6M10 17h6"></path></svg>Menu
+                  </button>
+                  <button class="act save {{P.saveClass}}" onClick="{{P.toggleSave}}" aria-label="{{P.saveLabel}}" aria-pressed="{{P.isSaved}}">
+                    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"></path></svg>
+                  </button>
+                </div>
+
+                <div style="margin-top: 22px;">
+                  <button class="dd-h {{recOpenClass}}" onClick="{{toggleRec}}" aria-expanded="{{recOpen}}">
+                    <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: #E07A1F;"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg>
+                    <span style="font-weight: 700; font-size: 15px;">Influencer recommendations</span>
+                    <span class="cnt">{{P.recN}}</span>
+                    <svg class="i chev {{recOpenClass}}" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                  </button>
+                  <div class="dd {{recOpenClass}}">
+                    <div class="dd-in">
+                      <div class="dd-body">
+                        <sc-for list="{{P.recs}}" as="r" hint-placeholder-count="2">
+                          <div class="rec">
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                              <button class="av" style="background: {{r.bg}};" onClick="{{r.openInfl}}" aria-label="Open @{{r.handle}}'s page">{{r.initial}}</button>
+                              <button class="reel {{r.reelClass}}" onClick="{{r.openReel}}" aria-label="Watch @{{r.handle}}'s reel on {{r.platformLabel}}">
+                                <sc-if value="{{r.isIg}}" hint-placeholder-val="{{true}}"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg></sc-if>
+                                <sc-if value="{{r.isTt}}" hint-placeholder-val="{{false}}"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l10-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="16" cy="16" r="3"></circle></svg></sc-if>
+                                <sc-if value="{{r.isYt}}" hint-placeholder-val="{{false}}"><svg class="i xs" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 7 9 5-9 5z"></path></svg></sc-if>
+                              </button>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                              <button onClick="{{r.openInfl}}" style="font-weight: 700; font-size: 14px; min-height: 24px;">@{{r.handle}}</button>
+                              <div class="meta" style="margin-bottom: 4px;">{{r.platformLabel}} · {{r.followers}} followers</div>
+                              <sc-for list="{{r.items}}" as="it" hint-placeholder-count="2">
+                                <div class="dish"><span>{{it.name}}</span><span class="price">AED {{it.price}}</span></div>
+                              </sc-for>
+                            </div>
+                          </div>
+                        </sc-for>
+                        <sc-if value="{{P.noRecs}}" hint-placeholder-val="{{false}}"><p class="muted" style="font-size: 13px; margin: 10px 0;">No influencer has spotted this place yet.</p></sc-if>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 12px;">
+                  <button class="dd-h {{offersOpenClass}}" onClick="{{toggleOffers}}" aria-expanded="{{offersOpen}}">
+                    <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--red);"><path d="M3 12V4h8l10 10-8 8z"></path><circle cx="7.5" cy="8.5" r="1.5"></circle></svg>
+                    <span style="font-weight: 700; font-size: 15px;">Offers</span>
+                    <span class="cnt">{{P.offerN}}</span>
+                    <svg class="i chev {{offersOpenClass}}" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                  </button>
+                  <div class="dd {{offersOpenClass}}">
+                    <div class="dd-in">
+                      <div class="dd-body">
+                        <div class="sub">Partner discounts</div>
+                        <sc-for list="{{P.partnerOffers}}" as="po" hint-placeholder-count="1">
+                          <div class="offer"><span class="src {{po.cls}}">{{po.src}}</span><span>{{po.text}}</span></div>
+                        </sc-for>
+                        <sc-if value="{{P.noPartnerOffers}}" hint-placeholder-val="{{false}}"><p class="muted" style="font-size: 13px; margin: 6px 0;">No Fazaa or Esaad discount here yet.</p></sc-if>
+                        <div class="sub">Spotted offers</div>
+                        <sc-for list="{{P.spottedOffers}}" as="so" hint-placeholder-count="1">
+                          <div class="offer"><span class="src spotted">{{so.title}}</span><span>{{so.text}}</span></div>
+                        </sc-for>
+                        <sc-if value="{{P.noSpottedOffers}}" hint-placeholder-val="{{false}}"><p class="muted" style="font-size: 13px; margin: 6px 0;">Spotted offers appear once this place becomes a Spotted Partner.</p></sc-if>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- INFLUENCER PAGE -->
+          <sc-if value="{{showInfl}}" hint-placeholder-val="{{false}}">
+            <div class="layer">
+              <div style="height: 76px; position: relative;">
+                <button class="back" onClick="{{back}}" aria-label="Back"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"></path></svg></button>
+              </div>
+              <div class="sec row" style="gap: 16px; align-items: center;">
+                <span class="prof-ring"><span style="background: {{I.bg}};">{{I.initial}}</span></span>
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+                  <span style="font-size: 19px; font-weight: 700;">@{{I.handle}}</span>
+                  <span class="muted" style="font-size: 12px;">{{I.followers}} followers · {{I.niche}}</span>
+                </div>
+              </div>
+              <div class="sec chips" style="margin-top: 14px;">
+                <sc-for list="{{I.platforms}}" as="pl" hint-placeholder-count="2">
+                  <button class="ptile" style="animation-delay: {{pl.delay}};" onClick="{{pl.open}}">
+                    <sc-if value="{{pl.isIg}}" hint-placeholder-val="{{true}}"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true" style="color: #C13584;"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg></sc-if>
+                    <sc-if value="{{pl.isTt}}" hint-placeholder-val="{{false}}"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l10-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="16" cy="16" r="3"></circle></svg></sc-if>
+                    <sc-if value="{{pl.isYt}}" hint-placeholder-val="{{false}}"><svg class="i s" viewBox="0 0 24 24" aria-hidden="true" style="color: #E52D27;"><rect x="2" y="5" width="20" height="14" rx="4"></rect><path d="m10 9 5 3-5 3z"></path></svg></sc-if>
+                    {{pl.label}}
+                  </button>
+                </sc-for>
+              </div>
+
+              <div class="sec row" style="margin-top: 24px; justify-content: space-between;">
+                <h2 class="h2">This month's top 7</h2>
+                <span class="chip" style="height: 26px;">October</span>
+              </div>
+              <div class="hs" style="margin-top: 10px;">
+                <sc-for list="{{I.top7}}" as="t" hint-placeholder-count="2">
+                  <div class="top7" style="animation-delay: {{t.delay}};">
+                    <button style="display: block; width: 100%;" onClick="{{t.open}}">
+                      <span style="position: relative; display: block; height: 100px; background: {{t.bg}}; overflow: hidden;">
+                        <span class="thumb-awn" style="height: 16px;"></span>
+                        <span class="rank">{{t.rank}}</span>
+                        <span style="position: absolute; right: 12px; bottom: 10px; color: #fff; font-weight: 800; font-size: 22px; opacity: .9;">{{t.mono}}</span>
+                      </span>
+                      <span style="display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 4px;">
+                        <span class="card-name">{{t.name}}</span>
+                        <span class="meta">{{t.cat}} · {{t.distLabel}}</span>
+                      </span>
+                    </button>
+                    <div style="padding: 4px 14px 14px;">
+                      <sc-for list="{{t.items}}" as="ti" hint-placeholder-count="2">
+                        <div class="dish"><span>{{ti.name}}</span><span class="price">AED {{ti.price}}</span></div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div class="sec" style="margin-top: 24px; display: flex; flex-direction: column; gap: 10px;">
+                <h2 class="h2">All recommendations</h2>
+                <sc-for list="{{I.all}}" as="a" hint-placeholder-count="3">
+                  <div class="row" style="padding: 10px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); animation: up .5s both; animation-delay: {{a.delay}};">
+                    <button class="row" style="flex: 1; min-width: 0;" onClick="{{a.open}}">
+                      <span class="thumb" style="width: 54px; height: 54px; border-radius: 14px; background: {{a.bg}};"><span class="thumb-mono" style="font-size: 16px;">{{a.mono}}</span></span>
+                      <span style="display: flex; flex-direction: column; min-width: 0;">
+                        <span class="card-name" style="font-size: 14px;">{{a.name}}</span>
+                        <span class="meta">{{a.cat}} · {{a.distLabel}}</span>
+                      </span>
+                    </button>
+                    <button class="reel {{a.reelClass}}" style="margin: 0; width: 44px; height: 44px; border-radius: 14px;" onClick="{{a.openReel}}" aria-label="Watch the reel about {{a.name}}">
+                      <svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 6 10 6-10 6z"></path></svg>
+                    </button>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- FILTER SHEET -->
+          <sc-if value="{{filtersOpen}}" hint-placeholder-val="{{false}}">
+            <button class="scrim" onClick="{{closeFilters}}" aria-label="Close filters"></button>
+            <div class="sheet" role="dialog" aria-label="Filters">
+              <div class="grab"></div>
+              <div class="row" style="justify-content: space-between;">
+                <h2 class="h2" style="font-size: 20px;">Filters</h2>
+                <button onClick="{{resetFilters}}" style="font-weight: 600; color: var(--acc); font-size: 13px; height: 40px;">Reset</button>
+              </div>
+              <div style="margin-top: 14px; padding: 16px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line);">
+                <label for="bud" style="font-size: 14px; font-weight: 600;">How much do you want to spend today?</label>
+                <div style="font-size: 30px; font-weight: 800; color: var(--acc); margin: 6px 0 2px; transition: all .2s;">{{budgetLabel}}</div>
+                <div class="muted" style="font-size: 12px;">per person</div>
+                <input id="bud" class="range" type="range" min="20" max="500" step="10" value="{{budget}}" onChange="{{onBudget}}">
+                <div class="row muted" style="justify-content: space-between; font-size: 11px;"><span>AED 20</span><span>AED 500+</span></div>
+              </div>
+              <div style="margin-top: 16px;">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Distance</div>
+                <div class="chips">
+                  <sc-for list="{{distOpts}}" as="d" hint-placeholder-count="4"><button class="chip {{d.sel}}" onClick="{{d.pick}}" aria-pressed="{{d.on}}">{{d.label}}</button></sc-for>
+                </div>
+              </div>
+              <div style="margin-top: 16px;">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Category</div>
+                <div class="chips">
+                  <sc-for list="{{catOpts}}" as="k" hint-placeholder-count="5"><button class="chip {{k.sel}}" onClick="{{k.pick}}" aria-pressed="{{k.on}}">{{k.label}}</button></sc-for>
+                </div>
+              </div>
+              <div class="row" style="margin-top: 18px; justify-content: space-between;">
+                <span style="font-size: 14px; font-weight: 600;">Spotted by influencers only</span>
+                <button class="tg {{fInflClass}}" onClick="{{toggleFInfl}}" aria-label="Spotted by influencers only" aria-pressed="{{fInfl}}"></button>
+              </div>
+              <div class="row" style="margin-top: 14px; justify-content: space-between;">
+                <span style="font-size: 14px; font-weight: 600;">Has offers (Fazaa, Esaad, Spotted)</span>
+                <button class="tg {{fOffersClass}}" onClick="{{toggleFOffers}}" aria-label="Has offers" aria-pressed="{{fOffers}}"></button>
+              </div>
+              <button class="cta" style="margin-top: 22px;" onClick="{{closeFilters}}">Show {{filterMatchCount}} places</button>
+            </div>
+          </sc-if>
+
+          <!-- MENU PDF -->
+          <sc-if value="{{showMenu}}" hint-placeholder-val="{{false}}">
+            <button class="scrim" onClick="{{closeMenu}}" aria-label="Close menu"></button>
+            <div class="sheet" role="dialog" aria-label="Menu PDF" style="background: #3A3442; color: #fff; height: 88%;">
+              <div class="row" style="justify-content: space-between; margin-bottom: 14px;">
+                <div class="row" style="gap: 8px; min-width: 0;">
+                  <span style="font-size: 10px; font-weight: 800; padding: 4px 6px; border-radius: 6px; background: #E5383B;">PDF</span>
+                  <span style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{M.file}}</span>
+                </div>
+                <button class="x" onClick="{{closeMenu}}" aria-label="Close menu" style="background: rgba(255,255,255,.14) !important; color: #fff !important;"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+              </div>
+              <div class="pdf">
+                <div style="text-align: center; font-size: 26px; font-weight: 700;">{{M.name}}</div>
+                <div style="text-align: center; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #8A6E50; margin: 4px 0 18px;">{{M.kind}}</div>
+                <sc-for list="{{M.items}}" as="mi" hint-placeholder-count="4">
+                  <div class="pdf-row"><span>{{mi.name}}</span><span class="pdf-dots"></span><b>AED {{mi.price}}</b></div>
+                </sc-for>
+                <div style="text-align: center; font-size: 11px; color: #8A6E50; margin-top: 18px;">Prices include VAT</div>
+              </div>
+              <div style="text-align: center; font-size: 12px; opacity: .8; margin-top: 12px;">Page 1 of 1</div>
+            </div>
+          </sc-if>
+
+          <!-- NOTIFICATION -->
+          <sc-if value="{{notif}}" hint-placeholder-val="{{false}}">
+            <button class="notif" onClick="{{openNotif}}">
+              <span class="appic"><i></i></span>
+              <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0;">
+                <span class="row" style="gap: 6px; font-size: 11px; opacity: .75;"><b>SPOTTED</b> · now</span>
+                <span style="font-size: 14px; font-weight: 700;">A place you saved is 1.2 km away</span>
+                <span style="font-size: 12px; opacity: .85;">Saffron Lane · 5 influencers recommend it</span>
+              </span>
+            </button>
+          </sc-if>
+
+          <sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}">
+            <div class="toast" role="status">{{toast}}</div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startDark":{"editor":"boolean","default":false},"$preview":{"width":470,"height":980}}'>
+const PLACES = [
+  { id: 'saffron', name: 'Saffron Lane', mono: 'SL', cat: 'Indian', group: 'Food', tags: 'indian curry biryani restaurant', dist: 1.2, ang: -35, lo: 35, hi: 80, partner: true, saved: true, c1: '#D9661A', c2: '#F6B26B', kind: 'Restaurant menu',
+    menu: [['Butter chicken', 48], ['Lamb biryani', 55], ['Paneer tikka', 38], ['Garlic naan', 12], ['Mango lassi', 18]],
+    po: [['Esaad', '15% off the total bill'], ['Fazaa', '10% off dine-in']], so: [['Stamp card', 'Collect stamps, discount rises up to 25%'], ['Lunch deal', 'Free lassi with any biryani, 12–4 pm']] },
+  { id: 'brew', name: 'Brew Theory', mono: 'BT', cat: 'Café', group: 'Food', tags: 'coffee cafe breakfast', dist: 2.4, ang: 150, lo: 20, hi: 45, partner: true, saved: true, c1: '#6F4E37', c2: '#C49A6C', kind: 'Café menu',
+    menu: [['Spanish latte', 22], ['Pistachio croissant', 18], ['Cold brew', 20], ['Avocado toast', 36]],
+    po: [['Esaad', '10% off all drinks']], so: [['Stamp card', 'Every 6th coffee on us, plus rising discounts']] },
+  { id: 'taco', name: 'Taco Norte', mono: 'TN', cat: 'Mexican', group: 'Food', tags: 'mexican tacos', dist: 3.8, ang: 70, lo: 30, hi: 70, partner: false, saved: true, c1: '#1F8A7E', c2: '#7BD3C5', kind: 'Restaurant menu',
+    menu: [['Birria tacos', 42], ['Street corn', 18], ['Burrito bowl', 45], ['Churros', 22]], po: [], so: [] },
+  { id: 'stack', name: 'Stack Burger Co.', mono: 'SB', cat: 'Burgers', group: 'Food', tags: 'burger american fast food', dist: 4.6, ang: -120, lo: 40, hi: 90, partner: true, saved: true, c1: '#C81D2E', c2: '#F27059', kind: 'Restaurant menu',
+    menu: [['Double smash burger', 49], ['Truffle fries', 24], ['Crispy chicken burger', 42], ['Salted caramel shake', 26]],
+    po: [['Fazaa', '15% off weekdays']], so: [['Combo', 'Free truffle fries with any burger'], ['Stamp card', 'Collect stamps, discount rises up to 25%']] },
+  { id: 'luma', name: 'Luma Boutique', mono: 'LB', cat: 'Clothes', group: 'Shopping', tags: 'clothes fashion abaya dresses shopping boutique', dist: 6.1, ang: 20, lo: 120, hi: 400, partner: false, saved: true, c1: '#A3168F', c2: '#F15BB5', kind: 'Catalogue',
+    menu: [['Linen abaya', 320], ['Silk scarf', 120], ['Kaftan dress', 280], ['Leather tote', 150]], po: [['Fazaa', '20% off the new season']], so: [] },
+  { id: 'forno', name: 'Forno 900', mono: 'F9', cat: 'Pizza', group: 'Food', tags: 'pizza italian', dist: 7.3, ang: 200, lo: 45, hi: 110, partner: false, saved: true, c1: '#B3121E', c2: '#E85D04', kind: 'Restaurant menu',
+    menu: [['Margherita', 45], ['Truffle funghi', 68], ['Burrata salad', 52], ['Tiramisu', 32]], po: [['Esaad', '10% off the bill']], so: [] },
+  { id: 'starlight', name: 'Starlight Cinemas', mono: 'SC', cat: 'Movies', group: 'Fun', tags: 'movies cinema film fun', dist: 8.9, ang: -80, lo: 45, hi: 75, partner: false, saved: true, c1: '#1D3557', c2: '#457B9D', kind: 'Tickets & snacks',
+    menu: [['Standard ticket', 45], ['Recliner ticket', 75], ['Popcorn combo', 38]], po: [['Esaad', '25% off tickets, Mon–Thu']], so: [] },
+  { id: 'kaze', name: 'Sushi Kaze', mono: 'SK', cat: 'Japanese', group: 'Food', tags: 'sushi japanese', dist: 10.2, ang: 110, lo: 60, hi: 180, partner: true, saved: true, c1: '#20444F', c2: '#2A9D8F', kind: 'Restaurant menu',
+    menu: [['Salmon nigiri set', 85], ['Dragon roll', 62], ['Wagyu gyoza', 58], ['Matcha mochi', 28]],
+    po: [['Esaad', '20% off weekday lunch']], so: [['Stamp card', 'Collect stamps, discount rises up to 25%']] },
+  { id: 'thread', name: 'Thread & Co.', mono: 'TC', cat: 'Clothes', group: 'Shopping', tags: 'clothes fashion shoes sneakers shopping', dist: 11.6, ang: -10, lo: 90, hi: 340, partner: false, saved: true, c1: '#3A0CA3', c2: '#7209B7', kind: 'Catalogue',
+    menu: [['Abaya set', 260], ['Denim jacket', 190], ['Sneakers', 340]], po: [], so: [] },
+  { id: 'shawarma', name: 'Shawarma Station', mono: 'SS', cat: 'Arabic', group: 'Food', tags: 'arabic shawarma lebanese', dist: 13.4, ang: 250, lo: 12, hi: 35, partner: false, saved: true, c1: '#8A5A3C', c2: '#DDB892', kind: 'Restaurant menu',
+    menu: [['Chicken shawarma', 15], ['Mixed grill platter', 35], ['Falafel wrap', 12], ['Fresh lemon mint', 14]], po: [], so: [] },
+  { id: 'glow', name: 'Glow Arcade', mono: 'GA', cat: 'Arcade', group: 'Fun', tags: 'games arcade bowling fun', dist: 5.2, ang: -60, lo: 50, hi: 80, partner: true, saved: false, isNew: true, c1: '#3451D1', c2: '#4CC9F0', kind: 'Games & prices',
+    menu: [['Game card (30 credits)', 50], ['Bowling lane, 1 hour', 80], ['VR session', 60]], po: [], so: [['Welcome', '2 free games on your first visit']] },
+  { id: 'masala', name: 'Masala Junction', mono: 'MJ', cat: 'Indian', group: 'Food', tags: 'indian dosa south indian', dist: 6.8, ang: 160, lo: 22, hi: 45, partner: false, saved: false, c1: '#D35F00', c2: '#FCBF49', kind: 'Restaurant menu',
+    menu: [['Chicken 65', 32], ['Masala dosa', 22], ['Veg thali', 45]], po: [['Esaad', '10% off dine-in']], so: [] },
+  { id: 'casa', name: 'Casa Verde', mono: 'CV', cat: 'Mexican', group: 'Food', tags: 'mexican nachos', dist: 9.5, ang: 40, lo: 38, hi: 75, partner: true, saved: false, isNew: true, c1: '#2D6A4F', c2: '#52B788', kind: 'Restaurant menu',
+    menu: [['Quesadilla', 38], ['Nachos grande', 42], ['Horchata', 18]], po: [], so: [['Welcome', 'Double stamps on your first visit']] },
+  { id: 'kiln', name: 'Kiln Bakery', mono: 'KB', cat: 'Bakery', group: 'Food', tags: 'bakery bread cakes dessert', dist: 14.1, ang: 230, lo: 16, hi: 40, partner: false, saved: false, c1: '#A8581C', c2: '#DDA15E', kind: 'Bakery menu',
+    menu: [['Sourdough loaf', 28], ['Cardamom bun', 16], ['Date cake', 30]], po: [], so: [] },
+  { id: 'dune', name: 'Dune Coffee', mono: 'DC', cat: 'Café', group: 'Food', tags: 'coffee cafe', dist: 12.0, ang: -150, lo: 18, hi: 40, partner: true, saved: false, isNew: true, c1: '#6E4A31', c2: '#B08968', kind: 'Café menu',
+    menu: [['Saffron latte', 24], ['Date & tahini cookie', 14], ['Iced V60', 22]], po: [['Fazaa', '10% off all orders']], so: [['Stamp card', 'Collect stamps, discount rises up to 25%']] }
+];
+const INFL = [
+  { id: 'capital', handle: 'capital.bites', initial: 'C', g: 'linear-gradient(135deg,#7B2CBF,#E5383B)', platforms: ['ig', 'tt'], followers: '48.2K', niche: 'Food in Abu Dhabi', picks: ['saffron', 'stack', 'kaze', 'brew', 'taco', 'forno', 'shawarma'], more: ['masala', 'kiln', 'casa'] },
+  { id: 'forkful', handle: 'forkful.ad', initial: 'F', g: 'linear-gradient(135deg,#F77F00,#D62839)', platforms: ['ig', 'yt'], followers: '31.5K', niche: 'Honest food reviews', picks: ['forno', 'saffron', 'brew', 'kaze', 'masala', 'kiln', 'dune'], more: ['stack', 'taco'] },
+  { id: 'lunchmap', handle: 'thelunchmap', initial: 'L', g: 'linear-gradient(135deg,#2A9D8F,#264653)', platforms: ['tt'], followers: '92K', niche: 'Lunch spots under AED 50', picks: ['shawarma', 'taco', 'stack', 'masala', 'casa', 'saffron', 'kiln'], more: ['brew'] },
+  { id: 'spice', handle: 'spice.trail.uae', initial: 'S', g: 'linear-gradient(135deg,#E85D04,#9D4EDD)', platforms: ['ig', 'tt', 'yt'], followers: '64.8K', niche: 'Spice lovers, UAE', picks: ['saffron', 'masala', 'kaze', 'taco', 'casa', 'shawarma', 'forno'], more: ['stack', 'dune'] },
+  { id: 'rack', handle: 'rackandrail.ad', initial: 'R', g: 'linear-gradient(135deg,#B5179E,#3A0CA3)', platforms: ['ig'], followers: '27.1K', niche: 'Fashion & weekends', picks: ['luma', 'thread', 'glow', 'starlight', 'brew', 'dune', 'kaze'], more: [] },
+  { id: 'weekend', handle: 'weekend.plans.ad', initial: 'W', g: 'linear-gradient(135deg,#4361EE,#4CC9F0)', platforms: ['ig', 'tt'], followers: '12.4K', niche: 'Things to do this weekend', picks: ['starlight', 'glow', 'casa', 'stack', 'brew', 'forno', 'luma'], more: [], isNew: true },
+  { id: 'sweet', handle: 'the.sweet.stop', initial: 'T', g: 'linear-gradient(135deg,#FF6B9A,#C77DFF)', platforms: ['ig'], followers: '8.9K', niche: 'Desserts & coffee', picks: ['kiln', 'brew', 'dune', 'kaze', 'forno', 'saffron', 'casa'], more: [], isNew: true }
+];
+const PLAT = { ig: 'Instagram', tt: 'TikTok', yt: 'YouTube' };
+const EXAMPLES = ['Indian', 'clothes', 'movies', 'Mexican', 'coffee', 'sushi', 'capital.bites'];
+const CATS = ['All', 'Food', 'Shopping', 'Fun', 'Indian', 'Mexican', 'Café'];
+const DISTS = [1, 5, 10, 15];
+const NEW_OFFERS = [
+  { p: 'saffron', src: 'Esaad', text: '15% off the whole bill', ends: 'Ends in 3 days' },
+  { p: 'stack', src: 'Spotted', text: 'Free truffle fries with any burger', ends: 'Ends Sunday' },
+  { p: 'luma', src: 'Fazaa', text: '20% off the new season', ends: '5 days left' },
+  { p: 'casa', src: 'Spotted', text: 'Double stamps on your first visit', ends: 'This week only' }
+];
+const LOYALTY = [
+  { p: 'saffron', stamps: 4, bg: 'linear-gradient(135deg,#D9661A,#9C3D00)' },
+  { p: 'brew', stamps: 5, bg: 'linear-gradient(135deg,#6F4E37,#3B2A1E)' },
+  { p: 'stack', stamps: 2, bg: 'linear-gradient(135deg,#C81D2E,#7A0E18)' }
+];
+const LEVEL = [0, 0, 5, 5, 10, 15, 25];
+const byId = (id) => PLACES.find((p) => p.id === id);
+const fmt = (d) => (d < 10 ? d.toFixed(1) : String(Math.round(d))) + ' km away';
+const recsFor = (pid) => INFL.map((inf, idx) => ({ inf, idx })).filter((x) => x.inf.picks.indexOf(pid) >= 0 || x.inf.more.indexOf(pid) >= 0);
+const itemsFor = (idx, p) => {
+  const n = p.menu.length; const a = p.menu[idx % n]; const b = p.menu[(idx + 2) % n];
+  const out = [{ name: a[0], price: a[1] }];
+  if (b[0] !== a[0]) out.push({ name: b[0], price: b[1] });
+  return out;
+};
+const hasOffers = (p) => p.po.length + p.so.length > 0;
+const thumbBg = (p) => 'linear-gradient(145deg,' + p.c2 + ',' + p.c1 + ')';
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const saved = {};
+    PLACES.forEach((p) => { if (p.saved) saved[p.id] = true; });
+    this.ex = 0; this.ch = 0; this.hold = 0;
+    this.state = {
+      dark: !!props.startDark, screen: 'splash', signedIn: false, tab: 'home', stack: [],
+      query: '', savedQuery: '', folder: null,
+      f: { budget: 500, dist: 15, cat: 'All', infl: false, offers: false },
+      filtersOpen: false, menuFor: null, recOpen: true, offersOpen: false,
+      toast: null, notif: false, newSeen: false, mapSel: null,
+      phone: '', otp: '', otpErr: false, name: '', email: '', wa: true,
+      savedCount: 0, typed: '', saved
+    };
+  }
+  componentDidMount() {
+    this.startSplash();
+    this.typer = setInterval(() => this.tickType(), 120);
+  }
+  componentWillUnmount() {
+    [this.splashT, this.toastT, this.notifT, this.notifT2, this.otpT].forEach((t) => clearTimeout(t));
+    clearInterval(this.typer); clearInterval(this.countT);
+  }
+  tickType() {
+    if (this.state.screen !== 'app' || this.state.tab !== 'home' || this.state.query) return;
+    if (this.hold > 0) { this.hold--; if (this.hold === 0) { this.ch = 0; this.ex = (this.ex + 1) % EXAMPLES.length; } return; }
+    const w = EXAMPLES[this.ex];
+    this.ch++;
+    if (this.ch >= w.length) { this.ch = w.length; this.hold = 14; }
+    this.setState({ typed: w.slice(0, this.ch) });
+  }
+  startSplash() {
+    clearTimeout(this.splashT);
+    this.setState({ screen: 'splash', stack: [], filtersOpen: false, menuFor: null, notif: false });
+    this.splashT = setTimeout(() => this.finishSplash(), 4400);
+  }
+  finishSplash() {
+    clearTimeout(this.splashT);
+    if (this.state.screen !== 'splash') return;
+    if (this.state.signedIn) this.enterApp(); else this.setState({ screen: 'signin' });
+  }
+  enterApp() {
+    this.setState({ screen: 'app', signedIn: true, tab: 'home', stack: [] });
+    clearTimeout(this.notifT); clearTimeout(this.notifT2);
+    this.notifT = setTimeout(() => this.showNotif(), 2800);
+  }
+  showNotif() {
+    clearTimeout(this.notifT2);
+    this.setState({ notif: true });
+    this.notifT2 = setTimeout(() => this.setState({ notif: false }), 6500);
+  }
+  toast(msg) {
+    clearTimeout(this.toastT);
+    this.setState({ toast: msg });
+    this.toastT = setTimeout(() => this.setState({ toast: null }), 2300);
+  }
+  setTab(t) {
+    const patch = { tab: t, stack: [], mapSel: null };
+    if (t !== 'saved') patch.folder = null;
+    if (t === 'new') patch.newSeen = true;
+    this.setState(patch);
+    if (t === 'profile') this.countUp();
+  }
+  countUp() {
+    clearInterval(this.countT);
+    let v = 0;
+    this.setState({ savedCount: 0 });
+    this.countT = setInterval(() => {
+      v = Math.min(340, v + 11);
+      this.setState({ savedCount: v });
+      if (v >= 340) clearInterval(this.countT);
+    }, 28);
+  }
+  push(type, id) {
+    this.setState({ stack: this.state.stack.concat([{ type, id }]), recOpen: true, offersOpen: false, notif: false });
+  }
+  back() { this.setState({ stack: this.state.stack.slice(0, -1) }); }
+  setF(patch) { this.setState({ f: Object.assign({}, this.state.f, patch) }); }
+  pass(p) {
+    const f = this.state.f;
+    if (f.budget < 500 && p.lo > f.budget) return false;
+    if (p.dist > f.dist) return false;
+    if (f.cat !== 'All' && p.group !== f.cat && p.cat !== f.cat) return false;
+    if (f.infl && recsFor(p.id).length === 0) return false;
+    if (f.offers && !hasOffers(p)) return false;
+    return true;
+  }
+  matches(p, q) {
+    const hay = (p.name + ' ' + p.cat + ' ' + p.group + ' ' + p.tags + ' ' + p.menu.map((m) => m[0]).join(' ')).toLowerCase();
+    return hay.indexOf(q) >= 0;
+  }
+  card(p, i) {
+    const recN = recsFor(p.id).length;
+    return {
+      name: p.name, mono: p.mono, cat: p.cat, bg: thumbBg(p), price: 'AED ' + p.lo + '–' + p.hi,
+      distLabel: fmt(p.dist), partner: !!p.partner, cardClass: p.partner ? 'partner' : '',
+      isSaved: !!this.state.saved[p.id], recN, hasRecs: recN > 0, delay: (i * 70) + 'ms',
+      open: () => this.push('place', p.id),
+      openMenu: () => this.setState({ menuFor: p.id })
+    };
+  }
+  sortPartnerFirst(list) {
+    return list.slice().sort((a, b) => (a.partner === b.partner ? a.dist - b.dist : (a.partner ? -1 : 1)));
+  }
+  renderVals() {
+    const s = this.state;
+    const f = s.f;
+    const near = PLACES.filter((p) => p.dist <= 15);
+    const savedNear = near.filter((p) => s.saved[p.id]).sort((a, b) => a.dist - b.dist);
+
+    const stories = savedNear.slice(0, 10).map((p, i) => ({
+      mono: p.mono, bg: thumbBg(p), distLabel: fmt(p.dist), ring: p.dist < 5 ? 'hot' : 'soft',
+      delay: (250 + i * 90) + 'ms', aria: p.name + ', ' + fmt(p.dist),
+      open: () => this.push('place', p.id)
+    }));
+
+    const q = s.query.trim().toLowerCase();
+    const results = q ? this.sortPartnerFirst(near.filter((p) => this.matches(p, q) && this.pass(p))).map((p, i) => this.card(p, i)) : [];
+    const inflResults = q ? INFL.filter((x) => (x.handle + ' ' + x.niche).toLowerCase().indexOf(q) >= 0).map((x) => ({
+      handle: x.handle, initial: x.initial, bg: x.g, followers: x.followers,
+      platformText: x.platforms.map((k) => PLAT[k]).join(' · '), pickCount: x.picks.length + x.more.length,
+      open: () => this.push('infl', x.id)
+    })) : [];
+    const feed = this.sortPartnerFirst(near.filter((p) => this.pass(p))).map((p, i) => this.card(p, i));
+
+    const chipsArr = [];
+    if (f.budget < 500) chipsArr.push({ label: 'Under AED ' + f.budget + ' pp', clear: () => this.setF({ budget: 500 }) });
+    if (f.dist < 15) chipsArr.push({ label: 'Within ' + f.dist + ' km', clear: () => this.setF({ dist: 15 }) });
+    if (f.cat !== 'All') chipsArr.push({ label: f.cat, clear: () => this.setF({ cat: 'All' }) });
+    if (f.infl) chipsArr.push({ label: 'Influencer picks', clear: () => this.setF({ infl: false }) });
+    if (f.offers) chipsArr.push({ label: 'Has offers', clear: () => this.setF({ offers: false }) });
+
+    // saved tab
+    const allSaved = PLACES.filter((p) => s.saved[p.id]).sort((a, b) => a.dist - b.dist);
+    const folderDefs = [
+      { key: 'all', name: 'All saved', bg: 'linear-gradient(145deg,#9D4EDD,#5A189A)', list: allSaved },
+      { key: 'Food', name: 'Food', bg: 'linear-gradient(145deg,#F4A259,#D62839)', list: allSaved.filter((p) => p.group === 'Food') },
+      { key: 'Shopping', name: 'Shopping', bg: 'linear-gradient(145deg,#F15BB5,#7209B7)', list: allSaved.filter((p) => p.group === 'Shopping') },
+      { key: 'Fun', name: 'Fun', bg: 'linear-gradient(145deg,#4CC9F0,#3451D1)', list: allSaved.filter((p) => p.group === 'Fun') }
+    ];
+    const folders = folderDefs.map((fd, i) => ({
+      name: fd.name, bg: fd.bg, delay: (i * 80) + 'ms', countLabel: fd.list.length + (fd.list.length === 1 ? ' place' : ' places'),
+      minis: fd.list.slice(0, 3).map((p) => ({ mono: p.mono, bg: thumbBg(p) })),
+      open: () => this.setState({ folder: fd.key })
+    }));
+    const sq = s.savedQuery.trim().toLowerCase();
+    let savedBase = allSaved;
+    if (s.folder && s.folder !== 'all') savedBase = savedBase.filter((p) => p.group === s.folder);
+    const savedList = savedBase.filter((p) => (!sq || this.matches(p, sq)) && this.pass(p)).map((p, i) => this.card(p, i));
+    const showSavedList = !!(sq || s.folder || chipsArr.length);
+    const folderName = s.folder === 'all' ? 'All saved' : (s.folder || '');
+
+    // map
+    const pins = near.filter((p) => s.saved[p.id] || p.partner).map((p, i) => {
+      const r = (p.dist / 15) * 160; const a = p.ang * Math.PI / 180;
+      return {
+        x: Math.round(195 + r * Math.cos(a)), y: Math.round(380 + r * Math.sin(a)),
+        isSaved: !!s.saved[p.id], isPartnerOnly: !s.saved[p.id] && p.partner,
+        selClass: s.mapSel === p.id ? 'sel' : '', delay: (200 + i * 70) + 'ms',
+        aria: p.name + ', ' + fmt(p.dist), pick: () => this.setState({ mapSel: p.id })
+      };
+    });
+    const mp = s.mapSel ? byId(s.mapSel) : null;
+    const mapSel = mp ? this.card(mp, 0) : { name: '', mono: '', bg: '', cat: '', price: '', distLabel: '', open: () => {} };
+
+    // new in
+    const newOffers = NEW_OFFERS.map((o, i) => {
+      const p = byId(o.p);
+      return { src: o.src, srcClass: o.src.toLowerCase(), text: o.text, ends: o.ends, name: p.name, distLabel: fmt(p.dist), bg: thumbBg(p), delay: (i * 90) + 'ms', open: () => { this.push('place', p.id); this.setState({ offersOpen: true, recOpen: false }); } };
+    });
+    const newInfl = INFL.filter((x) => x.isNew).map((x, i) => ({ handle: x.handle, initial: x.initial, bg: x.g, delay: (300 + i * 100) + 'ms', open: () => this.push('infl', x.id) }));
+    const newPlaces = PLACES.filter((p) => p.isNew && p.dist <= 15).map((p, i) => this.card(p, i));
+
+    // profile
+    const meName = s.name.trim() || 'Aisha Rahman';
+    const loyalty = LOYALTY.map((l) => {
+      const p = byId(l.p);
+      const now = LEVEL[l.stamps];
+      let next = l.stamps + 1; while (next < 6 && LEVEL[next] === now) next++;
+      return {
+        name: p.name, mono: p.mono, bg: l.bg, now, stampsLabel: l.stamps + ' of 6 stamps',
+        nextLabel: l.stamps >= 6 ? 'Max 25% reached' : (LEVEL[next] + '% at ' + next + ' stamps · max 25%'),
+        slots: [0, 1, 2, 3, 4, 5].map((k) => ({ on: k < l.stamps, cls: k < l.stamps ? 'on' : (k === l.stamps ? 'next' : ''), delay: (300 + k * 140) + 'ms' })),
+        open: () => this.push('place', p.id)
+      };
+    });
+
+    // place page
+    const top = s.stack.length ? s.stack[s.stack.length - 1] : null;
+    let P = { name: '', c1: '#6A1FB0', c2: '#9D4EDD', recs: [], partnerOffers: [], spottedOffers: [] };
+    if (top && top.type === 'place') {
+      const p = byId(top.id);
+      const recs = recsFor(p.id).map(({ inf, idx }) => {
+        const pl = inf.platforms[0];
+        return {
+          handle: inf.handle, initial: inf.initial, bg: inf.g, followers: inf.followers, platformLabel: PLAT[pl],
+          isIg: pl === 'ig', isTt: pl === 'tt', isYt: pl === 'yt', reelClass: pl === 'ig' ? '' : pl,
+          items: itemsFor(idx, p),
+          openInfl: () => this.push('infl', inf.id),
+          openReel: () => this.toast('Opening @' + inf.handle + "'s reel on " + PLAT[pl])
+        };
+      });
+      const isSaved = !!s.saved[p.id];
+      P = {
+        name: p.name, c1: p.c1, c2: p.c2, cat: p.cat, partner: !!p.partner, price: 'AED ' + p.lo + '–' + p.hi, distLabel: fmt(p.dist),
+        recs, recN: recs.length, noRecs: recs.length === 0,
+        partnerOffers: p.po.map((o) => ({ src: o[0], cls: o[0].toLowerCase(), text: o[1] })),
+        spottedOffers: p.so.map((o) => ({ title: o[0], text: o[1] })),
+        noPartnerOffers: p.po.length === 0, noSpottedOffers: p.so.length === 0, offerN: p.po.length + p.so.length,
+        isSaved, saveClass: isSaved ? 'on' : '', saveLabel: isSaved ? 'Remove from saved' : 'Save this place',
+        toggleSave: () => { const sv = Object.assign({}, this.state.saved); if (sv[p.id]) delete sv[p.id]; else sv[p.id] = true; this.setState({ saved: sv }); this.toast(sv[p.id] ? 'Saved to ' + p.group : 'Removed from saved'); },
+        openMaps: () => this.toast('Opening ' + p.name + ' in Google Maps'),
+        openMenu: () => this.setState({ menuFor: p.id })
+      };
+    }
+
+    // influencer page
+    let I = { handle: '', initial: '', bg: '', platforms: [], top7: [], all: [] };
+    if (top && top.type === 'infl') {
+      const inf = INFL.find((x) => x.id === top.id);
+      const idx = INFL.indexOf(inf);
+      const pl = inf.platforms[0];
+      I = {
+        handle: inf.handle, initial: inf.initial, bg: inf.g, followers: inf.followers, niche: inf.niche,
+        platforms: inf.platforms.map((k, i) => ({ label: PLAT[k], isIg: k === 'ig', isTt: k === 'tt', isYt: k === 'yt', delay: (300 + i * 120) + 'ms', open: () => this.toast('Opening @' + inf.handle + ' on ' + PLAT[k]) })),
+        top7: inf.picks.map((pid, i) => {
+          const p = byId(pid);
+          return { rank: i + 1, name: p.name, mono: p.mono, cat: p.cat, bg: thumbBg(p), distLabel: fmt(p.dist), items: itemsFor(idx + i, p), delay: (200 + i * 110) + 'ms', open: () => this.push('place', p.id) };
+        }),
+        all: inf.picks.concat(inf.more).map((pid, i) => {
+          const p = byId(pid);
+          return { name: p.name, mono: p.mono, cat: p.cat, bg: thumbBg(p), distLabel: fmt(p.dist), reelClass: pl === 'ig' ? '' : pl, delay: (i * 50) + 'ms', open: () => this.push('place', p.id), openReel: () => this.toast('Opening @' + inf.handle + "'s reel about " + p.name) };
+        })
+      };
+    }
+
+    const mf = s.menuFor ? byId(s.menuFor) : null;
+    const M = mf ? { name: mf.name, kind: mf.kind, file: mf.name.replace(/[^A-Za-z0-9]+/g, '-') + '-menu.pdf', items: mf.menu.map((m) => ({ name: m[0], price: m[1] })) } : { name: '', kind: '', file: '', items: [] };
+
+    const otpBoxes = [0, 1, 2, 3, 4, 5].map((k) => ({ ch: s.otp[k] || '', cls: s.otp[k] ? 'filled' : (k === s.otp.length ? 'active' : '') }));
+    const tabs = ['saved', 'map', 'home', 'new', 'profile'];
+    const ti = tabs.indexOf(s.tab);
+    const phoneDisplay = '+971 ' + (s.phone.trim() || '50 123 4567');
+
+    return {
+      themeClass: s.dark ? 'dark' : '', dark: s.dark, isLight: !s.dark, lightOn: s.dark ? '' : 'on', darkOn: s.dark ? 'on' : '', darkTg: s.dark ? 'on' : '',
+      setLight: () => this.setState({ dark: false }), setDark: () => this.setState({ dark: true }), toggleDark: () => this.setState({ dark: !this.state.dark }),
+      replay: () => this.startSplash(),
+      restart: () => { this.setState({ signedIn: false, phone: '', otp: '', otpErr: false, name: '', email: '', tab: 'home', query: '', savedQuery: '', folder: null, newSeen: false }); this.startSplash(); },
+      isSplash: s.screen === 'splash', skipSplash: () => this.finishSplash(),
+      isAuth: s.screen === 'signin' || s.screen === 'otp' || s.screen === 'details',
+      isSignin: s.screen === 'signin', isOtp: s.screen === 'otp', isDetails: s.screen === 'details', isApp: s.screen === 'app',
+      phone: s.phone, onPhone: (e) => this.setState({ phone: e.target.value.replace(/[^0-9 ]/g, '').slice(0, 12) }),
+      sendCode: () => this.setState({ screen: 'otp', otp: '', otpErr: false }),
+      backToPhone: () => this.setState({ screen: 'signin' }),
+      phoneDisplay, otp: s.otp, otpBoxes, otpErr: s.otpErr, otpErrClass: s.otpErr ? 'err' : '',
+      onOtp: (e) => {
+        const v = e.target.value.replace(/\D/g, '').slice(0, 6);
+        this.setState({ otp: v, otpErr: false });
+        if (v.length === 6) {
+          clearTimeout(this.otpT);
+          this.otpT = setTimeout(() => { if (v === '123456') this.setState({ screen: 'details' }); else this.setState({ otpErr: true, otp: '' }); }, 350);
+        }
+      },
+      fillDemo: () => { this.setState({ otp: '123456', otpErr: false }); clearTimeout(this.otpT); this.otpT = setTimeout(() => this.setState({ screen: 'details' }), 600); },
+      name: s.name, email: s.email,
+      onName: (e) => this.setState({ name: e.target.value }), onEmail: (e) => this.setState({ email: e.target.value }),
+      enterApp: () => this.enterApp(),
+
+      tabHome: s.tab === 'home', tabSaved: s.tab === 'saved', tabMap: s.tab === 'map', tabNew: s.tab === 'new', tabProfile: s.tab === 'profile',
+      navSaved: s.tab === 'saved' ? 'on' : '', navMap: s.tab === 'map' ? 'on' : '', navHome: s.tab === 'home' ? 'on' : '', navNew: s.tab === 'new' ? 'on' : '', navProfile: s.tab === 'profile' ? 'on' : '',
+      navDot: Math.round(ti * 78 + 36),
+      goSaved: () => this.setTab('saved'), goMap: () => this.setTab('map'), goHome: () => this.setTab('home'), goNew: () => this.setTab('new'), goProfile: () => this.setTab('profile'),
+      showNewDot: !s.newSeen,
+
+      stories, query: s.query, onQuery: (e) => this.setState({ query: e.target.value }), typed: s.typed, showTyped: !s.query,
+      isSearching: !!q, notSearching: !q, results, inflResults, hasInflResults: inflResults.length > 0,
+      resultTitle: 'Places · ' + results.length + (results.length === 1 ? ' result' : ' results'), noResults: !!q && results.length === 0 && inflResults.length === 0,
+      feed,
+
+      hasFilters: chipsArr.length > 0, filterCount: chipsArr.length, filterChips: chipsArr,
+      filtersOpen: s.filtersOpen, openFilters: () => this.setState({ filtersOpen: true }), closeFilters: () => this.setState({ filtersOpen: false }),
+      resetFilters: () => this.setState({ f: { budget: 500, dist: 15, cat: 'All', infl: false, offers: false } }),
+      budget: f.budget, budgetLabel: f.budget >= 500 ? 'Any budget' : 'Up to AED ' + f.budget,
+      onBudget: (e) => this.setF({ budget: Number(e.target.value) }),
+      distOpts: DISTS.map((d) => ({ label: d + ' km', on: f.dist === d, sel: f.dist === d ? 'sel' : '', pick: () => this.setF({ dist: d }) })),
+      catOpts: CATS.map((c) => ({ label: c, on: f.cat === c, sel: f.cat === c ? 'sel' : '', pick: () => this.setF({ cat: c }) })),
+      fInfl: f.infl, fInflClass: f.infl ? 'on' : '', toggleFInfl: () => this.setF({ infl: !this.state.f.infl }),
+      fOffers: f.offers, fOffersClass: f.offers ? 'on' : '', toggleFOffers: () => this.setF({ offers: !this.state.f.offers }),
+      filterMatchCount: near.filter((p) => this.pass(p)).length,
+
+      savedTotal: allSaved.length, savedQuery: s.savedQuery, onSavedQuery: (e) => this.setState({ savedQuery: e.target.value }),
+      showFolders: !showSavedList, showSavedList, folders, savedList, savedEmpty: savedList.length === 0,
+      inFolder: !!s.folder, notInFolder: !s.folder, folderName, closeFolder: () => this.setState({ folder: null }),
+      savedListCount: savedList.length + (savedList.length === 1 ? ' place' : ' places'),
+
+      pins, hasMapSel: !!mp, mapSel,
+      newOffers, newInfl, newPlaces,
+
+      meName, meEmail: s.email.trim() || 'aisha@example.com', meInitial: meName.charAt(0).toUpperCase(),
+      savedCount: s.savedCount,
+      savingsBreak: [{ label: 'Spotted', v: Math.round(s.savedCount * 145 / 340) }, { label: 'Esaad', v: Math.round(s.savedCount * 120 / 340) }, { label: 'Fazaa', v: Math.round(s.savedCount * 75 / 340) }],
+      loyalty, wa: s.wa, waClass: s.wa ? 'on' : '',
+      toggleWa: () => { const v = !this.state.wa; this.setState({ wa: v }); this.toast(v ? 'New offers will come to your WhatsApp' : 'WhatsApp offers turned off'); },
+      testNotif: () => this.showNotif(),
+
+      showPlace: !!(top && top.type === 'place'), showInfl: !!(top && top.type === 'infl'), P, I, back: () => this.back(),
+      recOpen: s.recOpen, recOpenClass: s.recOpen ? 'open' : '', toggleRec: () => this.setState({ recOpen: !this.state.recOpen }),
+      offersOpen: s.offersOpen, offersOpenClass: s.offersOpen ? 'open' : '', toggleOffers: () => this.setState({ offersOpen: !this.state.offersOpen }),
+      showMenu: !!mf, M, closeMenu: () => this.setState({ menuFor: null }),
+
+      notif: s.notif, openNotif: () => { this.setState({ notif: false }); this.push('place', 'saffron'); },
+      hasToast: !!s.toast, toast: s.toast || ''
+    };
+  }
+}
+</script>
+</body>
+</html>
