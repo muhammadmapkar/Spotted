@@ -116,6 +116,8 @@ Added from the redesign. There is **no server** in Version 1, so this is a demo 
 9. Sign in: phone, code, details (shown when signed out, after the splash)
 10. Home, New In and Profile — tabs from the redesign (placeholders until they are built)
 
+**Home (from the prototype):** "You're in {District, City}" (from the phone's location; a sample area if location is refused), then "Saved places near you": a row of up to 10 circles of saved places within 15 km, nearest first, showing the distance under each (a bright rotating ring under 5 km, a softer one from 5 to 15 km). Then a search bar that types example searches and a filter button with a count badge. Typing searches all nearby places by name, category, tags and menu items, plus influencers by handle, with Spotted Partners first. With nothing typed, an "Explore nearby" feed shows every place within 15 km, partners first, then nearest. While the design is built, the places, influencers and offers are **sample data** (`src/data/mock.ts`).
+
 **The bottom bar:** Saved · Map · **Home** (the raised centre button, opens first) · New In · Profile. A red dot on New In shows until it is opened. Profile shows the user's first initial.
 
 ## 7. Tech stack

@@ -40,6 +40,13 @@ const entryFiles = [
   'src/components/tabBarConfig.ts',
   'src/components/tabBarMath.ts',
   'src/state/newIn.ts',
+  'src/state/saved.ts',
+  'src/state/filters.ts',
+  'src/home/homeData.ts',
+  'src/home/typing.ts',
+  'src/location/area.ts',
+  'src/home/useTypingPlaceholder.ts',
+  'app/(tabs)/index.tsx',
 ];
 
 fs.rmSync(outDir, { recursive: true, force: true });

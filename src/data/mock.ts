@@ -271,3 +271,7 @@ export const hasOffers = (place: Place): boolean => place.partnerOffers.length +
 
 // The two colours of a place's logo gradient, from lightest (c2) to darkest (c1).
 export const thumbColors = (place: Pick<Place, 'c1' | 'c2'>): [string, string] => [place.c2, place.c1];
+
+// The area shown on Home when we cannot tell where the user is (location refused, or no signal).
+// It matches the sample places, which are set around Abu Dhabi.
+export const SAMPLE_AREA = 'Khalifa City, Abu Dhabi';
