@@ -21,7 +21,7 @@ export function CountryPicker({
   const { palette } = useTheme();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.scrim} onPress={onClose} accessibilityLabel="Close country list" />
+      <Pressable accessibilityRole="button" style={styles.scrim} onPress={onClose} accessibilityLabel="Close country list" />
       <View style={[styles.sheet, { backgroundColor: palette.bg }]}>
         <View style={[styles.grab, { backgroundColor: palette.line }]} />
         <AppText weight="700" size={20} style={{ marginBottom: 8 }}>Choose your country</AppText>

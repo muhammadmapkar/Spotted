@@ -58,9 +58,11 @@ export function usePing() {
 
 // How the rows of a list move when the results change (a filter is switched): they glide to their
 // new places over 0.3 s. Pass it to <Animated.FlatList itemLayoutAnimation={...}>. Off with Reduce Motion.
-export function useListLayout() {
+// With a very long list (more than LAYOUT_ANIMATION_MAX rows) the glide is skipped, so scrolling and filtering stay smooth.
+export const LAYOUT_ANIMATION_MAX = 40;
+export function useListLayout(rowCount = 0) {
   const reduceMotion = useReducedMotion();
-  return reduceMotion ? undefined : LinearTransition.duration(300);
+  return reduceMotion || rowCount > LAYOUT_ANIMATION_MAX ? undefined : LinearTransition.duration(300);
 }
 
 export { Animated };

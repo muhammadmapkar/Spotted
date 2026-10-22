@@ -6,6 +6,7 @@ import { IconName } from '@/src/components/icons/paths';
 import { AppText } from '@/src/components/ui/ui';
 import { Platform } from '@/src/data/mock';
 import { NO_RECOMMENDATIONS, Recommendation } from '@/src/place/placeData';
+import { MONO_SHADOW } from '@/src/theme/shadows';
 import { useTheme } from '@/src/theme/ThemeProvider';
 
 // The platform icon and the colours of the little reel button under the profile circle (prototype: .reel).
@@ -45,7 +46,7 @@ export function InfluencerRecs({
                 <Image source={{ uri: rec.profilePicUrl }} style={styles.avatar} accessibilityIgnoresInvertColors />
               ) : (
                 <LinearGradient colors={rec.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatar}>
-                  <AppText tone="onBrand" weight="700" size={18}>{rec.initial}</AppText>
+                  <AppText tone="onBrand" weight="700" size={18} style={MONO_SHADOW}>{rec.initial}</AppText>
                 </LinearGradient>
               )}
             </Pressable>

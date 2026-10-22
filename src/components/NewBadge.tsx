@@ -20,7 +20,7 @@ export function NewBadge({ label }: { label: string }) {
     <View style={styles.badge} accessible accessibilityLabel={label}>
       <Animated.View style={[styles.shimmer, style]}>
         <LinearGradient
-          colors={['#D62839', '#FF6B6B', '#D62839', '#FF6B6B', '#D62839']}
+          colors={['#D62839', '#DD3042', '#D62839', '#DD3042', '#D62839']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={StyleSheet.absoluteFill}

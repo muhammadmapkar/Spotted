@@ -1,54 +1,53 @@
-// Spotted colours. Change them here and the whole app updates.
-const coral = '#E8505B'; // main accent colour (brand)
-const ink = '#1F2430'; // main text colour (brand)
-
-// A few colours have a slightly deeper "strong" version. They are used only where
-// small white text sits on the colour (tags, selected chips) or where coloured text
-// sits on white, so everything stays easy to read. The bright brand colours stay
-// on big buttons, map pins, stripes and the tab bar.
-const coralStrong = '#C93642';
+// Colours for the older screens (Add place, the edit page, Collections, Settings, the welcome slides, ...).
+// They use the SAME purple look as the redesigned screens (see constants/Theme.ts and SPEC.md section 10),
+// so the whole app looks like one. Change them here and those screens update.
+const purple = '#6A1FB0'; // brand (light mode)
+const purpleDark = '#7B2CD6'; // deeper purple behind small white text in dark mode
+const ink = '#1C0F2E'; // main text colour (light mode)
 
 export default {
   light: {
     text: ink,
-    mutedText: '#6B7280', // softer grey text
-    background: '#FFFFFF',
-    card: '#F6F7F9', // background of cards
-    border: '#E3E5EA', // faint dividers
-    outline: '#7F8591', // outlines of things you tap (chips, inputs, buttons)
-    tint: coral,
-    tintStrong: coralStrong, // coral behind small white text
-    tintText: '#C4303C', // coral used as text colour
-    danger: '#C62828', // delete / warning text
-    tabIconDefault: '#737A87',
-    tabIconSelected: coral,
+    mutedText: '#5E4F72', // softer text
+    background: '#F6F2FB',
+    card: '#FFFFFF', // background of cards
+    border: '#E2D7F0', // faint dividers
+    outline: '#7F6C99', // outlines of things you tap (chips, inputs, buttons)
+    tint: purple,
+    tintStrong: purple, // purple behind small white text
+    tintText: purple, // purple used as text colour
+    danger: '#C42334', // delete / warning text
+    tabIconDefault: '#756788',
+    tabIconSelected: purple,
   },
   dark: {
-    text: '#F5F6F8',
-    mutedText: '#A0A6B3',
-    background: '#14171F',
-    card: '#1F232D',
-    border: '#2E3340',
-    outline: '#6B7280',
-    tint: coral,
-    tintStrong: coralStrong,
-    tintText: '#F26B75',
+    text: '#F4EEFC',
+    mutedText: '#BBABD4',
+    background: '#120A1F',
+    card: '#1E1231',
+    border: '#36254F',
+    outline: '#8F7FB0',
+    // a lighter purple, readable on the dark page and still carrying white button text
+    tint: '#8A3FE0',
+    tintStrong: purpleDark,
+    tintText: '#CDA8FF',
     danger: '#FF7A85',
-    tabIconDefault: '#7B8190',
-    tabIconSelected: coral,
+    tabIconDefault: '#9C8CBA',
+    tabIconSelected: '#CDA8FF',
   },
 };
 
-// Colours for the three place categories (map pins and card stripes).
+// Colours for the three place categories (card stripes and tags). They are the ends of the Saved folder
+// gradients: Food red, Shopping purple, Fun blue.
 export const CategoryColors = {
-  food: coral,
-  shopping: '#8B5CF6', // purple
-  fun: '#14B8A6', // teal
+  food: '#D62839',
+  shopping: '#7209B7',
+  fun: '#3451D1',
 };
 
 // Deeper versions for tags and selected chips that have white text on them.
 export const CategoryColorsStrong = {
-  food: coralStrong,
-  shopping: '#7C3AED',
-  fun: '#0F766E',
+  food: '#C42334',
+  shopping: '#7209B7',
+  fun: '#3451D1',
 };

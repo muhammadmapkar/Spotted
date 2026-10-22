@@ -47,7 +47,7 @@ export default function NewInScreen() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: palette.bg }} contentContainerStyle={{ paddingTop: insets.top + 24, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
       <Animated.View style={[styles.padded, titleRise]}>
-        <AppText weight="800" size={26} accessibilityRole="header">New in</AppText>
+        <AppText weight="700" size={26} style={{ letterSpacing: -0.3 }} accessibilityRole="header">New in</AppText>
         <AppText tone="muted" size={13} style={{ marginTop: 2 }}>{SUBTITLE}</AppText>
       </Animated.View>
 

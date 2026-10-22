@@ -11,6 +11,7 @@ const palette = new Proxy({}, { get: (_t, key) => `<${String(key)}>` });
 const passChildren = (props) => props.children ?? null;
 
 installFakes({
+  '@/src/theme/shadows': { MONO_SHADOW: {}, cardShadow: () => 'shadow', partnerGlow: () => 'glow', PARTNER_BORDER: 'border' },
   'react-native': {
     StyleSheet: { create: (x) => x, absoluteFill: {} },
     View: (props) => { rec.views.push(JSON.stringify(props.style ?? null)); return props.children ?? null; },

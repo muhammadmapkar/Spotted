@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
+import { Icon } from '@/src/components/icons/Icon';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
@@ -32,7 +33,7 @@ export function MapFallback() {
       contentContainerStyle={styles.list}
       ListHeaderComponent={
         <View style={[styles.notice, { backgroundColor: theme.card }]}>
-          <Text style={styles.noticeTitle}>🗺️ Map view is coming soon</Text>
+          <Text style={styles.noticeTitle}>Map view is coming soon</Text>
           <Text style={[styles.noticeText, { color: theme.mutedText }]}>
             The map needs a Google Maps key, which this draft does not have yet. Your places and Directions work as normal.
           </Text>
@@ -53,7 +54,7 @@ export function MapFallback() {
                 </Text>
                 <View style={[styles.pill, { backgroundColor: category.strongColor }]}>
                   <Text style={styles.pillText}>
-                    {category.emoji} {category.label}
+                    {category.label}
                   </Text>
                 </View>
               </View>
@@ -64,20 +65,21 @@ export function MapFallback() {
 
               <View style={styles.buttons} lightColor="transparent" darkColor="transparent">
                 {item.reelUrl ? (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => openLink(item.reelUrl!)}
                     style={[styles.button, { borderColor: theme.outline }]}>
-                    <Text style={styles.buttonText}>▶ Open reel</Text>
+                    <Icon name="play" size={16} color={theme.text} />
+                    <Text style={styles.buttonText}>Open reel</Text>
                   </Pressable>
                 ) : null}
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => openDirections(item)}
                   style={[styles.button, { backgroundColor: theme.tintStrong, borderColor: theme.tintStrong }]}>
                   <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>Directions</Text>
                 </Pressable>
               </View>
 
-              <Pressable onPress={() => router.push(`/place/${item.id}` as never)} style={styles.editLink}>
+              <Pressable accessibilityRole="button" onPress={() => router.push(`/place/${item.id}` as never)} style={styles.editLink}>
                 <Text style={{ color: theme.tintText, fontWeight: '600' }}>Edit place</Text>
               </Pressable>
             </View>
@@ -103,7 +105,7 @@ const styles = StyleSheet.create({
   pillText: { color: '#FFFFFF', fontSize: 12, fontWeight: '600' },
   note: { fontSize: 14, fontStyle: 'italic', marginTop: 8 },
   buttons: { flexDirection: 'row', gap: 8, marginTop: 14 },
-  button: { flex: 1, minHeight: 48, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  button: { flexDirection: 'row', gap: 6, flex: 1, minHeight: 48, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   buttonText: { fontSize: 15, fontWeight: '700' },
   editLink: { minHeight: 44, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
 });

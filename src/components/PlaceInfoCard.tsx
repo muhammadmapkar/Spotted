@@ -1,4 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { NewBadge } from '@/src/components/NewBadge';
@@ -7,7 +8,7 @@ import { Animated, useRiseIn } from '@/src/components/motion';
 import { AppText } from '@/src/components/ui/ui';
 import { Place, fmt, recsFor, thumbColors } from '@/src/data/mock';
 import { categoryLine } from '@/src/home/homeData';
-import { PARTNER_BORDER, cardShadow, partnerGlow } from '@/src/theme/shadows';
+import { MONO_SHADOW, PARTNER_BORDER, cardShadow, partnerGlow } from '@/src/theme/shadows';
 import { useTheme } from '@/src/theme/ThemeProvider';
 
 // A place as a card (prototype: .card). Used on Home, and reused in other tabs.
@@ -16,7 +17,7 @@ import { useTheme } from '@/src/theme/ThemeProvider';
 //                               pin  1.2 km away
 //                               [Spotted Partner] [Spotted by 3]        [Menu]
 // Cards slide up and fade in as they appear.
-export function PlaceInfoCard({
+function PlaceInfoCardView({
   place,
   saved,
   index = 0,
@@ -58,7 +59,7 @@ export function PlaceInfoCard({
               <View key={i} style={{ width: 10, backgroundColor: i % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'transparent' }} />
             ))}
           </View>
-          <AppText tone="onBrand" weight="800" size={22}>{place.mono}</AppText>
+          <AppText tone="onBrand" weight="800" size={22} style={MONO_SHADOW}>{place.mono}</AppText>
         </LinearGradient>
 
         <View style={styles.body}>
@@ -115,3 +116,11 @@ const styles = StyleSheet.create({
   badge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
   menuButton: { width: 56, minHeight: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center', gap: 4 },
 });
+
+// In a long list only the cards that really changed are redrawn. The tap handlers only open a place by its id,
+// so a new handler function alone never needs a redraw.
+export const PlaceInfoCard = memo(
+  PlaceInfoCardView,
+  (before, after) =>
+    before.place === after.place && before.saved === after.saved && before.index === after.index && before.justJoined === after.justJoined
+);

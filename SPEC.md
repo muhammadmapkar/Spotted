@@ -216,7 +216,8 @@ The visual source of truth is the design prototype (`spotted-prototype-reference
 - Large tap targets (at least 44 x 44), light and dark mode, readable text contrast in both.
 - **Motion:** friendly animations, and every animation respects the phone's Reduce Motion setting.
 - **Never** use eyes, faces or any human features in icons, illustrations or animations. **No emoji** in the UI.
-- Older screens still use the first coral palette (`constants/Colors.ts`) until they are redesigned. The app icon will follow the purple brand later.
+- The older screens (Add place, the edit page, Collections, Settings, the welcome slides, "Places from reels") now use the same purple look (`constants/Colors.ts` holds the same colours), and have no emoji. The app icon image is still the first coral one and needs a new picture (not done yet).
+- Every button is at least 44 x 44 and has a role and a name for screen readers; switches sit inside a 56 x 48 button. White letters on bright gradients have a soft shadow, and every colour pair is checked for contrast in both themes by the tests.
 
 ## 11. Secrets
 

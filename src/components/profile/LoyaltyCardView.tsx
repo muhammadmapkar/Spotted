@@ -51,6 +51,7 @@ export function LoyaltyCardView({ view, onPress }: { view: LoyaltyView; onPress:
       accessibilityRole="button"
       accessibilityLabel={`${place.name}, ${view.stampsLabel}, now ${view.nowLabel}`}>
       <LinearGradient colors={card.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.card}>
+        <View style={styles.shade} pointerEvents="none" />
         <View style={styles.top}>
           <View style={styles.logo}>
             <AppText tone="onBrand" weight="800" size={11}>{place.mono}</AppText>
@@ -78,6 +79,7 @@ export function LoyaltyCardView({ view, onPress }: { view: LoyaltyView; onPress:
 
 const styles = StyleSheet.create({
   card: { width: LOYALTY_CARD_WIDTH, borderRadius: 22, padding: 16, boxShadow: '0 6px 20px rgba(60,20,110,0.2)' },
+  shade: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.22)' },
   top: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   logo: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   stamps: { flexDirection: 'row', gap: 6, marginVertical: 12 },

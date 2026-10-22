@@ -5,7 +5,7 @@ const assert = require('node:assert');
 const { app, installFakes, setupReact } = require('./helpers/fakes');
 const { React, mount, act } = setupReact();
 
-const rec = { texts: [], pressables: [], asked: [], finished: 0, grant: true };
+const rec = { icons: [], texts: [], pressables: [], asked: [], finished: 0, grant: true };
 const colours = new Proxy({}, { get: () => '#000000' });
 installFakes({
   'react-native': {
@@ -16,6 +16,7 @@ installFakes({
     Text: (props) => { rec.texts.push([props.children].flat(Infinity).join('')); return null; },
     View: (props) => props.children ?? null,
   },
+  '@/src/components/ui/HeroIcon': { HeroIcon: (props) => { rec.icons.push(props.name); return null; } },
   '@/components/useColorScheme': { useColorScheme: () => 'light' },
   '@/constants/Colors': { __esModule: true, default: { light: colours, dark: colours } },
   '@/src/onboarding/OnboardingContext': { useOnboarding: () => ({ finish: async () => { rec.finished++; } }) },
@@ -26,17 +27,19 @@ installFakes({
   },
 });
 const PermissionsScreen = app('app/permissions.js').default;
-test.beforeEach(() => Object.assign(rec, { texts: [], pressables: [], asked: [], finished: 0, grant: true }));
+test.beforeEach(() => Object.assign(rec, { icons: [], texts: [], pressables: [], asked: [], finished: 0, grant: true }));
 const latest = () => rec.pressables.slice(-2); // [main button, "Not now"]
 const press = async (button) => { await act(async () => { await button.onPress(); }); };
 
 test('step 1 explains location while the app is open; step 2 notifications; then it finishes. "All the time" is never asked.', async () => {
   const screen = await mount(React.createElement(PermissionsScreen));
   assert.ok(rec.texts.includes('See places near you'));
+  assert.equal(rec.icons.at(-1), 'pin', 'an icon, not an emoji');
   assert.ok(rec.texts.some((t) => /while the app is open/.test(t)), 'says it is only while the app is open');
   await press(latest()[0]);
   assert.deepStrictEqual(rec.asked, ['location']);
   assert.ok(rec.texts.includes('Allow notifications'), 'straight to notifications, no "all the time" step');
+  assert.equal(rec.icons.at(-1), 'bell');
   await press(latest()[0]);
   assert.deepStrictEqual(rec.asked, ['location', 'notifications']);
   assert.equal(rec.finished, 1);

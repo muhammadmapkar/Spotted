@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
+import { HeroIcon } from '@/src/components/ui/HeroIcon';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CollectionFilter } from '@/src/components/CollectionFilter';
@@ -114,7 +115,7 @@ export default function PlacesScreen() {
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyEmoji}>📍</Text>
+            <HeroIcon name="pin" size={88} />
             <Text style={styles.emptyTitle}>{emptyTitle}</Text>
             <Text style={[styles.emptyText, { color: theme.mutedText }]}>{emptyText}</Text>
           </View>
@@ -137,7 +138,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   list: { paddingHorizontal: 16, paddingBottom: 110, flexGrow: 1 },
   empty: { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 24 },
-  emptyEmoji: { fontSize: 48, marginBottom: 12 },
   emptyTitle: { fontSize: 20, fontWeight: '700', marginBottom: 8 },
   emptyText: { fontSize: 15, textAlign: 'center', lineHeight: 22 },
   fab: {

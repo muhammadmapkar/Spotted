@@ -25,10 +25,10 @@ Read **SPEC.md** before doing anything. It is the source of truth for what to bu
 
 ## Design
 - Clean and friendly. **Purple brand** (light `#6A1FB0`, dark `#A061F0`), Poppins font. SPEC.md section 10 has all the colours. The visual source of truth is `spotted-prototype-reference.html`.
-- Colours are in `constants/Theme.ts`. Read them with `useTheme()` from `src/theme/ThemeProvider.tsx`. Older screens still use the first coral palette in `constants/Colors.ts`; move a screen to the new theme when it is redesigned (see SPOTTED_BUILD_GUIDE.md).
+- Colours are in `constants/Theme.ts`. Read them with `useTheme()` from `src/theme/ThemeProvider.tsx`. The older screens read the same purple colours through `constants/Colors.ts`.
 - Support light and dark mode. Large tap targets (at least 44 x 44). Respect Reduce Motion in every animation.
 - **Never use eyes, faces or any human features** in icons, illustrations or animations.
-- **Do not use emoji in the UI** (new and redesigned screens now; older screens are converted as they are redesigned).
+- **Do not use emoji in the UI** anywhere (a test checks every file). Use the icons in `src/components/icons`.
 
 ## Before store submission, always check
 - Location permission text is clear and explains background use.

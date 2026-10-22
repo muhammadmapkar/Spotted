@@ -11,6 +11,7 @@ const rec = { reduce: false, shared: [], delays: [], repeats: [], pressables: []
 const palette = new Proxy({}, { get: (_t, key) => `<${String(key)}>` });
 
 installFakes({
+  '@/src/theme/shadows': { MONO_SHADOW: {}, cardShadow: () => 'shadow', partnerGlow: () => 'glow', PARTNER_BORDER: 'border' },
   'react-native': {
     StyleSheet: { create: (x) => x },
     View: (props) => { rec.views.push(props); return props.children ?? null; },
@@ -52,6 +53,7 @@ installFakes({
 installFakes({ '@/src/components/motion': app('src/components/motion.js') });
 const { SavingsCard } = app('src/components/profile/SavingsCard.js');
 const { LoyaltyCardView } = app('src/components/profile/LoyaltyCardView.js');
+installFakes({ '@/src/components/ui/TapSwitch': app('src/components/ui/TapSwitch.js') });
 const { ToggleRow } = app('src/components/profile/ToggleRow.js');
 const { RingAvatar } = app('src/components/influencer/ProfileRing.js');
 const { useCountUp } = app('src/profile/useCountUp.js');
@@ -152,7 +154,12 @@ test('switch row: title, line under it, and a switch with the chosen "on" colour
   const sw = rec.switches[0];
   assert.equal(sw.value, true);
   assert.equal(sw.trackColor.true, '#1F8F4E');
-  assert.equal(sw.accessibilityLabel, 'Get new offers on WhatsApp');
+  const button = rec.pressables.find((p) => p.accessibilityRole === 'switch');
+  assert.equal(button.accessibilityLabel, 'Get new offers on WhatsApp');
+  assert.equal(button.accessibilityState.checked, true);
+  button.onPress();
+  assert.deepStrictEqual(changes, [false], 'tapping the bigger button flips the switch');
+  changes.length = 0;
   sw.onValueChange(false);
   assert.deepStrictEqual(changes, [false]);
   await screen.unmount();

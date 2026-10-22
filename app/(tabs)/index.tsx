@@ -41,7 +41,6 @@ export default function HomeScreen() {
   const { palette } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const listLayout = useListLayout(); // rows glide when the results change
   const isFocused = useIsFocused();
   const savedIds = useSavedIds();
   const filters = useFilters();
@@ -74,6 +73,7 @@ export default function HomeScreen() {
     ];
   }, [searching, searchText, filters]);
 
+  const listLayout = useListLayout(rows.length); // rows glide when the results change (not in a very long list)
   const openPlace = (place: Place) => router.push(`/venue/${place.id}` as never);
   // The Menu button opens the place page with the menu sheet already up.
   const openMenu = (place: Place) => router.push(`/venue/${place.id}?menu=1` as never);
@@ -132,7 +132,9 @@ export default function HomeScreen() {
       ListHeaderComponent={header}
       keyboardShouldPersistTaps="handled"
       initialNumToRender={8}
+      maxToRenderPerBatch={8}
       windowSize={7}
+      removeClippedSubviews
       contentContainerStyle={{ paddingBottom: 24 }}
       renderItem={({ item }) => {
         if (item.type === 'heading') {

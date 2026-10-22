@@ -37,7 +37,7 @@ installFakes({
   },
   'expo-linear-gradient': { LinearGradient: (props) => { rec.gradients.push(props); return props.children ?? null; } },
   '@/src/theme/ThemeProvider': { useTheme: () => ({ palette, scheme: 'light' }) },
-  '@/src/theme/shadows': { cardShadow: () => 'shadow' },
+  '@/src/theme/shadows': { MONO_SHADOW: {}, cardShadow: () => 'shadow' },
   '@/src/components/ui/ui': { AppText: (props) => { rec.texts.push([props.children].flat(Infinity).join('')); return null; } },
   '@/src/components/icons/Icon': { Icon: (props) => { rec.icons.push(props); return null; } },
   '@/src/data/mock': mock,

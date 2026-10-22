@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
 
 import { Text, TextInput, View } from '@/components/Themed';
+import { Icon } from '@/src/components/icons/Icon';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
@@ -106,7 +107,7 @@ export default function AddPlaceScreen() {
 
   // One tappable place in a list of results.
   const renderResult = (place: PlaceSuggestion) => (
-    <Pressable
+    <Pressable accessibilityRole="button"
       key={place.googlePlaceId}
       onPress={() => choose(place)}
       style={({ pressed }) => [styles.result, { backgroundColor: theme.card, opacity: pressed ? 0.7 : 1 }]}>
@@ -164,7 +165,7 @@ export default function AddPlaceScreen() {
         <>
           {params.reelUrl ? (
             <View style={[styles.attached, { backgroundColor: theme.card }]}>
-              <Text style={{ fontWeight: '600' }}>🔗 Reel link attached</Text>
+              <Text style={{ fontWeight: '600' }}>Reel link attached</Text>
               <Text style={{ color: theme.mutedText, fontSize: 13 }} numberOfLines={1}>
                 {params.reelUrl}
               </Text>
@@ -191,8 +192,8 @@ export default function AddPlaceScreen() {
             onPress={() => setCaptionOpen(!captionOpen)}
             accessibilityRole="button"
             style={[styles.captionToggle, { borderColor: theme.outline }]}>
-            <Text style={{ fontWeight: '600' }}>📝 Have the caption? Paste it to find the place</Text>
-            <Text style={{ color: theme.mutedText }}>{captionOpen ? '▲' : '▼'}</Text>
+            <Text style={{ fontWeight: '600' }}>Have the caption? Paste it to find the place</Text>
+            <View style={{ transform: [{ rotate: captionOpen ? '180deg' : '0deg' }] }} lightColor="transparent" darkColor="transparent"><Icon name="chevron" size={18} color={theme.mutedText} /></View>
           </Pressable>
 
           {captionOpen ? (
@@ -205,7 +206,7 @@ export default function AddPlaceScreen() {
                 multiline
                 style={[styles.input, styles.captionInput, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
               />
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={findFromCaption}
                 disabled={captionBusy || !caption.trim()}
                 style={[styles.findButton, { backgroundColor: theme.tintStrong, opacity: captionBusy || !caption.trim() ? 0.5 : 1 }]}>
@@ -255,7 +256,7 @@ export default function AddPlaceScreen() {
               <Text style={styles.resultName}>{selected.name}</Text>
               <Text style={[styles.resultAddress, { color: theme.mutedText }]}>{selected.address}</Text>
             </View>
-            <Pressable onPress={() => setSelected(null)} style={styles.changeButton}>
+            <Pressable accessibilityRole="button" onPress={() => setSelected(null)} style={styles.changeButton}>
               <Text style={{ color: theme.tintText, fontWeight: '600' }}>Change</Text>
             </Pressable>
           </View>
@@ -278,7 +279,7 @@ export default function AddPlaceScreen() {
                     },
                   ]}>
                   <Text style={[styles.chipText, { color: isSelected ? '#FFFFFF' : theme.text }]}>
-                    {CATEGORIES[key].emoji} {CATEGORIES[key].label}
+                    {CATEGORIES[key].label}
                   </Text>
                 </Pressable>
               );
@@ -314,7 +315,7 @@ export default function AddPlaceScreen() {
             style={[styles.input, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
           />
 
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={save}
             disabled={saving}
             style={[styles.saveButton, { backgroundColor: theme.tint, opacity: saving ? 0.6 : 1 }]}>

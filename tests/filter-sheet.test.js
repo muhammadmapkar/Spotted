@@ -38,6 +38,7 @@ installFakes({
   '@/src/home/homeData': rules,
   '@/src/state/filters': store,
 });
+installFakes({ '@/src/components/ui/TapSwitch': app('src/components/ui/TapSwitch.js') });
 const { FilterSheet } = app('src/components/filters/FilterSheet.js');
 
 const matchCount = (f) => rules.nearbyMatchCount(mock.PLACES, f);
@@ -179,7 +180,11 @@ test('the two switches change the filters', async () => {
   assert.deepStrictEqual([store.getFilters().infl, store.getFilters().offers], [true, true]);
   await act(async () => { rec.switches[0].onValueChange(false); });
   assert.deepStrictEqual([store.getFilters().infl, store.getFilters().offers], [false, true]);
-  assert.deepStrictEqual(rec.switches.slice(0, 2).map((s) => s.accessibilityLabel), ['Spotted by influencers only', 'Has offers (Fazaa, Esaad, Spotted)']);
+  const switchButtons = rec.pressables.filter((p) => p.accessibilityRole === 'switch');
+  assert.deepStrictEqual([...new Set(switchButtons.map((p) => p.accessibilityLabel))], ['Spotted by influencers only', 'Has offers (Fazaa, Esaad, Spotted)'], 'each switch is one button with a name');
+  assert.equal(switchButtons.at(-1).accessibilityState.checked, true, 'the offers switch is on');
+  switchButtons.at(-2).onPress();
+  assert.equal(store.getFilters().infl, true, 'tapping the bigger button flips the switch');
   await screen.unmount();
 });
 

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
 
 import { Text, TextInput, View } from '@/components/Themed';
+import { Icon } from '@/src/components/icons/Icon';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
@@ -90,7 +91,7 @@ export default function PlaceScreen() {
                 },
               ]}>
               <Text style={[styles.chipText, { color: selected ? '#FFFFFF' : theme.text }]}>
-                {CATEGORIES[key].emoji} {CATEGORIES[key].label}
+                {CATEGORIES[key].label}
               </Text>
             </Pressable>
           );
@@ -112,18 +113,19 @@ export default function PlaceScreen() {
       />
 
       {place.reelUrl ? (
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => openLink(place.reelUrl!)}
           style={[styles.secondaryButton, { borderColor: theme.outline }]}>
-          <Text style={styles.secondaryText}>▶ Open reel</Text>
+          <Icon name="play" size={16} color={theme.text} />
+          <Text style={styles.secondaryText}>Open reel</Text>
         </Pressable>
       ) : null}
 
-      <Pressable onPress={save} style={[styles.saveButton, { backgroundColor: theme.tint }]}>
+      <Pressable accessibilityRole="button" onPress={save} style={[styles.saveButton, { backgroundColor: theme.tint }]}>
         <Text style={styles.saveText}>Save changes</Text>
       </Pressable>
 
-      <Pressable onPress={confirmDelete} style={styles.deleteButton}>
+      <Pressable accessibilityRole="button" onPress={confirmDelete} style={styles.deleteButton}>
         <Text style={[styles.deleteText, { color: theme.danger }]}>Delete this place</Text>
       </Pressable>
     </ScrollView>
@@ -154,7 +156,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlignVertical: 'top',
   },
-  secondaryButton: {
+  secondaryButton: { flexDirection: 'row', gap: 6,
     minHeight: 52,
     borderRadius: 14,
     borderWidth: 1,

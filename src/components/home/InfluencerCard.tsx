@@ -6,7 +6,7 @@ import { AppText } from '@/src/components/ui/ui';
 import { Influencer } from '@/src/data/mock';
 import { pickCount, platformText } from '@/src/home/homeData';
 import { safeWebUrl } from '@/src/place/placeData';
-import { cardShadow } from '@/src/theme/shadows';
+import { MONO_SHADOW, cardShadow } from '@/src/theme/shadows';
 import { useTheme } from '@/src/theme/ThemeProvider';
 
 // A round profile picture: their picture when we have one, otherwise their colours with their first letter.
@@ -21,7 +21,7 @@ export function InfluencerAvatar({ influencer, size = 46 }: { influencer: Influe
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{ width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center' }}>
-      <AppText tone="onBrand" weight="700" size={size * 0.39}>{influencer.initial}</AppText>
+      <AppText tone="onBrand" weight="700" size={size * 0.39} style={MONO_SHADOW}>{influencer.initial}</AppText>
     </LinearGradient>
   );
 }

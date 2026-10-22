@@ -7,7 +7,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'constants', 'Colors.ts'), 'utf8');
-const NAMED = { ink: '#1F2430', coral: '#E8505B', coralStrong: '#C93642' };
+// the named colours at the top of the file, e.g. const purple = '#6A1FB0';
+const NAMED = Object.fromEntries([...source.matchAll(/const (\w+) = '(#[0-9A-Fa-f]{6})'/g)].map(([, name, hex]) => [name, hex]));
 function colorsFor(mode) {
   const block = new RegExp(`${mode}: \\{([\\s\\S]*?)\\n  \\},`).exec(source)[1];
   const result = {};
@@ -38,15 +39,15 @@ for (const mode of ['light', 'dark']) {
       ['body text on card', t.text, t.card, 4.5],
       ['muted text on page', t.mutedText, t.background, 4.5],
       ['muted text on card', t.mutedText, t.card, 4.5],
-      ['coral text on page (links)', t.tintText, t.background, 4.5],
-      ['coral text on card (distance)', t.tintText, t.card, 4.5],
+      ['brand text on page (links)', t.tintText, t.background, 4.5],
+      ['brand text on card (distance)', t.tintText, t.card, 4.5],
       ['danger text on page', t.danger, t.background, 4.5],
       ['danger text on card', t.danger, t.card, 4.5],
-      ['white on strong coral (small buttons, banner)', '#FFFFFF', t.tintStrong, 4.5],
+      ['white on strong brand (small buttons, banner)', '#FFFFFF', t.tintStrong, 4.5],
       ['white on Food tag/chip', '#FFFFFF', strong.food, 4.5],
       ['white on Shopping tag/chip', '#FFFFFF', strong.shopping, 4.5],
       ['white on Fun tag/chip', '#FFFFFF', strong.fun, 4.5],
-      ['white on brand coral (19px bold buttons)', '#FFFFFF', t.tint, 3],
+      ['white on brand (19px bold buttons)', '#FFFFFF', t.tint, 3],
       ['inactive tab icon on page', t.tabIconDefault, t.background, 3],
       ['outline on page (chips, inputs)', t.outline, t.background, 3],
       ['outline on card', t.outline, t.card, 3],

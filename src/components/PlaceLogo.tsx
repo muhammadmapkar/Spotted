@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
 import { Place, thumbColors } from '@/src/data/mock';
 import { POPPINS } from '@/src/theme/fonts';
+import { MONO_SHADOW } from '@/src/theme/shadows';
 
 // A place's logo: its two-letter monogram in white on a gradient of the place's colours
 // (from the light colour c2 to the dark colour c1, like the prototype).
@@ -30,7 +31,7 @@ export function PlaceLogo({
         { width: size, height: size, borderRadius: shape === 'circle' ? size / 2 : size * 0.22 },
       ]}>
       <Text
-        style={{ color: '#FFFFFF', fontFamily: POPPINS.extraBold, fontSize: size * 0.3, letterSpacing: -0.5 }}
+        style={[{ color: '#FFFFFF', fontFamily: POPPINS.extraBold, fontSize: size * 0.3, letterSpacing: -0.5 }, MONO_SHADOW]}
         lightColor="#FFFFFF"
         darkColor="#FFFFFF">
         {place.mono}

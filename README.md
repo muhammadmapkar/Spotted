@@ -112,7 +112,7 @@ npm run check          # type-check, then the tests
 ```
 They need **Node 24 or newer** (they use Node's built-in test runner and SQLite, so nothing extra to install).
 
-**What they cover** (397 tests in `tests/`):
+**What they cover** (480 tests in `tests/`):
 - the place-clue finder: reads sample captions and suggests the place (and never guesses wildly);
 - the reminder rules: nearest 20 places, quiet hours (including past midnight), the 24-hour no-repeat rule;
 - the background reminder job and the "refused permissions" cases, against a pretend phone;
@@ -121,6 +121,7 @@ They need **Node 24 or newer** (they use Node's built-in test runner and SQLite,
 - the Android map safety switch, the place search (demo list and Google), the My Places filters;
 - readable colours in light and dark mode, and the icon files;
 - Influencer page: platform buttons and profile links (app first, website if the app is missing), the top 7 and all-recommendations lists, reel links, month chip, the ring / pop / fan-in animations, and every tap on the real screen;
+- Final audit (reads every screen file): no emoji, no faces or people icons, every file that animates respects Reduce Motion, every button has a role, a name and is at least 44 x 44, switches have a name, colour contrast in both themes, 500 places searched in well under 0.1 s, long lists draw only what is on screen; and a comparison with the prototype's sizes, corner radius, spacing, text weights, dark-mode colours and animation times;
 - Nearby alerts: the alert words and distances, watching saved Spotted places together with reel places (20 nearest), once a day per place, quiet hours, saving / un-saving updating the watch list, tapping an alert, the banner, the order of permission questions, and the permission texts in app.json;
 - Profile tab: the savings count-up and split, the loyalty discount table and stamp slots, the WhatsApp choice (saved per person, off by default, removed by "Delete all my data"), the nearby-alerts and dark-mode switches, and every tap on the real screen;
 - New In tab: which offers, influencers and places are new (within 15 km, nearest first), the shimmering NEW / JUST JOINED badges, the cards, the sections sliding in, opening the place with its Offers dropdown open, and clearing the red dot;

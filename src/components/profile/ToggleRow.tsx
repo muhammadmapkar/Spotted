@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
-import { StyleSheet, Switch, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { TapSwitch } from '@/src/components/ui/TapSwitch';
 import { AppText } from '@/src/components/ui/ui';
 import { useTheme } from '@/src/theme/ThemeProvider';
 
@@ -31,13 +32,7 @@ export function ToggleRow({
         <AppText weight="600" size={14}>{title}</AppText>
         {subtitle ? <AppText tone="muted" size={12}>{subtitle}</AppText> : null}
       </View>
-      <Switch
-        value={value}
-        onValueChange={onChange}
-        trackColor={{ false: palette.line, true: onColor }}
-        thumbColor="#FFFFFF"
-        accessibilityLabel={title}
-      />
+      <TapSwitch value={value} onValueChange={onChange} label={title} trackColor={{ false: palette.line, true: onColor }} />
     </View>
   );
 }

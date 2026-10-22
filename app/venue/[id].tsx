@@ -75,7 +75,7 @@ export default function VenueScreen() {
         <PlaceHero place={place} onBack={() => router.back()} />
 
         <View style={[styles.sheet, { backgroundColor: palette.bg }]}>
-          <AppText weight="800" size={24} accessibilityRole="header">{place.name}</AppText>
+          <AppText weight="700" size={24} style={{ letterSpacing: -0.3 }} accessibilityRole="header">{place.name}</AppText>
           <AppText tone="muted" size={13} style={{ marginTop: 4 }}>{placeSubtitle(place)}</AppText>
 
           <ActionRow

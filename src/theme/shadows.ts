@@ -12,4 +12,12 @@ export const cardShadow = (palette: Palette): string => `0 6px 20px ${rgba(palet
 // A Spotted Partner card also glows purple (prototype: .card.partner).
 export const partnerGlow = (palette: Palette): string => `0 0 0 3px rgba(160,97,240,0.15), ${cardShadow(palette)}`;
 
+// White letters (a place's two-letter logo, an influencer's initial) sit on bright gradients. A soft dark shadow keeps
+// them readable on the lightest colours.
+export const MONO_SHADOW = {
+  textShadowColor: 'rgba(0,0,0,0.4)',
+  textShadowOffset: { width: 0, height: 1 },
+  textShadowRadius: 3,
+} as const;
+
 export const PARTNER_BORDER = 'rgba(160,97,240,0.65)';

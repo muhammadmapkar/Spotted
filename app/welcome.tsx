@@ -3,14 +3,15 @@ import { useRef, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
+import { HeroIcon } from '@/src/components/ui/HeroIcon';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 
 // The three welcome slides.
 const SLIDES = [
-  { emoji: '📲', title: 'Save from reels', text: 'Found a great place on Instagram? Share the reel to Spotted, or paste its link.' },
-  { emoji: '📍', title: 'Confirm the place', text: 'Pick the exact place yourself, choose Food, Shopping or Fun, and add a note.' },
-  { emoji: '🔔', title: 'Get reminded nearby', text: 'When you are close to a saved place, Spotted gives you a gentle nudge.' },
+  { icon: 'bookmark' as const, title: 'Save from reels', text: 'Found a great place on Instagram? Share the reel to Spotted, or paste its link.' },
+  { icon: 'pin' as const, title: 'Confirm the place', text: 'Pick the exact place yourself, choose Food, Shopping or Fun, and add a note.' },
+  { icon: 'bell' as const, title: 'Get reminded nearby', text: 'When you are close to a saved place, Spotted gives you a gentle nudge.' },
 ];
 
 export default function WelcomeScreen() {
@@ -28,7 +29,7 @@ export default function WelcomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Pressable onPress={() => router.push('/permissions' as never)} style={styles.skip}>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/permissions' as never)} style={styles.skip}>
         <Text style={{ color: theme.mutedText, fontSize: 16 }}>Skip</Text>
       </Pressable>
 
@@ -42,7 +43,7 @@ export default function WelcomeScreen() {
         onMomentumScrollEnd={(event) => setIndex(Math.round(event.nativeEvent.contentOffset.x / width))}
         renderItem={({ item }) => (
           <View style={[styles.slide, { width }]}>
-            <Text style={styles.emoji}>{item.emoji}</Text>
+            <HeroIcon name={item.icon} />
             <Text style={styles.title}>{item.title}</Text>
             <Text style={[styles.text, { color: theme.mutedText }]}>{item.text}</Text>
           </View>
@@ -59,7 +60,7 @@ export default function WelcomeScreen() {
         ))}
       </View>
 
-      <Pressable onPress={next} style={[styles.button, { backgroundColor: theme.tint }]}>
+      <Pressable accessibilityRole="button" onPress={next} style={[styles.button, { backgroundColor: theme.tint }]}>
         <Text style={styles.buttonText}>{isLast ? 'Get started' : 'Next'}</Text>
       </Pressable>
     </View>
@@ -70,7 +71,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 56, paddingBottom: 40 },
   skip: { alignSelf: 'flex-end', minHeight: 48, minWidth: 64, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 },
   slide: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 36 },
-  emoji: { fontSize: 88, marginBottom: 24 },
   title: { fontSize: 28, fontWeight: '800', textAlign: 'center', marginBottom: 12 },
   text: { fontSize: 17, lineHeight: 25, textAlign: 'center' },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginVertical: 24 },

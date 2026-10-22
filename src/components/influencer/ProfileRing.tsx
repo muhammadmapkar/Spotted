@@ -7,6 +7,7 @@ import { usePopIn } from '@/src/components/motion';
 import { AppText } from '@/src/components/ui/ui';
 import { Influencer } from '@/src/data/mock';
 import { safeWebUrl } from '@/src/place/placeData';
+import { MONO_SHADOW } from '@/src/theme/shadows';
 import { useTheme } from '@/src/theme/ThemeProvider';
 
 const RING = 96; // the whole circle (prototype: .prof-ring)
@@ -54,7 +55,7 @@ export function RingAvatar({
           <Image source={{ uri: picture }} style={styles.fill} accessibilityIgnoresInvertColors />
         ) : (
           <LinearGradient colors={gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.fill, styles.center]}>
-            <AppText tone="onBrand" weight="800" size={34}>{initial}</AppText>
+            <AppText tone="onBrand" weight="800" size={34} style={MONO_SHADOW}>{initial}</AppText>
           </LinearGradient>
         )}
       </View>

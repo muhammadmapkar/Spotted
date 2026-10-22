@@ -1,8 +1,8 @@
 // The Spotted design palettes, copied exactly from the prototype's CSS
 // (.ph for light and .ph.dark for dark in spotted-prototype-reference.html).
 //
-// This sits NEXT TO constants/Colors.ts (the original coral palette). Screens will switch from
-// Colors to this theme one by one as they are redesigned. Read it with the useTheme() hook.
+// This sits NEXT TO constants/Colors.ts (the older screens' colours, now the same purple). The redesigned
+// screens read this palette through the useTheme() hook.
 
 export interface Palette {
   bg: string; // page background

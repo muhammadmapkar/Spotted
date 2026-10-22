@@ -46,7 +46,6 @@ export default function SavedScreen() {
   const { palette } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const listLayout = useListLayout(); // rows glide when the results change
   const savedIds = useSavedIds();
   const filters = useFilters();
 
@@ -87,12 +86,13 @@ export default function SavedScreen() {
     return list;
   }, [tilesMode, saved, results]);
 
+  const listLayout = useListLayout(rows.length); // rows glide when the results change (not in a very long list)
   const openPlace = (place: Place) => router.push(`/venue/${place.id}` as never);
   const openMenu = (place: Place) => router.push(`/venue/${place.id}?menu=1` as never);
 
   const header = (
     <View style={{ paddingTop: insets.top + 24, paddingHorizontal: 20 }}>
-      <AppText weight="800" size={26} accessibilityRole="header">Saved</AppText>
+      <AppText weight="700" size={26} style={{ letterSpacing: -0.3 }} accessibilityRole="header">Saved</AppText>
       <AppText tone="muted" size={13} style={{ marginTop: 2, marginBottom: 14 }}>{savedTotalLabel(saved.length)}</AppText>
       <HomeSearchBar
         value={query}
@@ -115,6 +115,10 @@ export default function SavedScreen() {
         keyExtractor={(row) => row.key}
         ListHeaderComponent={header}
         keyboardShouldPersistTaps="handled"
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={7}
+        removeClippedSubviews
         contentContainerStyle={{ paddingBottom: 24 }}
         renderItem={({ item }) => {
           if (item.type === 'tiles') {

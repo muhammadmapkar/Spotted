@@ -7,6 +7,7 @@ import { AppText } from '@/src/components/ui/ui';
 import { Platform, fmt, thumbColors } from '@/src/data/mock';
 import { RecommendationRow as RowData } from '@/src/influencer/influencerData';
 import { heroPhotoUrl } from '@/src/place/placeData';
+import { MONO_SHADOW } from '@/src/theme/shadows';
 import { useTheme } from '@/src/theme/ThemeProvider';
 
 // The play button colours by platform (prototype: .reel).
@@ -31,7 +32,7 @@ export function RecommendationRow({ row, onOpenPlace, onOpenReel }: { row: RowDa
           <Image source={{ uri: photo }} style={styles.thumb} accessibilityIgnoresInvertColors />
         ) : (
           <LinearGradient colors={thumbColors(place)} start={{ x: 0.2, y: 0.1 }} end={{ x: 0.8, y: 0.9 }} style={[styles.thumb, styles.center]}>
-            <AppText tone="onBrand" weight="800" size={16}>{place.mono}</AppText>
+            <AppText tone="onBrand" weight="800" size={16} style={MONO_SHADOW}>{place.mono}</AppText>
           </LinearGradient>
         )}
         <View style={{ flex: 1, minWidth: 0 }}>

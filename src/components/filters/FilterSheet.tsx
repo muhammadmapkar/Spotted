@@ -1,10 +1,11 @@
 import { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetModal, BottomSheetScrollView, useBottomSheetTimingConfigs } from '@gorhom/bottom-sheet';
 import Slider from '@react-native-community/slider';
 import { RefObject, useCallback } from 'react';
-import { Pressable, StyleSheet, Switch, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { TapSwitch } from '@/src/components/ui/TapSwitch';
 import { AppText } from '@/src/components/ui/ui';
 import { CATEGORY_FILTERS, DISTANCE_FILTERS } from '@/src/data/mock';
 import { ANY_BUDGET, BUDGET_STEP, Filters, MIN_BUDGET, budgetLabel, showPlacesLabel, snapBudget } from '@/src/home/homeData';
@@ -127,13 +128,7 @@ function ToggleRow({ label, value, onChange, top }: { label: string; value: bool
   return (
     <View style={[styles.toggleRow, { marginTop: top }]}>
       <AppText weight="600" size={14} style={{ flex: 1 }}>{label}</AppText>
-      <Switch
-        value={value}
-        onValueChange={onChange}
-        trackColor={{ false: palette.line, true: '#7B2CD6' }}
-        thumbColor="#FFFFFF"
-        accessibilityLabel={label}
-      />
+      <TapSwitch value={value} onValueChange={onChange} label={label} trackColor={{ false: palette.line, true: '#7B2CD6' }} />
     </View>
   );
 }

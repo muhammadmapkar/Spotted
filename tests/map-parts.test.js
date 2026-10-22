@@ -54,7 +54,7 @@ installFakes({
     Circle: (props) => { rec.mapCircle = props; return null; },
   },
   '@/src/theme/ThemeProvider': { useTheme: () => ({ palette, scheme: rec.scheme }) },
-  '@/src/theme/shadows': { cardShadow: () => 'shadow' },
+  '@/src/theme/shadows': { MONO_SHADOW: {}, cardShadow: () => 'shadow' },
   '@/src/components/ui/ui': { AppText: (props) => { rec.texts.push([props.children].flat(Infinity).join('')); return null; } },
   '@/src/components/PlaceLogo': { PlaceLogo: (props) => { rec.logo = props.place.id; return null; } },
   '@/src/data/mock': mock,

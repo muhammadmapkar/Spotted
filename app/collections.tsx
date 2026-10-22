@@ -98,7 +98,7 @@ export default function CollectionsScreen() {
               returnKeyType="done"
               style={[styles.input, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
             />
-            <Pressable onPress={create} style={[styles.primaryButton, { backgroundColor: theme.tintStrong }]}>
+            <Pressable accessibilityRole="button" onPress={create} style={[styles.primaryButton, { backgroundColor: theme.tintStrong }]}>
               <Text style={styles.primaryText}>Add</Text>
             </Pressable>
           </View>
@@ -121,10 +121,10 @@ export default function CollectionsScreen() {
                 style={[styles.input, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.background }]}
               />
               <View style={styles.buttons} lightColor="transparent" darkColor="transparent">
-                <Pressable onPress={() => setEditingId(null)} style={[styles.button, { borderColor: theme.outline }]}>
+                <Pressable accessibilityRole="button" onPress={() => setEditingId(null)} style={[styles.button, { borderColor: theme.outline }]}>
                   <Text style={styles.buttonText}>Cancel</Text>
                 </Pressable>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => saveRename(item.id)}
                   style={[styles.button, { backgroundColor: theme.tintStrong, borderColor: theme.tintStrong }]}>
                   <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>Save</Text>
@@ -133,12 +133,12 @@ export default function CollectionsScreen() {
             </View>
           ) : (
             <View lightColor="transparent" darkColor="transparent">
-              <Text style={styles.name}>📁 {item.name}</Text>
+              <Text style={styles.name}>{item.name}</Text>
               <Text style={{ color: theme.mutedText, marginTop: 2 }}>
                 {item.placeCount === 0 ? 'No places yet' : `${item.placeCount} place${item.placeCount === 1 ? '' : 's'}`}
               </Text>
               <View style={styles.buttons} lightColor="transparent" darkColor="transparent">
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => {
                     setEditingId(item.id);
                     setEditName(item.name);
@@ -146,7 +146,7 @@ export default function CollectionsScreen() {
                   style={[styles.button, { borderColor: theme.outline }]}>
                   <Text style={styles.buttonText}>Rename</Text>
                 </Pressable>
-                <Pressable onPress={() => confirmDelete(item)} style={[styles.button, { borderColor: theme.outline }]}>
+                <Pressable accessibilityRole="button" onPress={() => confirmDelete(item)} style={[styles.button, { borderColor: theme.outline }]}>
                   <Text style={[styles.buttonText, { color: theme.danger }]}>Delete</Text>
                 </Pressable>
               </View>

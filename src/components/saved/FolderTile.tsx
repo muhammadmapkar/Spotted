@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Animated, usePopIn } from '@/src/components/motion';
 import { AppText } from '@/src/components/ui/ui';
 import { thumbColors } from '@/src/data/mock';
+import { MONO_SHADOW } from '@/src/theme/shadows';
 import { FolderTile as TileData } from '@/src/saved/savedData';
 
 // One folder on the Saved tab (prototype: .tile and .minis): a coloured gradient card with up to three
@@ -14,6 +15,8 @@ export function FolderTile({ tile, onPress }: { tile: TileData; onPress: () => v
     <Animated.View style={[styles.slot, pop]}>
       <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${tile.name}, ${tile.countLabel}`} style={{ flex: 1 }}>
         <LinearGradient colors={tile.colors} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={styles.tile}>
+          {/* a soft dark fade under the words keeps the white text readable on the light colours */}
+          <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.32)']} style={styles.fade} pointerEvents="none" />
           <View style={styles.minis}>
             {tile.minis.map((place, i) => (
               <LinearGradient
@@ -22,7 +25,7 @@ export function FolderTile({ tile, onPress }: { tile: TileData; onPress: () => v
                 start={{ x: 0.2, y: 0.1 }}
                 end={{ x: 0.8, y: 0.9 }}
                 style={[styles.mini, { zIndex: 3 - i }]}>
-                <AppText tone="onBrand" weight="800" size={11}>{place.mono}</AppText>
+                <AppText tone="onBrand" weight="800" size={11} style={MONO_SHADOW}>{place.mono}</AppText>
               </LinearGradient>
             ))}
           </View>
@@ -39,6 +42,7 @@ export function FolderTile({ tile, onPress }: { tile: TileData; onPress: () => v
 const styles = StyleSheet.create({
   slot: { flex: 1, minWidth: 0 },
   tile: { height: 150, padding: 16, borderRadius: 22, justifyContent: 'space-between', overflow: 'hidden' },
+  fade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '65%' },
   minis: { flexDirection: 'row', minHeight: 34 },
   mini: {
     width: 34,

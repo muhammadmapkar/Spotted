@@ -51,7 +51,7 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
-// Spotted's look for headers, back buttons and backgrounds (coral accent, our text colour),
+// Spotted's look for headers, back buttons and backgrounds (purple accent, our text colour),
 // in light and dark mode. Without this the app would use Expo's default blue.
 const SpottedLight = {
   ...DefaultTheme,

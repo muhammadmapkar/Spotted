@@ -7,6 +7,7 @@ const { React, mount } = setupReact();
 const mock = app('src/data/mock.js');
 const rec = { gradients: [], texts: [], pressables: [], pops: [], views: [] };
 installFakes({
+  '@/src/theme/shadows': { MONO_SHADOW: {}, cardShadow: () => 'shadow', partnerGlow: () => 'glow', PARTNER_BORDER: 'border' },
   'react-native': {
     StyleSheet: { create: (x) => x },
     View: (props) => props.children ?? null,
@@ -28,11 +29,12 @@ test('a tile shows the gradient, three logos, the name and the count; it pops in
   let taps = 0;
   const screen = await mount(React.createElement(FolderTile, { tile, onPress: () => { taps++; } }));
   assert.deepStrictEqual(rec.gradients[0].colors, ['#F4A259', '#D62839']);
-  assert.equal(rec.gradients.length, 1 + 3, 'the tile and three small logos');
-  assert.deepStrictEqual(rec.gradients.slice(1).map((g) => g.colors.join()), ['saffron', 'brew', 'taco'].map((id) => mock.thumbColors(mock.placeById(id)).join()));
+  assert.equal(rec.gradients.length, 1 + 1 + 3, 'the tile, its dark fade, and three small logos');
+  assert.deepStrictEqual(rec.gradients[1].colors, ['rgba(0,0,0,0)', 'rgba(0,0,0,0.32)'], 'the fade that keeps the words readable');
+  assert.deepStrictEqual(rec.gradients.slice(2).map((g) => g.colors.join()), ['saffron', 'brew', 'taco'].map((id) => mock.thumbColors(mock.placeById(id)).join()));
   for (const wanted of ['SL', 'BT', 'TN', 'Food', '7 places']) assert.ok(rec.texts.includes(wanted), wanted);
   assert.deepStrictEqual(rec.pops, [[80, 450]]);
-  assert.ok(rec.gradients.slice(1).every((g) => JSON.stringify(g.style).includes('"marginRight":-10')), 'the small logos overlap');
+  assert.ok(rec.gradients.slice(2).every((g) => JSON.stringify(g.style).includes('"marginRight":-10')), 'the small logos overlap');
   assert.equal(rec.pressables[0].accessibilityLabel, 'Food, 7 places');
   rec.pressables[0].onPress();
   assert.equal(taps, 1);
@@ -42,7 +44,7 @@ test('a tile shows the gradient, three logos, the name and the count; it pops in
 test('an empty folder shows no logos and "0 places"', async () => {
   const tile = rules.folderTiles([])[2];
   const screen = await mount(React.createElement(FolderTile, { tile, onPress: () => {} }));
-  assert.equal(rec.gradients.length, 1);
+  assert.equal(rec.gradients.length, 2, 'just the tile and its fade');
   assert.ok(rec.texts.includes('0 places'));
   assert.deepStrictEqual(rec.pops, [[160, 450]]);
   await screen.unmount();

@@ -1,10 +1,11 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { TapSwitch } from '@/src/components/ui/TapSwitch';
 import { SUPPORT_EMAIL } from '@/src/config';
 import { resetSaved } from '@/src/state/saved';
 import { DEFAULT_SETTINGS, Settings, deleteAllData, getSettings, listPlaces, saveSettings } from '@/src/db';
@@ -111,10 +112,11 @@ export default function SettingsScreen() {
               Get a notification when you are near a saved place.
             </Text>
           </View>
-          <Switch
+          <TapSwitch
             value={settings.remindersEnabled}
             onValueChange={(value) => change({ remindersEnabled: value })}
-            trackColor={{ true: theme.tint }}
+            label="Nearby reminders"
+            trackColor={{ false: theme.border, true: theme.tint }}
           />
         </View>
       </View>
@@ -158,11 +160,12 @@ export default function SettingsScreen() {
               Spotted stays silent between these times.
             </Text>
           </View>
-          <Switch
+          <TapSwitch
             value={settings.quietHoursEnabled}
             disabled={remindersOff}
             onValueChange={(value) => change({ quietHoursEnabled: value })}
-            trackColor={{ true: theme.tint }}
+            label="Quiet hours"
+            trackColor={{ false: theme.border, true: theme.tint }}
           />
         </View>
 
@@ -197,7 +200,7 @@ export default function SettingsScreen() {
         <LinkRow label="Contact support" onPress={contactSupport} />
       </View>
 
-      <Pressable onPress={confirmDeleteAll} style={styles.deleteButton}>
+      <Pressable accessibilityRole="button" onPress={confirmDeleteAll} style={styles.deleteButton}>
         <Text style={[styles.deleteText, { color: theme.danger }]}>Delete all my data</Text>
       </Pressable>
       <Text style={[styles.footer, { color: theme.mutedText }]}>
@@ -207,16 +210,16 @@ export default function SettingsScreen() {
       {/* Testing helper. Only appears while developing, never in the store app. */}
       {__DEV__ ? (
         <View lightColor="transparent" darkColor="transparent">
-          <Pressable onPress={sendTestReminder} style={[styles.devButton, { borderColor: theme.outline }]}>
+          <Pressable accessibilityRole="button" onPress={sendTestReminder} style={[styles.devButton, { borderColor: theme.outline }]}>
             <Text style={{ fontWeight: '600' }}>Testing: send a test reminder</Text>
           </Pressable>
-          <Pressable onPress={showReminderStatus} style={[styles.devButton, { borderColor: theme.outline, marginTop: 8 }]}>
+          <Pressable accessibilityRole="button" onPress={showReminderStatus} style={[styles.devButton, { borderColor: theme.outline, marginTop: 8 }]}>
             <Text style={{ fontWeight: '600' }}>Testing: check reminder status</Text>
           </Pressable>
-          <Pressable onPress={restart} style={[styles.devButton, { borderColor: theme.outline, marginTop: 8 }]}>
+          <Pressable accessibilityRole="button" onPress={restart} style={[styles.devButton, { borderColor: theme.outline, marginTop: 8 }]}>
             <Text style={{ fontWeight: '600' }}>Testing: show welcome screens again</Text>
           </Pressable>
-          <Pressable onPress={signOut} style={[styles.devButton, { borderColor: theme.outline, marginTop: 8 }]}>
+          <Pressable accessibilityRole="button" onPress={signOut} style={[styles.devButton, { borderColor: theme.outline, marginTop: 8 }]}>
             <Text style={{ fontWeight: '600' }}>Testing: sign out</Text>
           </Pressable>
         </View>
@@ -240,14 +243,14 @@ function TimeStepper({
     <View style={styles.stepperRow} lightColor="transparent" darkColor="transparent">
       <Text style={styles.rowTitle}>{label}</Text>
       <View style={styles.stepper} lightColor="transparent" darkColor="transparent">
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onChange(addMinutes(time, -30))}
           accessibilityLabel={`${label} earlier by 30 minutes`}
           style={[styles.stepButton, { borderColor: theme.outline }]}>
           <Text style={styles.stepText}>−</Text>
         </Pressable>
         <Text style={styles.time}>{time}</Text>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => onChange(addMinutes(time, 30))}
           accessibilityLabel={`${label} later by 30 minutes`}
           style={[styles.stepButton, { borderColor: theme.outline }]}>

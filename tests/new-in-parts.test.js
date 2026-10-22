@@ -38,7 +38,7 @@ installFakes({
   },
   'expo-linear-gradient': { LinearGradient: (props) => { rec.gradients.push(props); return props.children ?? null; } },
   '@/src/theme/ThemeProvider': { useTheme: () => ({ palette, scheme: rec.scheme }) },
-  '@/src/theme/shadows': { cardShadow: () => 'shadow', partnerGlow: () => 'glow', PARTNER_BORDER: 'border' },
+  '@/src/theme/shadows': { MONO_SHADOW: {}, cardShadow: () => 'shadow', partnerGlow: () => 'glow', PARTNER_BORDER: 'border' },
   '@/src/components/ui/ui': { AppText: (props) => { const text = [props.children].flat(Infinity).join(''); rec.texts.push(text); rec.tones[text] = props.tone; return null; } },
   '@/src/components/icons/Icon': { Icon: (props) => { rec.icons.push(props.name); return null; } },
   '@/src/data/mock': mock,
@@ -57,7 +57,7 @@ const { SourceBadge } = app('src/components/place/OffersList.js');
 const newIn = app('src/newin/newInData.js');
 
 test.beforeEach(() => Object.assign(rec, { reduce: false, shared: [], delays: [], repeats: [], pressables: [], images: [], gradients: [], texts: [], views: [], icons: [], scheme: 'light', tones: {} }));
-const RED_SHIMMER = '#D62839,#FF6B6B,#D62839,#FF6B6B,#D62839';
+const RED_SHIMMER = '#D62839,#DD3042,#D62839,#DD3042,#D62839';
 
 // ---- the badge -------------------------------------------------------------------------------
 

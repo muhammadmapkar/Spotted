@@ -6,7 +6,7 @@ import { AppText } from '@/src/components/ui/ui';
 import { fmt, thumbColors } from '@/src/data/mock';
 import { heroPhotoUrl } from '@/src/place/placeData';
 import { TopCard as TopCardData } from '@/src/influencer/influencerData';
-import { cardShadow } from '@/src/theme/shadows';
+import { MONO_SHADOW, cardShadow } from '@/src/theme/shadows';
 import { useTheme } from '@/src/theme/ThemeProvider';
 
 export const TOP_CARD_WIDTH = 236;
@@ -36,7 +36,7 @@ export function TopCard({ card, onPress }: { card: TopCardData; onPress: () => v
                   <View key={i} style={{ width: 10, backgroundColor: i % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'transparent' }} />
                 ))}
               </View>
-              <AppText tone="onBrand" weight="800" size={22} style={styles.mono}>{place.mono}</AppText>
+              <AppText tone="onBrand" weight="800" size={22} style={[styles.mono, MONO_SHADOW]}>{place.mono}</AppText>
             </LinearGradient>
           )}
           <AppText tone="onBrand" weight="800" size={54} style={styles.rank}>{card.rank}</AppText>

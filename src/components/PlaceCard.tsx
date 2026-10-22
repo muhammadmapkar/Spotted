@@ -39,7 +39,7 @@ export function PlaceCard({
           </Text>
           <View style={[styles.pill, { backgroundColor: category.strongColor }]}>
             <Text style={styles.pillText}>
-              {category.emoji} {category.label}
+              {category.label}
             </Text>
           </View>
         </View>

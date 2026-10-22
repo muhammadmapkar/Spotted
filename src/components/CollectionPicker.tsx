@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet } from 'react-native';
 
 import { Text, TextInput, View } from '@/components/Themed';
+import { Icon } from '@/src/components/icons/Icon';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Collection, MAX_COLLECTION_NAME, addCollection, listCollections } from '@/src/db';
@@ -67,8 +68,8 @@ export function CollectionPicker({
                   borderColor: selected ? theme.tintStrong : theme.outline,
                 },
               ]}>
+              {selected ? <Icon name="check" size={14} color="#FFFFFF" strokeWidth={3} /> : null}
               <Text style={[styles.chipText, { color: selected ? '#FFFFFF' : theme.text }]} numberOfLines={1}>
-                {selected ? '✓ ' : ''}
                 {collection.name}
               </Text>
             </Pressable>
@@ -79,7 +80,7 @@ export function CollectionPicker({
           onPress={() => setAdding(!adding)}
           accessibilityRole="button"
           style={[styles.chip, { borderColor: theme.outline, borderStyle: 'dashed' }]}>
-          <Text style={[styles.chipText, { color: theme.text }]}>＋ New collection</Text>
+          <Text style={[styles.chipText, { color: theme.text }]}>+ New collection</Text>
         </Pressable>
       </View>
 
@@ -96,7 +97,7 @@ export function CollectionPicker({
             returnKeyType="done"
             style={[styles.input, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
           />
-          <Pressable onPress={create} style={[styles.addButton, { backgroundColor: theme.tintStrong }]}>
+          <Pressable accessibilityRole="button" onPress={create} style={[styles.addButton, { backgroundColor: theme.tintStrong }]}>
             <Text style={styles.addButtonText}>Add</Text>
           </Pressable>
         </View>
@@ -113,7 +114,7 @@ export function CollectionPicker({
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: {
+  chip: { flexDirection: 'row', gap: 6,
     minHeight: 44,
     maxWidth: '100%',
     paddingHorizontal: 16,

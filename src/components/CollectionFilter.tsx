@@ -42,7 +42,7 @@ export function CollectionFilter({
               },
             ]}>
             <Text style={[styles.label, { color: isSelected ? '#FFFFFF' : theme.text }]} numberOfLines={1}>
-              {chip.id === 'all' ? chip.name : `📁 ${chip.name}`}
+              {chip.name}
             </Text>
           </Pressable>
         );
