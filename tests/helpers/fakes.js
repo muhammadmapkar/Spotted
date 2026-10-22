@@ -135,4 +135,16 @@ function setupReact() {
   return { React, mount, act: React.act, wait };
 }
 
-module.exports = { app, installFakes, makeTestDb, atTime, createPhone, setupReact };
+// The design prototype (the HTML file). Its CSS and sample data are the source of truth for the design,
+// so tests compare our code against it. It lives in the project folder (or in docs/).
+function readPrototype() {
+  const fs = require('node:fs');
+  const root = path.join(__dirname, '..', '..');
+  for (const candidate of ['spotted-prototype-reference.html', 'docs/spotted-prototype-reference.html']) {
+    const file = path.join(root, candidate);
+    if (fs.existsSync(file)) return fs.readFileSync(file, 'utf8');
+  }
+  throw new Error('spotted-prototype-reference.html not found');
+}
+
+module.exports = { app, installFakes, makeTestDb, atTime, createPhone, setupReact, readPrototype };

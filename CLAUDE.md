@@ -27,6 +27,9 @@ Read **SPEC.md** before doing anything. It is the source of truth for what to bu
 - Clean and friendly. Coral accent `#E8505B`, text `#1F2430`.
 - Category colours: Food coral, Shopping purple, Fun teal.
 - Support light and dark mode. Large tap targets.
+- The redesign (see SPOTTED_BUILD_GUIDE.md) adds a purple theme in `constants/Theme.ts` and the Poppins font. Screens move from `constants/Colors.ts` to the new theme as they are redesigned. Use `useTheme()` from `src/theme/ThemeProvider.tsx`.
+- **Never use eyes, faces or any human features** in icons, illustrations or animations.
+- **Do not use emoji in the UI** (new and redesigned screens now; older screens are converted as they are redesigned).
 
 ## Before store submission, always check
 - Location permission text is clear and explains background use.

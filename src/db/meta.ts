@@ -19,3 +19,17 @@ export async function resetOnboarding(): Promise<void> {
   const db = await getDb();
   await db.runAsync("DELETE FROM meta WHERE key = 'onboardingDone'");
 }
+
+// The user's light/dark choice: 'system' (follow the phone, the default), 'light' or 'dark'.
+export type ThemePreference = 'system' | 'light' | 'dark';
+
+export async function getThemePreference(): Promise<ThemePreference> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ value: string }>("SELECT value FROM meta WHERE key = 'themePreference'");
+  return row?.value === 'light' || row?.value === 'dark' ? row.value : 'system';
+}
+
+export async function setThemePreference(preference: ThemePreference): Promise<void> {
+  const db = await getDb();
+  await db.runAsync("INSERT OR REPLACE INTO meta (key, value) VALUES ('themePreference', ?)", [preference]);
+}

@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
+import { POPPINS } from '@/src/theme/fonts';
 
 // The bottom tab bar: My Places, Map, Settings.
 export default function TabLayout() {
@@ -11,6 +12,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        tabBarLabelStyle: { fontFamily: POPPINS.medium },
+        headerTitleStyle: { fontFamily: POPPINS.semiBold },
         tabBarActiveTintColor: Colors[colorScheme].tint,
         tabBarInactiveTintColor: Colors[colorScheme].tabIconDefault,
       }}>

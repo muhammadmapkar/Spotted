@@ -25,6 +25,11 @@ const entryFiles = [
   'src/settings/time.ts',
   'src/placeFilters.ts',
   'app/(tabs)/map.tsx',
+  'constants/Theme.ts',
+  'src/theme/fonts.ts',
+  'src/theme/ThemeProvider.tsx',
+  'src/data/mock.ts',
+  'src/components/icons/paths.ts',
 ];
 
 fs.rmSync(outDir, { recursive: true, force: true });

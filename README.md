@@ -112,14 +112,15 @@ npm run check          # type-check, then the tests
 ```
 They need **Node 24 or newer** (they use Node's built-in test runner and SQLite, so nothing extra to install).
 
-**What they cover** (66 tests in `tests/`):
+**What they cover** (84 tests in `tests/`):
 - the place-clue finder: reads sample captions and suggests the place (and never guesses wildly);
 - the reminder rules: nearest 20 places, quiet hours (including past midnight), the 24-hour no-repeat rule;
 - the background reminder job and the "refused permissions" cases, against a pretend phone;
 - on-phone storage, collections, settings, and "Delete all my data";
 - sharing a reel: finding and cleaning the link, and opening Add Place (runs the real component in React);
 - the Android map safety switch, the place search (demo list and Google), the My Places filters;
-- readable colours in light and dark mode, and the icon files.
+- readable colours in light and dark mode, and the icon files;
+- the redesign foundation: palettes and sample data are compared against the prototype file itself, and the light/dark choice is saved.
 
 **What they do NOT cover:** real phones. Background location, real notifications, Instagram's share sheet,
 and how the screens look need a manual test on a development build (see the test list in the owner's notes).
@@ -165,9 +166,11 @@ spotted/
 │   ├── geofence/             # Nearby reminders: rules, background jobs, notifications
 │   ├── share/                # Receives reels shared from Instagram
 │   ├── permissions/          # Location + notification permissions
+│   ├── theme/                # Light/dark theme provider (useTheme) and the Poppins font mapping
+│   ├── data/mock.ts          # SAMPLE data for the redesign preview (places, influencers, offers)
 │   ├── location/             # Distance helpers
 │   ├── onboarding/           # First-launch state
-│   └── components/           # Shared UI pieces
+│   └── components/           # Shared UI pieces (icons/ = the Spotted line icons, PlaceLogo)
 ├── tests/                    # Automatic tests (run with `npm test`) and their helpers
 ├── docs/PRIVACY_POLICY.md    # Draft privacy policy (publish it, then link it in src/config.ts)
 ├── eas.json                  # Build settings for Expo's cloud builds

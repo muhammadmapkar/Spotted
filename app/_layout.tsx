@@ -1,5 +1,12 @@
 import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'expo-status-bar';
+import {
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+  Poppins_800ExtraBold,
+} from '@expo-google-fonts/poppins';
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -9,9 +16,11 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { GeofenceManager } from '@/src/geofence/GeofenceManager';
-import { getOnboardingDone, resetOnboarding, setOnboardingDone } from '@/src/db';
+import { ThemePreference, getOnboardingDone, getThemePreference, resetOnboarding, setOnboardingDone } from '@/src/db';
 import { OnboardingContext } from '@/src/onboarding/OnboardingContext';
 import { ShareIntentHandler } from '@/src/share/ShareIntentHandler';
+import { POPPINS } from '@/src/theme/fonts';
+import { SpottedThemeProvider, applyThemePreference } from '@/src/theme/ThemeProvider';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -62,14 +71,27 @@ Notifications.setNotificationHandler({
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  // Load the Poppins font (5 weights). The splash screen stays up until it is ready.
+  const [fontsLoaded, fontError] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+    Poppins_800ExtraBold,
   });
+  // If a font ever fails to load, carry on with the phone's own font instead of crashing.
+  const loaded = fontsLoaded || !!fontError;
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
+  // The user's saved Light / Dark / "follow my phone" choice (null = still loading).
+  const [themePreference, setThemePref] = useState<ThemePreference | null>(null);
   useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+    getThemePreference()
+      .then((preference) => {
+        applyThemePreference(preference); // before the first screen shows, so there is no flash
+        setThemePref(preference);
+      })
+      .catch(() => setThemePref('system'));
+  }, []);
 
   // Has the user already been through the welcome screens? (null = still checking)
   const [onboardingDone, setDone] = useState<boolean | null>(null);
@@ -90,7 +112,7 @@ export default function RootLayout() {
     setDone(false);
   }, []);
 
-  const ready = loaded && onboardingDone !== null;
+  const ready = loaded && onboardingDone !== null && themePreference !== null;
 
   useEffect(() => {
     if (ready) {
@@ -103,9 +125,11 @@ export default function RootLayout() {
   }
 
   return (
-    <OnboardingContext.Provider value={{ finish, restart }}>
-      <RootLayoutNav onboardingDone={onboardingDone} />
-    </OnboardingContext.Provider>
+    <SpottedThemeProvider initialPreference={themePreference}>
+      <OnboardingContext.Provider value={{ finish, restart }}>
+        <RootLayoutNav onboardingDone={onboardingDone} />
+      </OnboardingContext.Provider>
+    </SpottedThemeProvider>
   );
 }
 
@@ -116,7 +140,7 @@ function RootLayoutNav({ onboardingDone }: { onboardingDone: boolean }) {
     <ThemeProvider value={colorScheme === 'dark' ? SpottedDark : SpottedLight}>
       {/* Phone status bar (clock, battery): light icons in dark mode, dark icons in light mode */}
       <StatusBar style="auto" />
-      <Stack>
+      <Stack screenOptions={{ headerTitleStyle: { fontFamily: POPPINS.semiBold } }}>
         {/* First launch only: welcome slides, then permissions */}
         <Stack.Protected guard={!onboardingDone}>
           <Stack.Screen name="welcome" options={{ headerShown: false }} />
