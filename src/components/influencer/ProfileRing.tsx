@@ -12,13 +12,23 @@ import { useTheme } from '@/src/theme/ThemeProvider';
 const RING = 96; // the whole circle (prototype: .prof-ring)
 const BORDER = 4; // thickness of the coloured ring
 
-// The influencer's profile circle (prototype: .prof-ring): their picture (or gradient + initial) inside a
-// slowly turning rainbow ring. It zooms in when the page opens (0.6 s).
-export function ProfileRing({ influencer }: { influencer: Influencer }) {
+// A profile circle (prototype: .prof-ring): a picture (or gradient + initial) inside a slowly turning rainbow
+// ring. It zooms in when the page opens (0.6 s). Used for influencers and for the signed-in user.
+export function RingAvatar({
+  initial,
+  gradient,
+  pictureUrl,
+  label,
+}: {
+  initial: string;
+  gradient: [string, string];
+  pictureUrl?: string | null;
+  label: string; // read out by screen readers, e.g. "@capital.bites's profile picture"
+}) {
   const { palette } = useTheme();
   const reduceMotion = useReducedMotion();
   const zoom = usePopIn(0, 600);
-  const picture = safeWebUrl(influencer.profilePicUrl);
+  const picture = safeWebUrl(pictureUrl);
 
   const turn = useSharedValue(0);
   useEffect(() => {
@@ -28,7 +38,7 @@ export function ProfileRing({ influencer }: { influencer: Influencer }) {
 
   const inner = RING - BORDER * 2;
   return (
-    <Animated.View style={[styles.ring, zoom]} accessible accessibilityRole="image" accessibilityLabel={`@${influencer.handle}'s profile picture`}>
+    <Animated.View style={[styles.ring, zoom]} accessible accessibilityRole="image" accessibilityLabel={label}>
       <View style={styles.window}>
         <Animated.View style={[styles.spinner, spin]}>
           <LinearGradient
@@ -43,12 +53,24 @@ export function ProfileRing({ influencer }: { influencer: Influencer }) {
         {picture ? (
           <Image source={{ uri: picture }} style={styles.fill} accessibilityIgnoresInvertColors />
         ) : (
-          <LinearGradient colors={influencer.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.fill, styles.center]}>
-            <AppText tone="onBrand" weight="800" size={34}>{influencer.initial}</AppText>
+          <LinearGradient colors={gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.fill, styles.center]}>
+            <AppText tone="onBrand" weight="800" size={34}>{initial}</AppText>
           </LinearGradient>
         )}
       </View>
     </Animated.View>
+  );
+}
+
+// The influencer's profile circle.
+export function ProfileRing({ influencer }: { influencer: Influencer }) {
+  return (
+    <RingAvatar
+      initial={influencer.initial}
+      gradient={influencer.gradient}
+      pictureUrl={influencer.profilePicUrl}
+      label={`@${influencer.handle}'s profile picture`}
+    />
   );
 }
 

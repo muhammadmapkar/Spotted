@@ -112,7 +112,7 @@ npm run check          # type-check, then the tests
 ```
 They need **Node 24 or newer** (they use Node's built-in test runner and SQLite, so nothing extra to install).
 
-**What they cover** (324 tests in `tests/`):
+**What they cover** (357 tests in `tests/`):
 - the place-clue finder: reads sample captions and suggests the place (and never guesses wildly);
 - the reminder rules: nearest 20 places, quiet hours (including past midnight), the 24-hour no-repeat rule;
 - the background reminder job and the "refused permissions" cases, against a pretend phone;
@@ -121,6 +121,7 @@ They need **Node 24 or newer** (they use Node's built-in test runner and SQLite,
 - the Android map safety switch, the place search (demo list and Google), the My Places filters;
 - readable colours in light and dark mode, and the icon files;
 - Influencer page: platform buttons and profile links (app first, website if the app is missing), the top 7 and all-recommendations lists, reel links, month chip, the ring / pop / fan-in animations, and every tap on the real screen;
+- Profile tab: the savings count-up and split, the loyalty discount table and stamp slots, the WhatsApp choice (saved per person, off by default, removed by "Delete all my data"), the nearby-alerts and dark-mode switches, and every tap on the real screen;
 - New In tab: which offers, influencers and places are new (within 15 km, nearest first), the shimmering NEW / JUST JOINED badges, the cards, the sections sliding in, opening the place with its Offers dropdown open, and clearing the red dot;
 - Map tab: which places get a pin (saved = red bookmark, unsaved partner = purple), distances from the user, the 15 km circle, the dark map style, the real Google map vs the drawn preview (never the Google map on Android without a key), and tapping pins;
 - Saved tab: folders and counts, searching only saved places, shared filters, keeping saved places on the phone (and "Delete all my data" forgetting them), the back arrow / phone back button, and every tap on the real screen;
@@ -189,6 +190,7 @@ spotted/
 │   ├── services/auth.ts      # The FAKE SMS service (code is always 123456). A real provider replaces this one file
 │   ├── influencer/           # Influencer page rules (profile links with website fallback, top 7, all recommendations)
 │   ├── components/filters/   # The filter bottom sheet
+│   ├── profile/              # Profile tab rules (savings count-up, loyalty stamps and discounts)
 │   ├── newin/                # New In tab rules (new offers, influencers, places)
 │   ├── map/                  # Map tab rules (pins, circle, dark map style); the drawing is in components/map/
 │   ├── saved/                # Saved tab rules (folders, search, filters)

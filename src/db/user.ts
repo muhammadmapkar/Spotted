@@ -51,3 +51,17 @@ export async function endSession(): Promise<void> {
   await db.runAsync("DELETE FROM meta WHERE key = 'sessionPhone'");
   emitDataChanged();
 }
+
+// "Get new offers on WhatsApp": the choice is kept with the person's profile (by phone number), on the phone only.
+// It only controls whether NEW OFFERS are sent to WhatsApp. It is OFF until the person turns it on,
+// because nobody should get marketing messages they did not ask for.
+export async function getWhatsappOffers(phone: string): Promise<boolean> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ value: string }>('SELECT value FROM meta WHERE key = ?', [`whatsappOffers:${phone}`]);
+  return row?.value === 'true';
+}
+
+export async function setWhatsappOffers(phone: string, on: boolean): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)', [`whatsappOffers:${phone}`, on ? 'true' : 'false']);
+}

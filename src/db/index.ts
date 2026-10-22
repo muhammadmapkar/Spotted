@@ -13,7 +13,7 @@ export * from './settings';
 export async function deleteAllData(): Promise<void> {
   const db = await getDb();
   await db.execAsync(
-    "DELETE FROM places; DELETE FROM place_collections; DELETE FROM collections; DELETE FROM settings; DELETE FROM users; DELETE FROM meta WHERE key IN ('sessionPhone', 'savedPlaceIds');"
+    "DELETE FROM places; DELETE FROM place_collections; DELETE FROM collections; DELETE FROM settings; DELETE FROM users; DELETE FROM meta WHERE key IN ('sessionPhone', 'savedPlaceIds') OR key LIKE 'whatsappOffers:%';"
   );
   emitDataChanged();
 }
