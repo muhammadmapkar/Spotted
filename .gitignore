@@ -24,3 +24,6 @@ npm-debug.*
 
 # Generated files for the owner (not part of the app)
 exports/
+
+# Built by `npm test` (generated, not part of the app)
+.test-build/

@@ -81,10 +81,10 @@ Welcome! Read **SPEC.md** (what we build) and **CLAUDE.md** (the rules) first. T
 4. Start the app: `npx expo start --dev-client` (needs the Spotted development build on an Android phone;
    ask the owner for the install file). Expo Go can show the screens, but not Instagram sharing or
    background reminders.
-5. Before every commit, run these two checks. Both must be clean:
+5. Before every commit, run the checks. Everything must pass:
    ```bash
-   npx tsc --noEmit
-   npx expo-doctor
+   npm run check        # type-check + all automatic tests
+   npx expo-doctor      # project health check
    ```
 
 ### How we work together
@@ -103,6 +103,31 @@ Welcome! Read **SPEC.md** (what we build) and **CLAUDE.md** (the rules) first. T
 - Keep Version 1 small. Do not build anything listed under "Out of scope" in SPEC.md without asking.
 - Builds (`eas build`) are tied to the owner's Expo account. Ask before starting one, because the free
   plan has a limited number of builds per month.
+
+### Automatic tests
+One command runs all of them (about 5 seconds):
+```bash
+npm test               # the tests only
+npm run check          # type-check, then the tests
+```
+They need **Node 24 or newer** (they use Node's built-in test runner and SQLite, so nothing extra to install).
+
+**What they cover** (48 tests in `tests/`):
+- the reminder rules: nearest 20 places, quiet hours (including past midnight), the 24-hour no-repeat rule;
+- the background reminder job and the "refused permissions" cases, against a pretend phone;
+- on-phone storage, collections, settings, and "Delete all my data";
+- sharing a reel: finding and cleaning the link, and opening Add Place (runs the real component in React);
+- the Android map safety switch, the place search (demo list and Google), the My Places filters;
+- readable colours in light and dark mode, and the icon files.
+
+**What they do NOT cover:** real phones. Background location, real notifications, Instagram's share sheet,
+and how the screens look need a manual test on a development build (see the test list in the owner's notes).
+
+**Adding a test:** make `tests/something.test.js` (copy a small one, like `tests/share-links.test.js`).
+The helpers in `tests/helpers/fakes.js` give you a pretend phone (`createPhone`), a pretend database
+(`makeTestDb`), a frozen clock (`atTime`) and a way to run real React components (`setupReact`).
+`tests/helpers/build.js` lists the files the tests load. Add a new file there if your test needs one.
+A good habit: when you fix a bug, first write a test that fails because of it.
 
 ### Things that will bite you
 - **Android map:** the Google map **crashes the whole app** if no Google Maps key is built in. That is
@@ -141,6 +166,7 @@ spotted/
 │   ├── location/             # Distance helpers
 │   ├── onboarding/           # First-launch state
 │   └── components/           # Shared UI pieces
+├── tests/                    # Automatic tests (run with `npm test`) and their helpers
 ├── docs/PRIVACY_POLICY.md    # Draft privacy policy (publish it, then link it in src/config.ts)
 ├── eas.json                  # Build settings for Expo's cloud builds
 ├── SPEC.md  CLAUDE.md  README.md

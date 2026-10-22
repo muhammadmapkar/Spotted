@@ -1,0 +1,58 @@
+// Step 1 of `npm test`: turns the TypeScript files the tests need into plain JavaScript
+// (in the .test-build/ folder), so Node can run them. Nothing here changes your app.
+
+const { spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const root = path.join(__dirname, '..', '..');
+const outDir = path.join(root, '.test-build');
+
+// The tests start from these files. The compiler follows their imports automatically.
+const entryFiles = [
+  'src/db/index.ts',
+  'src/geofence/rules.ts',
+  'src/geofence/sync.ts',
+  'src/geofence/tasks.ts',
+  'src/geofence/GeofenceManager.tsx',
+  'src/permissions/index.ts',
+  'src/location/distance.ts',
+  'src/places/search.ts',
+  'src/share/links.ts',
+  'src/share/ShareIntentHandler.tsx',
+  'src/settings/time.ts',
+  'src/placeFilters.ts',
+  'app/(tabs)/map.tsx',
+];
+
+fs.rmSync(outDir, { recursive: true, force: true });
+
+const tsc = path.join(root, 'node_modules', 'typescript', 'bin', 'tsc');
+const result = spawnSync(
+  process.execPath,
+  [
+    tsc,
+    ...entryFiles,
+    '--ignoreConfig',
+    '--outDir', outDir,
+    '--rootDir', root,
+    '--module', 'commonjs',
+    '--target', 'es2020',
+    '--moduleResolution', 'node',
+    '--ignoreDeprecations', '6.0',
+    '--skipLibCheck',
+    '--esModuleInterop',
+    '--jsx', 'react-jsx',
+  ],
+  { cwd: root, encoding: 'utf8' }
+);
+
+// The compiler may complain about "@/..." shortcuts in a few files (the real type-check is
+// `npm run typecheck`). That is fine here. What matters is that the JavaScript was written.
+const missing = entryFiles.filter((file) => !fs.existsSync(path.join(outDir, file.replace(/\.tsx?$/, '.js'))));
+if (missing.length > 0) {
+  console.error('Could not prepare the tests. These files were not built:\n  ' + missing.join('\n  '));
+  console.error(result.stdout || result.stderr);
+  process.exit(1);
+}
+console.log(`Prepared ${entryFiles.length} files for testing in .test-build/`);

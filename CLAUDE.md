@@ -10,7 +10,8 @@ Read **SPEC.md** before doing anything. It is the source of truth for what to bu
 ## How to work
 - Build ONE feature at a time from SPEC.md. Stop when it works and tell me how to test it.
 - Keep Version 1 small. Don't add features that are listed as "Out of scope".
-- After each working feature, commit to Git with a short clear message and push to GitHub.
+- After each working feature, run `npm run check` (type-check + automatic tests), then commit to Git with a short clear message and push to GitHub.
+- When fixing a bug, add a test in `tests/` that would have caught it.
 - If something fails, explain the error simply, fix it, and tell me what went wrong.
 
 ## Tech rules
