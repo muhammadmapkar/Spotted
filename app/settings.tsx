@@ -6,6 +6,7 @@ import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { SUPPORT_EMAIL } from '@/src/config';
+import { resetSaved } from '@/src/state/saved';
 import { DEFAULT_SETTINGS, Settings, deleteAllData, getSettings, listPlaces, saveSettings } from '@/src/db';
 import { cancelAllReminders, sendNearbyNotification } from '@/src/geofence/notify';
 import { getReminderStatus } from '@/src/geofence/sync';
@@ -53,6 +54,7 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             await deleteAllData();
+            resetSaved(); // the saved places on Home and the Saved tab go back to the starting list
             await cancelAllReminders();
             clearLocal(); // the saved profile is erased too, so the user is signed out
             setSettings(await getSettings());

@@ -6,6 +6,7 @@ const { app, installFakes, setupReact } = require('./helpers/fakes');
 const { React, mount, act } = setupReact();
 global.__DEV__ = true;
 
+installFakes({}); // the phone database pieces, so the saved-places store can load
 const mock = app('src/data/mock.js');
 const filtersStore = app('src/state/filters.js');
 const savedStore = app('src/state/saved.js');

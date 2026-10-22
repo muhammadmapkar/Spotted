@@ -2,7 +2,8 @@
 // area name. Checked against the sample data (so the expected answers are worked out by hand).
 const test = require('node:test');
 const assert = require('node:assert');
-const { app, setupReact } = require('./helpers/fakes');
+const { app, installFakes, setupReact } = require('./helpers/fakes');
+installFakes({}); // the phone database pieces, so the saved-places store can load
 const mock = app('src/data/mock.js');
 const home = app('src/home/homeData.js');
 const typing = app('src/home/typing.js');

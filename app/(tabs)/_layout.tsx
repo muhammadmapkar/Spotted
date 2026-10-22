@@ -13,7 +13,7 @@ export default function TabLayout() {
       tabBar={(props) => <SpottedTabBar {...props} />}
       screenOptions={{ headerTitleStyle: { fontFamily: POPPINS.semiBold } }}>
       {/* The order here is the order in the bar */}
-      <Tabs.Screen name="saved" options={{ title: 'Saved' }} />
+      <Tabs.Screen name="saved" options={{ title: 'Saved', headerShown: false }} />
       <Tabs.Screen name="map" options={{ title: 'Map' }} />
       <Tabs.Screen name="index" options={{ title: 'Home', headerShown: false }} />
       <Tabs.Screen name="new" options={{ title: 'New In', headerShown: false }} />

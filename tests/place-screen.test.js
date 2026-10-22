@@ -5,6 +5,7 @@ const assert = require('node:assert');
 const { app, installFakes, setupReact } = require('./helpers/fakes');
 const { React, mount, act } = setupReact();
 
+installFakes({}); // the phone database pieces, so the saved-places store can load
 const mock = app('src/data/mock.js');
 const savedStore = app('src/state/saved.js');
 

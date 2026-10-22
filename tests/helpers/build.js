@@ -64,6 +64,10 @@ const entryFiles = [
   'src/components/influencer/RecommendationRow.tsx',
   'src/components/motion.ts',
   'src/components/filters/FilterSheet.tsx',
+  'src/services/savedPlaces.ts',
+  'src/saved/savedData.ts',
+  'app/(tabs)/saved.tsx',
+  'src/components/saved/FolderTile.tsx',
 ];
 
 fs.rmSync(outDir, { recursive: true, force: true });

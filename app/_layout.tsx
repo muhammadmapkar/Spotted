@@ -33,6 +33,7 @@ import {
   setOnboardingDone,
   startSession,
 } from '@/src/db';
+import { hydrateSaved } from '@/src/state/saved';
 import { OnboardingContext } from '@/src/onboarding/OnboardingContext';
 import { ShareIntentHandler } from '@/src/share/ShareIntentHandler';
 import { AnimatedSplash } from '@/src/splash/AnimatedSplash';
@@ -118,6 +119,12 @@ export default function RootLayout() {
       .catch(() => setDone(false));
   }, []);
 
+  // The saved places kept on the phone (so they are still there after a restart).
+  const [savedLoaded, setSavedLoaded] = useState(false);
+  useEffect(() => {
+    hydrateSaved().finally(() => setSavedLoaded(true));
+  }, []);
+
   // Who is signed in (undefined = still checking, null = nobody). Kept on the phone.
   const [authUser, setAuthUser] = useState<UserProfile | null | undefined>(undefined);
   useEffect(() => {
@@ -149,7 +156,7 @@ export default function RootLayout() {
   // The animated intro plays over the app on every start. The app loads behind it.
   const [splashDone, setSplashDone] = useState(false);
 
-  const ready = loaded && onboardingDone !== null && themePreference !== null && authUser !== undefined;
+  const ready = loaded && onboardingDone !== null && themePreference !== null && authUser !== undefined && savedLoaded;
 
   useEffect(() => {
     if (ready) {
@@ -207,6 +214,7 @@ function RootLayoutNav({ signedIn, onboardingDone }: { signedIn: boolean; onboar
           <Stack.Screen name="venue/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
           <Stack.Screen name="influencer/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
           <Stack.Screen name="settings" options={{ title: 'Settings' }} />
+          <Stack.Screen name="reel-places" options={{ title: 'Places from reels' }} />
           <Stack.Screen name="collections" options={{ title: 'Collections' }} />
           <Stack.Screen name="add-place" options={{ title: 'Add place', presentation: 'modal' }} />
         </Stack.Protected>
