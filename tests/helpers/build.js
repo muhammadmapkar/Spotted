@@ -56,6 +56,13 @@ const entryFiles = [
   'src/components/place/InfluencerRecs.tsx',
   'src/components/place/OffersList.tsx',
   'src/components/place/ShopFront.tsx',
+  'src/influencer/influencerData.ts',
+  'app/influencer/[id].tsx',
+  'src/components/influencer/ProfileRing.tsx',
+  'src/components/influencer/PlatformTile.tsx',
+  'src/components/influencer/TopCard.tsx',
+  'src/components/influencer/RecommendationRow.tsx',
+  'src/components/motion.ts',
 ];
 
 fs.rmSync(outDir, { recursive: true, force: true });

@@ -65,10 +65,16 @@ export interface Recommendation {
 }
 
 // Where a reel link goes when the data has no exact reel: the influencer's page on that platform.
-function profileUrl(handle: string, platform: Platform): string {
+export function profileUrl(handle: string, platform: Platform): string {
   if (platform === 'tt') return `https://www.tiktok.com/@${handle}`;
   if (platform === 'yt') return `https://www.youtube.com/@${handle}`;
   return `https://www.instagram.com/${handle}/`;
+}
+
+// The link for "watch the reel about this place": the exact reel when the data has it, otherwise the
+// influencer's page on that platform. Never anything but a web link.
+export function reelUrlFor(influencer: Influencer, placeId: string, platform: Platform): string | null {
+  return safeWebUrl(influencer.reels?.[placeId]) ?? safeWebUrl(profileUrl(influencer.handle, platform));
 }
 
 export function recommendationsFor(place: Place): Recommendation[] {
@@ -83,8 +89,8 @@ export function recommendationsFor(place: Place): Recommendation[] {
       platform,
       platformLabel: PLATFORM_NAMES[platform],
       followers: influencer.followers,
-      items: itemsFor(index, place),
-      reelUrl: safeWebUrl(influencer.reels?.[place.id]) ?? safeWebUrl(profileUrl(influencer.handle, platform)),
+      items: place.menu.length > 0 ? itemsFor(index, place) : [], // a place with no menu items has nothing to recommend
+      reelUrl: reelUrlFor(influencer, place.id, platform),
     };
   });
 }

@@ -112,7 +112,7 @@ npm run check          # type-check, then the tests
 ```
 They need **Node 24 or newer** (they use Node's built-in test runner and SQLite, so nothing extra to install).
 
-**What they cover** (192 tests in `tests/`):
+**What they cover** (224 tests in `tests/`):
 - the place-clue finder: reads sample captions and suggests the place (and never guesses wildly);
 - the reminder rules: nearest 20 places, quiet hours (including past midnight), the 24-hour no-repeat rule;
 - the background reminder job and the "refused permissions" cases, against a pretend phone;
@@ -120,6 +120,7 @@ They need **Node 24 or newer** (they use Node's built-in test runner and SQLite,
 - sharing a reel: finding and cleaning the link, and opening Add Place (runs the real component in React);
 - the Android map safety switch, the place search (demo list and Google), the My Places filters;
 - readable colours in light and dark mode, and the icon files;
+- Influencer page: platform buttons and profile links (app first, website if the app is missing), the top 7 and all-recommendations lists, reel links, month chip, the ring / pop / fan-in animations, and every tap on the real screen;
 - Place page: the line under the name, the Google Maps link, influencer recommendations and reel links, offers and their empty messages, PDF vs paper menu (Android viewer, https only, fallback if the PDF fails), the dropdowns' animation, the buttons, and every tap on the real screen;
 - Home: the circles row, search (names, tags, menu items, influencer handles), partner-first ordering, filters and chips, the typing placeholder, the area name, and every tap on the real screen;
 - the bottom bar: tab order, the sliding dot's position, the New In red dot, and that Settings is still reachable from Profile;
@@ -162,7 +163,7 @@ spotted/
 │   │   ├── new.tsx           # New In (placeholder for now)
 │   │   └── profile.tsx       # Profile; Settings opens from here
 │   ├── venue/[id].tsx        # The Place page (hero, Location / Menu / save, influencer and offer dropdowns, menu sheet)
-│   ├── influencer/[id].tsx   # An influencer (placeholder until the full page)
+│   ├── influencer/[id].tsx   # The Influencer page (ring, platform buttons, top 7, all recommendations)
 │   ├── settings.tsx          # Settings (reminders, delete all my data, privacy link)
 │   ├── sign-in.tsx           # Sign in: phone, code, details
 │   ├── add-place.tsx         # Search + save a place (also opens from a shared reel)
@@ -180,6 +181,7 @@ spotted/
 │   ├── theme/                # Light/dark theme provider (useTheme) and the Poppins font mapping
 │   ├── auth/                 # Sign-in: phone rules, the step-by-step flow logic, who is signed in
 │   ├── services/auth.ts      # The FAKE SMS service (code is always 123456). A real provider replaces this one file
+│   ├── influencer/           # Influencer page rules (profile links with website fallback, top 7, all recommendations)
 │   ├── place/                # Place page rules (Google Maps link, recommendations, offers, menu viewer choice)
 │   ├── home/                 # Home rules (circles, search, filters, sorting) and the typing placeholder
 │   ├── state/                # Small shared stores: saved places, filters, the New In dot
