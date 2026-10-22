@@ -25,18 +25,26 @@ export function safeWebUrl(url: string | undefined | null): string | null {
 
 // The sample places have no GPS position, so one is worked out from their distance and direction,
 // around the sample area (Khalifa City, Abu Dhabi). Real places carry their own latitude/longitude.
-const SAMPLE_CENTER = { latitude: 24.42, longitude: 54.58 };
+export const SAMPLE_CENTER = { latitude: 24.42, longitude: 54.58 };
 const KM_PER_DEGREE = 111;
+
+// Where a sample place is, measured from `center` using its distance and direction. (The Map tab uses the
+// user's own position as the centre, so the sample places always appear around them.)
+export function coordinatesAround(
+  center: { latitude: number; longitude: number },
+  place: Pick<Place, 'dist' | 'ang'>
+): { latitude: number; longitude: number } {
+  const radians = (place.ang * Math.PI) / 180;
+  const latitude = center.latitude + (place.dist * Math.cos(radians)) / KM_PER_DEGREE;
+  const longitude = center.longitude + (place.dist * Math.sin(radians)) / (KM_PER_DEGREE * Math.cos((center.latitude * Math.PI) / 180));
+  return { latitude: Math.round(latitude * 1e6) / 1e6, longitude: Math.round(longitude * 1e6) / 1e6 };
+}
 
 export function coordinatesOf(place: Place): { latitude: number; longitude: number } {
   if (typeof place.latitude === 'number' && typeof place.longitude === 'number') {
     return { latitude: place.latitude, longitude: place.longitude };
   }
-  const radians = (place.ang * Math.PI) / 180;
-  const latitude = SAMPLE_CENTER.latitude + (place.dist * Math.cos(radians)) / KM_PER_DEGREE;
-  const longitude =
-    SAMPLE_CENTER.longitude + (place.dist * Math.sin(radians)) / (KM_PER_DEGREE * Math.cos((SAMPLE_CENTER.latitude * Math.PI) / 180));
-  return { latitude: Math.round(latitude * 1e6) / 1e6, longitude: Math.round(longitude * 1e6) / 1e6 };
+  return coordinatesAround(SAMPLE_CENTER, place);
 }
 
 // The Google Maps link for the Location button:

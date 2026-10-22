@@ -1,4 +1,4 @@
-import { useFocusEffect, useRouter } from 'expo-router';
+import { Stack, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet } from 'react-native';
 
@@ -14,7 +14,8 @@ import { useUserLocation } from '@/src/location/useUserLocation';
 import { Collection, SavedPlace, deletePlace, listCollections, listPlaces } from '@/src/db';
 import { filterPlaces } from '@/src/placeFilters';
 
-// The home screen: all saved places, newest first, with filter chips on top.
+// The original list of places saved from reels: newest first, with filter chips on top.
+// It opens from the Saved tab, and has a Map button for the matching map (app/reel-map.tsx).
 export default function PlacesScreen() {
   const theme = Colors[useColorScheme()];
   const router = useRouter();
@@ -82,6 +83,19 @@ export default function PlacesScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable
+              onPress={() => router.push('/reel-map' as never)}
+              accessibilityRole="button"
+              accessibilityLabel="Show these places on a map"
+              style={{ minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: theme.tintText, fontWeight: '700' }}>Map</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <RemindersBanner />
       <FilterChips selected={filter} onSelect={setFilter} />
       <CollectionFilter collections={collections} selected={collectionFilter} onSelect={setCollectionFilter} />

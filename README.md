@@ -112,7 +112,7 @@ npm run check          # type-check, then the tests
 ```
 They need **Node 24 or newer** (they use Node's built-in test runner and SQLite, so nothing extra to install).
 
-**What they cover** (269 tests in `tests/`):
+**What they cover** (302 tests in `tests/`):
 - the place-clue finder: reads sample captions and suggests the place (and never guesses wildly);
 - the reminder rules: nearest 20 places, quiet hours (including past midnight), the 24-hour no-repeat rule;
 - the background reminder job and the "refused permissions" cases, against a pretend phone;
@@ -121,6 +121,7 @@ They need **Node 24 or newer** (they use Node's built-in test runner and SQLite,
 - the Android map safety switch, the place search (demo list and Google), the My Places filters;
 - readable colours in light and dark mode, and the icon files;
 - Influencer page: platform buttons and profile links (app first, website if the app is missing), the top 7 and all-recommendations lists, reel links, month chip, the ring / pop / fan-in animations, and every tap on the real screen;
+- Map tab: which places get a pin (saved = red bookmark, unsaved partner = purple), distances from the user, the 15 km circle, the dark map style, the real Google map vs the drawn preview (never the Google map on Android without a key), and tapping pins;
 - Saved tab: folders and counts, searching only saved places, shared filters, keeping saved places on the phone (and "Delete all my data" forgetting them), the back arrow / phone back button, and every tap on the real screen;
 - Filter sheet: the budget slider (AED 20 to 500+, snapped to steps), distance and category chips, the two switches, Reset, the live "Show N places" button, and the glide animation of the results;
 - Place page: the line under the name, the Google Maps link, influencer recommendations and reel links, offers and their empty messages, PDF vs paper menu (Android viewer, https only, fallback if the PDF fails), the dropdowns' animation, the buttons, and every tap on the real screen;
@@ -164,6 +165,7 @@ spotted/
 │   │   ├── index.tsx         # Home: location, saved-place circles, search, Explore feed
 │   │   ├── new.tsx           # New In (placeholder for now)
 │   │   └── profile.tsx       # Profile; Settings opens from here
+│   ├── reel-map.tsx          # The original map of places saved from reels (opens from "Places from reels")
 │   ├── reel-places.tsx       # The original list of places saved from reels (opens from the Saved tab)
 │   ├── venue/[id].tsx        # The Place page (hero, Location / Menu / save, influencer and offer dropdowns, menu sheet)
 │   ├── influencer/[id].tsx   # The Influencer page (ring, platform buttons, top 7, all recommendations)
@@ -186,6 +188,7 @@ spotted/
 │   ├── services/auth.ts      # The FAKE SMS service (code is always 123456). A real provider replaces this one file
 │   ├── influencer/           # Influencer page rules (profile links with website fallback, top 7, all recommendations)
 │   ├── components/filters/   # The filter bottom sheet
+│   ├── map/                  # Map tab rules (pins, circle, dark map style); the drawing is in components/map/
 │   ├── saved/                # Saved tab rules (folders, search, filters)
 │   ├── services/savedPlaces.ts  # where saved places are kept on the phone (one file to change for a backend)
 │   ├── place/                # Place page rules (Google Maps link, recommendations, offers, menu viewer choice)
@@ -209,6 +212,7 @@ spotted/
 - **Expo Go vs development build.** Expo Go is fine for screens, list, search and storage. Sharing from
   Instagram and background reminders only work in a **development build** (see above).
 - **Menu PDFs.** A place with a `menuPdfUrl` shows that PDF inside the app (`react-native-webview`; on Android it is wrapped in Google's free document viewer, because Android's web view cannot show PDFs by itself). Places without one show the items like a paper menu. The sample places have no PDF yet.
+- **Google Maps key (Android).** The Map tab shows a drawn preview on Android until a Google Maps key is built in, because the Google map crashes the app without one. To switch to the real map: (1) create a key in Google Cloud ("Maps SDK for Android" enabled, restricted to package `com.spotted.app`), (2) put it in `.env` as `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` (never commit it) and as an EAS secret for builds, (3) add it to the Android settings in a small `app.config.js` (`android.config.googleMaps.apiKey`), (4) set `GOOGLE_MAPS_KEY_IN_BUILD` to `true` in `src/config.ts`, (5) make a new development build. iPhone uses Apple Maps and needs no key.
 - **Filter sheet.** The purple filter button on Home slides up a sheet (`@gorhom/bottom-sheet`, with `@react-native-community/slider`). It changes one shared filter state, so Home (and, in the next step, the Saved tab) always agree; the list behind it reshuffles as you change things.
 - **Testing buttons.** In a development build, the bottom of Settings has "Testing" buttons
   (test reminder, reminder status, show welcome screens again). They are hidden in the store build.

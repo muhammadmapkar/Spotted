@@ -1,5 +1,6 @@
 // On Android the Google map CRASHES the whole app without a Google Maps key.
-// So the Map tab must never start the real map there; it shows a list instead.
+// So the map must never start the real map there; it shows a list instead.
+// (This file checks the original map of places saved from reels. The new Map tab has the same rule, tested in map-screen.test.js.)
 const test = require('node:test');
 const assert = require('node:assert');
 const { app, installFakes, setupReact } = require('./helpers/fakes');
@@ -12,7 +13,7 @@ installFakes({
   '@/src/components/MapFallback': { MapFallback: () => { state.listShown++; return null; } },
   '@/src/config': { get GOOGLE_MAPS_KEY_IN_BUILD() { return state.keyInBuild; } },
 });
-const MapScreen = app('app/(tabs)/map.js').default;
+const MapScreen = app('app/reel-map.js').default;
 
 async function show(os, keyInBuild) {
   Object.assign(state, { os, keyInBuild, liveMapStarted: 0, listShown: 0 });

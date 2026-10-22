@@ -215,6 +215,7 @@ function RootLayoutNav({ signedIn, onboardingDone }: { signedIn: boolean; onboar
           <Stack.Screen name="influencer/[id]" options={{ headerShown: false, animation: 'slide_from_right' }} />
           <Stack.Screen name="settings" options={{ title: 'Settings' }} />
           <Stack.Screen name="reel-places" options={{ title: 'Places from reels' }} />
+          <Stack.Screen name="reel-map" options={{ title: 'Reel places map' }} />
           <Stack.Screen name="collections" options={{ title: 'Collections' }} />
           <Stack.Screen name="add-place" options={{ title: 'Add place', presentation: 'modal' }} />
         </Stack.Protected>
