@@ -207,6 +207,7 @@ interface Settings {
 - [ ] A place can be saved into collections; collections can be created, renamed, deleted; the filter works.
 - [ ] Pasting or sharing a TikTok/Instagram caption suggests the right place; the user confirms before anything is saved.
 - [ ] A place can be muted or marked "I've been here", and then never sends reminders; the daily limit works.
+- [ ] My Places search and sort, Share place, and the map filter chips work.
 - [ ] `npm test` and `npm run typecheck` pass.
 - [ ] No crashes in a 1-week test by 12+ testers.
 - [ ] Battery use acceptable after a full day.

@@ -7,24 +7,27 @@
 > phone or in a real account. If a screen looks different from what is written, go with what you see
 > and tell Claude.
 
-**Which phases need what**
+**The order**
 
-| Phase | What it is | Needs a new development build? |
-|---|---|---|
-| 1 | Real search + Android map | **Yes** (map key, notification icon) |
-| 2 | Polish and safety | **Yes** (notification icon and colour are baked into the build) |
-| 3 | Real-phone test | uses the build from Phase 1/2 |
-| 4 | Privacy policy + Google Play | production build for Play |
-| 5 | iPhone | iPhone build |
+| # | Phase | What you do | New build needed after? |
+|---|---|---|---|
+| 0 | Branches | Compare and merge the branches carefully | – |
+| 1 | Real search + Android map | Google keys, budget alert, Cloudflare proxy, EAS variables, flip the map switch | **Yes** |
+| 2 | Polish and safety | Nothing, only check things in the new build | **Yes** (same build as Phase 1) |
+| 3 | Real-phone test | Walk around with the test sheet | uses the Phase 1/2 build |
+| 4 | Privacy policy + Google Play | Publish the policy, Play account (USD 25), closed test with 12+ testers for 14 days | **Yes** (production build for Play) |
+| 5 | iPhone | Apple account (USD 99/year), TestFlight, 20 real captions | iPhone build |
+| 6 | Launch | See ROADMAP.md Phase 6 (Claude helps when you get there) | – |
+| 7 | Extras | Quickly check the 3 small new features | no |
 
 **Quick tip:** do Phase 1 first, then make ONE new build that includes everything from Phases 1 and 2.
-That saves your free build quota.
+That saves your free build quota. `eas build` is never started by Claude: you start it.
 
 ---
 
 ## Phase 0: Branches (before anything else)
 
-1. [ ] `main` has a separate redesign by Sarah. The branches `main`, `improvements-round-1` and
+1. [ ] `main` has a separate redesign that you made. The branches `main`, `improvements-round-1` and
    `cloud-work` have **not** been merged. Before merging anything, ask Claude:
    *"Compare `main` and `cloud-work` and tell me what each one changed."* Then decide what to keep.
 2. [ ] Do not merge by clicking "Merge" blindly. One branch can overwrite the other.
@@ -353,3 +356,24 @@ Extra iPhone tests (tick when OK):
 5. [ ] Add the **Privacy Policy URL** and **Support URL**.
 6. [ ] Paste the **App Review notes** from `docs/STORE_LISTING.md` (very important: they explain why the app needs "Always" location).
 7. [ ] Choose the TestFlight build → **Add for Review** → **Submit for Review**. (Do this only after the Google Play pilot looks good, see ROADMAP Phase 6.)
+
+---
+
+## Phase 7: Check the small extras (5 minutes, in the new build)
+
+1. [ ] **Search in My Places:** type part of a place name, area or note. The list shrinks. Clear the box and everything is back.
+2. [ ] **Newest / Nearest:** tap **Nearest**. The closest place is first. (If location is refused the button is greyed out and says why.)
+3. [ ] **Share place:** open a saved place → **Share place** → choose WhatsApp. The message has the name, your note, a Google Maps link and the reel link.
+4. [ ] **Broken reel link:** this is hard to trigger with a normal Instagram link, because the phone can open any web address.
+   If you can't make it fail, skip it. When it does fail you see "This reel won't open" with **Remove link** and **Keep link**.
+
+---
+
+## Last: before you submit to the stores (Phase 6)
+
+When Phases 1 to 5 are finished, ask Claude: *"Do Phase 6 from ROADMAP.md."* It will go through the lists in `CLAUDE.md` and `SPEC.md`
+and tell you what is ticked. The final **Submit for review** buttons in Play Console and App Store Connect are yours to press.
+
+## Anything unclear?
+
+If a step does not match what you see on screen, stop and send Claude a screenshot. Never paste your keys, passwords or the content of `.env` into chat.

@@ -11,17 +11,17 @@ The app is **almost fully built**. What's missing is mostly *outside* the code: 
 
 | Feature (SPEC.md) | Status | Notes |
 |---|---|---|
-| F1 Share a reel to Spotted | 🟡 Partly | Code is done. Never tried on a real phone. A reel shared during the very first launch (welcome screens) may be lost. |
+| F1 Share a reel to Spotted | 🟡 Partly | Code is done (a reel shared during the welcome screens is now kept). Never tried on a real phone. |
 | F1b Place suggestions from a caption | ✅ Done | TikTok works automatically; Instagram uses "Paste caption". Not yet tried on many real reels. |
 | F2 Confirm and save a place | ✅ Done | Real Google search only works after the proxy is set up (Phase 1). Until then: demo list of Dubai places. |
 | F3 My Places list | ✅ Done | |
-| F4 Map | 🟡 Partly | On Android the map is switched off (shows a list) until a Maps key is added. No category filters on the map. |
+| F4 Map | 🟡 Partly | On Android the map is switched off (shows a list) until a Maps key is added (code is ready, see `docs/MY_STEPS.md`). Category filters were added in cloud-work. |
 | F5 Nearby reminders | 🟡 Built, not tested | All rules are coded and unit-tested. Never tested by actually walking past a place. |
-| F6 Settings | 🟡 Almost | Privacy policy link says "coming soon". |
-| F7 Onboarding | ✅ Done | Welcome slides only mention Instagram, not TikTok. |
+| F6 Settings | 🟡 Almost | Privacy policy link says "coming soon" until you publish the policy and set `PRIVACY_POLICY_URL`. |
+| F7 Onboarding | ✅ Done | Welcome slides now mention TikTok too. |
 | F8 Collections | ✅ Done | |
 
-**Checks:** `npm test` (21 of 21 pass) and `npm run typecheck` (clean) both pass today.
+**Checks:** `npm test` (63 of 63 pass after cloud-work) and `npm run typecheck` (clean) both pass today.
 
 **Git:** the newest work is on the branch `improvements-round-1` and is **not merged into `main` yet**. `main` also has a separate redesign by Sarah, so the two branches must be compared before any merge.
 
@@ -33,26 +33,29 @@ The app is **almost fully built**. What's missing is mostly *outside* the code: 
 - [ ] Merge `improvements-round-1` into `main`
   - ⚠️ **Not done.** `main` has a separate redesign by Sarah. The two branches must be compared (what each one changed) before merging, or one will overwrite the other.
 - [x] Commit `docs/team-split.html`. The `owner` in `app.json` (`sarahnaziahmed-debug`) was checked: it is the correct Expo username (GitHub's is spelled differently, which is fine).
-- [ ] Deploy the Places proxy (`server/places-proxy`) and give the app its address
-- [ ] Add the Maps key so the Android map shows. Add category filters to the map.
-- [ ] Add missing error handling (place screen, settings) and a loading spinner on the place screen
-- [ ] Add accessibility labels (switches, arrow symbols)
-- [ ] Set a notification icon and colour
-- [ ] Don't lose a reel shared during the first launch
-- [ ] Mention TikTok on the welcome slides
-- [ ] Add tests for the database, collections and filters
+- [ ] Deploy the Places proxy (`server/places-proxy`) and give the app its address (🧑 code is ready, steps in `docs/MY_STEPS.md` Phase 1)
+- [ ] Add the Maps key so the Android map shows (🧑 code is ready, then set `GOOGLE_MAPS_KEY_IN_BUILD` to `true`)
+- [x] Add category filters to the map
+- [x] Add missing error handling (place screen, settings) and a loading spinner on the place screen
+- [x] Add accessibility labels (switches, arrow symbols)
+- [x] Set a notification icon and colour
+- [x] Don't lose a reel shared during the first launch
+- [x] Mention TikTok on the welcome slides
+- [x] Add tests for the database, collections and filters
 
 **Real-world testing**
-- [ ] Walk past a saved place with the app closed → reminder arrives
+- [ ] Walk past a saved place with the app closed → reminder arrives (test sheet: `docs/TEST_PLAN.md`)
 - [ ] Test with location / notifications refused
 - [ ] Battery use over a full day, on 2–3 phone brands
 - [ ] Pilot with 12+ testers for 14 days (`docs/PILOT.md`)
 
 **Legal and stores**
-- [ ] Publish the privacy policy and put its link in `src/config.ts`
-- [ ] A real support email
-- [ ] Google Play: developer account, listing, screenshots, Data Safety form, background location form and video, closed test
-- [ ] Apple: developer account, iPhone build, share extension tested, App Store listing and privacy answers
+- [x] Privacy policy text finished (`docs/PRIVACY_POLICY.md`; the support email placeholder `[SUPPORT EMAIL]` still needs your real email)
+- [ ] 🧑 Publish the privacy policy and put its link in `src/config.ts`
+- [ ] 🧑 A real support email
+- [x] Store texts and form answers written (`docs/STORE_LISTING.md`), tester message written (`docs/TESTER_MESSAGE.md`)
+- [ ] 🧑 Google Play: developer account, listing, screenshots, Data Safety form, background location form and video, closed test
+- [ ] 🧑 Apple: developer account, iPhone build, share extension tested, App Store listing and privacy answers
 
 ---
 
@@ -339,3 +342,43 @@ first. Don't write any code yet — write the plan to docs/V2_PLAN.md.
 **Total:** about **3–5 days of actual work**, but about **5–7 weeks on the calendar**, mostly because of real-life testing and the 14-day Google Play test.
 
 **Tip:** Phase 5 (iPhone) can run at the same time as Phase 4's 14-day test, which saves about 2 weeks.
+
+---
+
+## 6. Done in cloud-work
+
+Work done while you were away, on the branch `cloud-work` (not merged anywhere, no Pull Request opened).
+`npm run typecheck` is clean and `npm test` passes (63 tests, up from 21).
+
+**Phase 0**
+- Untick "Merge into main" and noted that `main` has Sarah's separate redesign, so the two branches must be compared first.
+
+**Phase 1 (code parts)**
+- Places proxy: rate limit now uses Cloudflare's current `[[ratelimits]]` setting; optional shared secret (`APP_SHARED_SECRET` / `X-Spotted-Key`); README updated.
+- Android Maps key now comes from the `GOOGLE_MAPS_ANDROID_API_KEY` environment variable through the new `app.config.ts` (all `app.json` settings kept).
+- Food / Shopping / Fun filter chips on the map and on the list shown instead of the map.
+- `docs/MY_STEPS.md`: Google keys, budget alert, Cloudflare, EAS variables.
+
+**Phase 2**
+- Place screen: friendly errors for loading, saving and deleting, and a loading spinner. Settings: errors when a setting can't be saved or other actions fail.
+- Accessibility labels on switches and buttons; decorative arrows hidden from screen readers.
+- Notification icon (white pin) and coral colour `#E8505B`.
+- A reel shared during the welcome / permission screens is remembered and Add Place opens after onboarding.
+- Welcome screen mentions TikTok.
+- New tests: database (places, collections, delete all data), place filters, pending share.
+
+**Phase 3, 4, 5 (papers only)**
+- `docs/TEST_PLAN.md` (19 tests + battery-saving steps for Samsung, Xiaomi, Pixel).
+- `docs/PRIVACY_POLICY.md` finished (date 23 October 2026, email placeholder kept).
+- `docs/STORE_LISTING.md`: Google Play and App Store texts, Data Safety, background location declaration + video script, content rating, target audience, App Privacy answers, App Review notes.
+- `docs/TESTER_MESSAGE.md`.
+- iOS settings checked: added `ITSAppUsesNonExemptEncryption: false` and a clear motion text. Location texts, background mode, share extension and App Group were already correct.
+- `docs/MY_STEPS.md`: Play account, closed test, Apple Developer, TestFlight, reel captions.
+
+**Phase 7 extras**
+- My Places: search box (name, area, note) and Newest / Nearest sort (logic and tests in `src/placeFilters.ts`).
+- Place screen: Share place button.
+- "Open reel" that fails: friendly message with the option to remove the link.
+- `SPEC.md` updated for each new feature.
+
+**Needs a new development build:** notification icon and colour, `ITSAppUsesNonExemptEncryption`, motion text, the Maps key from `app.config.ts`. Everything else is code only.
