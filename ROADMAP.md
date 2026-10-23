@@ -23,14 +23,15 @@ The app is **almost fully built**. What's missing is mostly *outside* the code: 
 
 **Checks:** `npm test` (21 of 21 pass) and `npm run typecheck` (clean) both pass today.
 
-**Git:** the newest work is on the branch `improvements-round-1` and is **not merged into `main` yet**.
+**Git:** the newest work is on the branch `improvements-round-1` and is **not merged into `main` yet**. `main` also has a separate redesign by Sarah, so the two branches must be compared before any merge.
 
 ---
 
 ## 2. What's left before launch (checklist)
 
 **Code / setup**
-- [x] Merge `improvements-round-1` into `main`
+- [ ] Merge `improvements-round-1` into `main`
+  - ⚠️ **Not done.** `main` has a separate redesign by Sarah. The two branches must be compared (what each one changed) before merging, or one will overwrite the other.
 - [x] Commit `docs/team-split.html`. The `owner` in `app.json` (`sarahnaziahmed-debug`) was checked: it is the correct Expo username (GitHub's is spelled differently, which is fine).
 - [ ] Deploy the Places proxy (`server/places-proxy`) and give the app its address
 - [ ] Add the Maps key so the Android map shows. Add category filters to the map.
