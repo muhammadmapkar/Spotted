@@ -42,9 +42,15 @@ export default function SettingsScreen() {
   );
 
   // Change one or more settings: show it straight away, and save it on the phone.
-  const change = (changes: Partial<Settings>) => {
+  // If saving fails, we put the screen back to what is really saved and tell the user.
+  const change = async (changes: Partial<Settings>) => {
     setSettings((current) => ({ ...current, ...changes }));
-    saveSettings(changes);
+    try {
+      await saveSettings(changes);
+    } catch {
+      setSettings(await getSettings().catch(() => DEFAULT_SETTINGS));
+      Alert.alert('Could not save', 'Your setting was not saved. Please try again.');
+    }
   };
 
   const confirmDeleteAll = () => {
@@ -57,10 +63,14 @@ export default function SettingsScreen() {
           text: 'Delete everything',
           style: 'destructive',
           onPress: async () => {
-            await deleteAllData();
-            await cancelAllReminders();
-            setSettings(await getSettings());
-            Alert.alert('Done', 'All your data has been deleted from this phone.');
+            try {
+              await deleteAllData();
+              await cancelAllReminders();
+              setSettings(await getSettings());
+              Alert.alert('Done', 'All your data has been deleted from this phone.');
+            } catch {
+              Alert.alert('Could not delete everything', 'Some data may still be on this phone. Please try again.');
+            }
           },
         },
       ]
@@ -84,18 +94,26 @@ export default function SettingsScreen() {
   // Testing helper: sends the "You're near ..." notification after 5 seconds,
   // so you have time to close the app and see the real thing arrive.
   const sendTestReminder = async () => {
-    const [place] = await listPlaces();
-    if (!place) {
-      Alert.alert('Save a place first', 'The test reminder uses your newest saved place.');
-      return;
+    try {
+      const [place] = await listPlaces();
+      if (!place) {
+        Alert.alert('Save a place first', 'The test reminder uses your newest saved place.');
+        return;
+      }
+      await sendNearbyNotification(place, 5);
+      Alert.alert('Test reminder', 'It arrives in 5 seconds. Close the app to see it like a real reminder, then tap it.');
+    } catch {
+      Alert.alert('Test reminder failed', 'Could not send the test reminder. Are notifications allowed for Spotted?');
     }
-    await sendNearbyNotification(place, 5);
-    Alert.alert('Test reminder', 'It arrives in 5 seconds. Close the app to see it like a real reminder, then tap it.');
   };
 
   // Testing helper: shows what the reminder system is doing right now.
   const showReminderStatus = async () => {
-    Alert.alert('Reminder status', await getReminderStatus());
+    try {
+      Alert.alert('Reminder status', await getReminderStatus());
+    } catch {
+      Alert.alert('Reminder status', 'Could not check the reminder status.');
+    }
   };
 
   return (
