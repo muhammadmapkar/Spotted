@@ -45,7 +45,10 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 - Reel link saved with the place (tap to reopen the reel).
 
 ### F3. My Places (list)
-- List of saved places, newest first.
+- List of saved places, newest first by default.
+- **Search box** above the list: finds places by name, area (address) or note. Several words must all match. Upper/lower case doesn't matter.
+- **Sort:** "Newest" (default) or "Nearest". "Nearest" only works when location is allowed (otherwise it is greyed out).
+- Search, the category chips and the collection chips all combine.
 - Filter chips: All / Food / Shopping / Fun.
 - A second row of chips filters by collection (shown only when the user has collections). Category and collection filters combine.
 - Each item shows name, area, category, distance from user (if location allowed).
