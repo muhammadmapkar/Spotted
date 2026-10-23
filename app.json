@@ -65,7 +65,13 @@
           "isAndroidForegroundServiceEnabled": false
         }
       ],
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#E8505B"
+        }
+      ],
       [
         "expo-share-intent",
         {
