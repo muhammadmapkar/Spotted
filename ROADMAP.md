@@ -30,8 +30,8 @@ The app is **almost fully built**. What's missing is mostly *outside* the code: 
 ## 2. What's left before launch (checklist)
 
 **Code / setup**
-- [ ] Merge `improvements-round-1` into `main`
-- [ ] Commit `docs/team-split.html`. Fix the `owner` name in `app.json` (`sarahnaziahmed-debug` vs `sarahnazirahmed-debug`).
+- [x] Merge `improvements-round-1` into `main`
+- [x] Commit `docs/team-split.html`. The `owner` in `app.json` (`sarahnaziahmed-debug`) was checked: it is the correct Expo username (GitHub's is spelled differently, which is fine).
 - [ ] Deploy the Places proxy (`server/places-proxy`) and give the app its address
 - [ ] Add the Maps key so the Android map shows. Add category filters to the map.
 - [ ] Add missing error handling (place screen, settings) and a loading spinner on the place screen
