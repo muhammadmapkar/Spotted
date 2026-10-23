@@ -133,6 +133,7 @@ export default function SettingsScreen() {
           <Switch
             value={settings.remindersEnabled}
             onValueChange={(value) => change({ remindersEnabled: value })}
+            accessibilityLabel="Nearby reminders"
             trackColor={{ true: theme.tint }}
           />
         </View>
@@ -213,6 +214,7 @@ export default function SettingsScreen() {
             value={settings.quietHoursEnabled}
             disabled={remindersOff}
             onValueChange={(value) => change({ quietHoursEnabled: value })}
+            accessibilityLabel="No notifications at night (quiet hours)"
             trackColor={{ true: theme.tint }}
           />
         </View>
@@ -309,9 +311,15 @@ function TimeStepper({
 function LinkRow({ label, onPress }: { label: string; onPress: () => void }) {
   const theme = Colors[useColorScheme()];
   return (
-    <Pressable onPress={onPress} style={styles.linkRow} accessibilityRole="link">
+    <Pressable onPress={onPress} style={styles.linkRow} accessibilityRole="link" accessibilityLabel={label}>
       <Text style={styles.rowTitle}>{label}</Text>
-      <Text style={{ color: theme.mutedText, fontSize: 20 }}>›</Text>
+      {/* The › arrow is only decoration, so screen readers skip it. */}
+      <Text
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={{ color: theme.mutedText, fontSize: 20 }}>
+        ›
+      </Text>
     </Pressable>
   );
 }

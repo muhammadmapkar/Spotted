@@ -205,7 +205,12 @@ export default function AddPlaceScreen() {
             </View>
           ) : null}
           {/* Caption: lets the app suggest the place. Always optional. */}
-          <Pressable onPress={() => setCaptionOpen((open) => !open)} style={styles.captionToggle}>
+          <Pressable
+            onPress={() => setCaptionOpen((open) => !open)}
+            accessibilityRole="button"
+            accessibilityLabel="Find the place from the caption" // the ▾ ▸ arrow is only decoration
+            accessibilityState={{ expanded: captionOpen }}
+            style={styles.captionToggle}>
             <Text style={{ color: theme.tintText, fontWeight: '600' }}>
               {captionOpen ? '▾' : '▸'} Find the place from the caption
             </Text>

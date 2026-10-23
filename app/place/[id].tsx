@@ -160,7 +160,12 @@ export default function PlaceScreen() {
               Turn off for places you pass all the time.
             </Text>
           </View>
-          <Switch value={!muted} onValueChange={(on) => setMuted(!on)} trackColor={{ true: theme.tint }} />
+          <Switch
+            value={!muted}
+            onValueChange={(on) => setMuted(!on)}
+            accessibilityLabel="Remind me when I'm near this place"
+            trackColor={{ true: theme.tint }}
+          />
         </View>
         <View style={styles.switchRow} lightColor="transparent" darkColor="transparent">
           <View style={styles.switchText} lightColor="transparent" darkColor="transparent">
@@ -169,7 +174,12 @@ export default function PlaceScreen() {
               Spotted stops reminding you about this place.
             </Text>
           </View>
-          <Switch value={visited} onValueChange={setVisited} trackColor={{ true: theme.tint }} />
+          <Switch
+            value={visited}
+            onValueChange={setVisited}
+            accessibilityLabel="I've been here"
+            trackColor={{ true: theme.tint }}
+          />
         </View>
       </View>
 
@@ -190,6 +200,8 @@ export default function PlaceScreen() {
       {place.reelUrl ? (
         <Pressable
           onPress={() => openLink(place.reelUrl!)}
+          accessibilityRole="button"
+          accessibilityLabel="Open reel" // the ▶ symbol is only decoration
           style={[styles.secondaryButton, { borderColor: theme.outline }]}>
           <Text style={styles.secondaryText}>▶ Open reel</Text>
         </Pressable>

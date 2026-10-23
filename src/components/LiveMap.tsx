@@ -131,6 +131,8 @@ export function LiveMap() {
             {selected.reelUrl ? (
               <Pressable
                 onPress={() => openLink(selected.reelUrl!)}
+                accessibilityRole="button"
+                accessibilityLabel="Open reel" // the ▶ symbol is only decoration
                 style={[styles.button, { borderColor: theme.outline }]}>
                 <Text style={styles.buttonText}>▶ Open reel</Text>
               </Pressable>
