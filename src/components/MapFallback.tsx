@@ -7,7 +7,9 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { SavedPlace, listPlaces } from '@/src/db';
+import { FilterChips, Filter } from '@/src/components/FilterChips';
 import { openDirections, openLink } from '@/src/openLink';
+import { filterPlaces } from '@/src/placeFilters';
 
 // Shown on the Map tab instead of a map when no Google Maps key is built into the app
 // (the real map would crash). It lists the saved places, each with Directions.
@@ -15,6 +17,7 @@ export function MapFallback() {
   const theme = Colors[useColorScheme()];
   const router = useRouter();
   const [places, setPlaces] = useState<SavedPlace[]>([]);
+  const [filter, setFilter] = useState<Filter>('all'); // All / Food / Shopping / Fun
 
   useFocusEffect(
     useCallback(() => {
@@ -26,20 +29,27 @@ export function MapFallback() {
 
   return (
     <FlatList
-      data={places}
+      data={filterPlaces(places, filter, 'all')}
       keyExtractor={(place) => place.id}
       style={{ backgroundColor: theme.background }}
       contentContainerStyle={styles.list}
       ListHeaderComponent={
-        <View style={[styles.notice, { backgroundColor: theme.card }]}>
-          <Text style={styles.noticeTitle}>🗺️ Map view is coming soon</Text>
-          <Text style={[styles.noticeText, { color: theme.mutedText }]}>
-            The map needs a Google Maps key, which this draft does not have yet. Your places and Directions work as normal.
-          </Text>
+        <View lightColor="transparent" darkColor="transparent">
+          <View style={styles.chips} lightColor="transparent" darkColor="transparent">
+            <FilterChips selected={filter} onSelect={setFilter} />
+          </View>
+          <View style={[styles.notice, { backgroundColor: theme.card }]}>
+            <Text style={styles.noticeTitle}>🗺️ Map view is coming soon</Text>
+            <Text style={[styles.noticeText, { color: theme.mutedText }]}>
+              The map needs a Google Maps key, which this draft does not have yet. Your places and Directions work as normal.
+            </Text>
+          </View>
         </View>
       }
       ListEmptyComponent={
-        <Text style={[styles.empty, { color: theme.mutedText }]}>Save a place and it will show up here.</Text>
+        <Text style={[styles.empty, { color: theme.mutedText }]}>
+          {places.length === 0 ? 'Save a place and it will show up here.' : 'No matching places. Try another chip.'}
+        </Text>
       }
       renderItem={({ item }) => {
         const category = CATEGORIES[item.category];
@@ -90,6 +100,7 @@ export function MapFallback() {
 
 const styles = StyleSheet.create({
   list: { padding: 16, paddingBottom: 32 },
+  chips: { marginHorizontal: -16 }, // the chips row has its own side padding
   notice: { borderRadius: 16, padding: 16, marginBottom: 16 },
   noticeTitle: { fontSize: 17, fontWeight: '700', marginBottom: 4 },
   noticeText: { fontSize: 14, lineHeight: 20 },
