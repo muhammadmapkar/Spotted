@@ -9,7 +9,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.spotted.app"
+      "bundleIdentifier": "com.spotted.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -60,6 +63,7 @@
           "locationAlwaysAndWhenInUsePermission": "Spotted uses your location to remind you when you're near a place you saved — even when the app is closed. Your location stays on your phone.",
           "locationAlwaysPermission": "Spotted uses your location to remind you when you're near a place you saved — even when the app is closed. Your location stays on your phone.",
           "locationWhenInUsePermission": "Spotted uses your location to show how far saved places are and to find places near you. Your location stays on your phone.",
+          "motionUsagePermission": "Your phone may use motion information to save battery while Spotted watches for saved places near you. Spotted does not read or store it.",
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": false
