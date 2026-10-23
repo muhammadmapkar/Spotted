@@ -8,7 +8,7 @@ import Colors from '@/constants/Colors';
 
 // The three welcome slides.
 const SLIDES = [
-  { emoji: '📲', title: 'Save from reels', text: 'Found a great place on Instagram? Share the reel to Spotted, or paste its link.' },
+  { emoji: '📲', title: 'Save from reels', text: 'Found a great place on Instagram or TikTok? Share the reel to Spotted, or paste its link.' },
   { emoji: '📍', title: 'Confirm the place', text: 'Pick the exact place yourself, choose Food, Shopping or Fun, and add a note.' },
   { emoji: '🔔', title: 'Get reminded nearby', text: 'When you are close to a saved place, Spotted gives you a gentle nudge.' },
 ];
