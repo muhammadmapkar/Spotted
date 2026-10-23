@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, TextInput } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Switch, TextInput } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -18,35 +18,48 @@ export default function PlaceScreen() {
 
   const [place, setPlace] = useState<SavedPlace | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false); // loading hit an error (not the same as "not found")
+  const [busy, setBusy] = useState(false); // true while saving or deleting, so a double tap does nothing
   const [category, setCategory] = useState<Category>('food');
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [note, setNote] = useState('');
   const [muted, setMuted] = useState(false);
   const [visited, setVisited] = useState(false);
 
-  // Load the place when the screen opens.
-  useEffect(() => {
-    getPlace(id).then((found) => {
-      if (!found) return setNotFound(true);
-      setPlace(found);
-      setCategory(found.category);
-      setNote(found.note ?? '');
-      setCollectionIds(found.collectionIds);
-      setMuted(found.muted);
-      setVisited(Boolean(found.visitedAt));
-    });
+  // Load the place. Used when the screen opens and by the "Try again" button.
+  const load = useCallback(() => {
+    setLoadFailed(false);
+    getPlace(id)
+      .then((found) => {
+        if (!found) return setNotFound(true);
+        setPlace(found);
+        setCategory(found.category);
+        setNote(found.note ?? '');
+        setCollectionIds(found.collectionIds);
+        setMuted(found.muted);
+        setVisited(Boolean(found.visitedAt));
+      })
+      .catch(() => setLoadFailed(true)); // show a friendly message instead of a blank screen
   }, [id]);
+  useEffect(load, [load]);
 
   const save = async () => {
-    await updatePlace(id, {
-      category,
-      note: note.trim() || undefined,
-      collectionIds,
-      muted,
-      // Keep the original date if it was already marked; set it now if newly marked; clear it if unmarked.
-      visitedAt: visited ? (place?.visitedAt ?? new Date().toISOString()) : undefined,
-    });
-    router.back();
+    if (busy) return;
+    setBusy(true);
+    try {
+      await updatePlace(id, {
+        category,
+        note: note.trim() || undefined,
+        collectionIds,
+        muted,
+        // Keep the original date if it was already marked; set it now if newly marked; clear it if unmarked.
+        visitedAt: visited ? (place?.visitedAt ?? new Date().toISOString()) : undefined,
+      });
+      router.back();
+    } catch {
+      setBusy(false);
+      Alert.alert('Could not save', 'Your changes were not saved. Please try again.');
+    }
   };
 
   const confirmDelete = () => {
@@ -56,8 +69,15 @@ export default function PlaceScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          await deletePlace(id);
-          router.back();
+          if (busy) return;
+          setBusy(true);
+          try {
+            await deletePlace(id);
+            router.back();
+          } catch {
+            setBusy(false);
+            Alert.alert('Could not delete', 'This place was not deleted. Please try again.');
+          }
         },
       },
     ]);
@@ -71,7 +91,30 @@ export default function PlaceScreen() {
       </View>
     );
   }
-  if (!place) return <View style={styles.center} />; // still loading
+  if (loadFailed) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.title}>Could not open this place</Text>
+        <Text style={{ color: theme.mutedText, marginBottom: 16, textAlign: 'center' }}>
+          Something went wrong while loading it. Please try again.
+        </Text>
+        <Pressable
+          onPress={load}
+          accessibilityRole="button"
+          style={[styles.saveButton, styles.retryButton, { backgroundColor: theme.tint }]}>
+          <Text style={styles.saveText}>Try again</Text>
+        </Pressable>
+      </View>
+    );
+  }
+  if (!place) {
+    // Still loading: show a spinner instead of a blank screen.
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={theme.tint} accessibilityLabel="Loading place" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -152,8 +195,12 @@ export default function PlaceScreen() {
         </Pressable>
       ) : null}
 
-      <Pressable onPress={save} style={[styles.saveButton, { backgroundColor: theme.tint }]}>
-        <Text style={styles.saveText}>Save changes</Text>
+      <Pressable
+        onPress={save}
+        disabled={busy}
+        accessibilityRole="button"
+        style={[styles.saveButton, { backgroundColor: theme.tint, opacity: busy ? 0.6 : 1 }]}>
+        <Text style={styles.saveText}>{busy ? 'Saving…' : 'Save changes'}</Text>
       </Pressable>
 
       <Pressable onPress={confirmDelete} style={styles.deleteButton}>
@@ -208,6 +255,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 24,
   },
+  retryButton: { alignSelf: 'stretch', paddingHorizontal: 24, marginTop: 8 },
   saveText: { color: '#FFFFFF', fontSize: 19, fontWeight: '700' },
   deleteButton: { minHeight: 52, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
   deleteText: { fontSize: 16, fontWeight: '600' },
