@@ -153,3 +153,19 @@ Easiest: use the website.
    - Share a reel while the welcome or permission screens are showing. After finishing them, Add Place should
      open with that reel.
    - Turn on TalkBack (Settings → Accessibility → TalkBack) and tap a switch in Settings. It should read its name.
+
+---
+
+## Phase 3: Real-phone test (about 1 week, mostly you)
+
+1. [ ] Make sure Phase 1 (keys, proxy, EAS variables) and Phase 2 are done.
+2. [ ] Make the test build (this uses your free build quota, so ask yourself first: is everything in it?):
+   ```bash
+   eas build --profile preview --platform android
+   ```
+   When it finishes, open the link on your phone and install it. (Allow "install unknown apps" if asked.)
+3. [ ] Open `docs/TEST_PLAN.md`. Do the tests in order and tick them. Write down anything that fails.
+4. [ ] Turn off battery saving for Spotted first. The steps for Samsung, Xiaomi and Pixel are at the bottom of `docs/TEST_PLAN.md`.
+5. [ ] Borrow 1 or 2 other Android phones (a Samsung and a Xiaomi if you can) and repeat tests 6 to 9 on them.
+6. [ ] Do test 15 (battery after a full day) on at least one phone.
+7. [ ] Come back to Claude with what failed. Ask it to fix the bugs one at a time on a branch called `phase-3-fixes`.
