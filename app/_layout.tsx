@@ -132,8 +132,9 @@ function RootLayoutNav({ onboardingDone }: { onboardingDone: boolean }) {
         </Stack.Protected>
       </Stack>
 
-      {/* Opens Add Place when a reel is shared to Spotted (after onboarding) */}
-      {onboardingDone ? <ShareIntentHandler /> : null}
+      {/* Opens Add Place when a reel is shared to Spotted. A reel shared during the welcome
+          screens is remembered and opened right after onboarding. */}
+      <ShareIntentHandler onboardingDone={onboardingDone} />
 
       {/* Watches your saved places and opens one when you tap a reminder */}
       {onboardingDone ? <GeofenceManager /> : null}
