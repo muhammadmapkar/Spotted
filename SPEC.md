@@ -90,6 +90,11 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 - Collection names: 1 to 40 characters, unique (ignoring upper/lower case).
 - Collections are personal and stay on the phone. Sharing them with friends is Version 2.
 
+### F9. Share a place with a friend
+- The place screen has a **Share place** button. It opens the phone's normal share sheet (WhatsApp, Messages, ...).
+- The message has the place name, address, your note (if any), a Google Maps link, and the reel link (if any).
+- Uses React Native's built-in Share. Nothing is sent to our servers.
+
 ## 5. Out of scope for Version 1 (later)
 
 - User accounts / login / cloud sync

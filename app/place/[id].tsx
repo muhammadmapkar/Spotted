@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Switch, TextInput } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Share, StyleSheet, Switch, TextInput } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -9,6 +9,7 @@ import { CATEGORIES } from '@/src/categories';
 import { CollectionPicker } from '@/src/components/CollectionPicker';
 import { Category, SavedPlace, deletePlace, getPlace, updatePlace } from '@/src/db';
 import { openLink } from '@/src/openLink';
+import { placeShareText } from '@/src/sharePlace';
 
 // Place detail / edit screen. You can change the category and the note.
 export default function PlaceScreen() {
@@ -59,6 +60,17 @@ export default function PlaceScreen() {
     } catch {
       setBusy(false);
       Alert.alert('Could not save', 'Your changes were not saved. Please try again.');
+    }
+  };
+
+  // Opens the phone's normal share sheet (WhatsApp, Messages, ...) with the place details.
+  const sharePlace = async () => {
+    if (!place) return;
+    try {
+      // Share what is saved. If the user typed a new note but has not saved it yet, use that note.
+      await Share.share({ message: placeShareText({ ...place, note: note.trim() || undefined }) });
+    } catch {
+      Alert.alert('Could not share', 'Your phone could not open the share menu. Please try again.');
     }
   };
 
@@ -206,6 +218,14 @@ export default function PlaceScreen() {
           <Text style={styles.secondaryText}>▶ Open reel</Text>
         </Pressable>
       ) : null}
+
+      <Pressable
+        onPress={sharePlace}
+        accessibilityRole="button"
+        accessibilityLabel="Share this place"
+        style={[styles.secondaryButton, { borderColor: theme.outline }]}>
+        <Text style={styles.secondaryText}>Share place</Text>
+      </Pressable>
 
       <Pressable
         onPress={save}
