@@ -4,10 +4,17 @@ main = "worker.js"
 compatibility_date = "2025-01-01"
 
 # Limit each phone/IP to 60 requests per minute.
-# (Cloudflare's rate limit feature. If your Cloudflare dashboard says this setting has changed,
-#  follow their current docs: https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/ )
-[[unsafe.bindings]]
+# This is Cloudflare's current "ratelimits" setting (the old [[unsafe.bindings]] way is retired).
+# "period" can only be 10 or 60 seconds. "namespace_id" is any number you choose, just keep it unique
+# in your Cloudflare account. Docs: https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/
+[[ratelimits]]
 name = "RATE_LIMITER"
-type = "ratelimit"
 namespace_id = "1001"
-simple = { limit = 60, period = 60 }
+
+  [ratelimits.simple]
+  limit = 60
+  period = 60
+
+# Optional shared secret (see README.md). Do NOT write the secret here.
+# Set it with:  npx wrangler secret put APP_SHARED_SECRET
+# If it is not set, the proxy accepts every request (it still works).

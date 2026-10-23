@@ -56,6 +56,14 @@ export default {
       if (!success) return json({ error: 'Too many requests' }, 429);
     }
 
+    // Optional shared secret. If APP_SHARED_SECRET is set on the worker, the app must send the same
+    // value in the "X-Spotted-Key" header. If it is not set, this check is skipped.
+    // (The value also sits inside the app, so a determined person could extract it. It only
+    // keeps casual strangers out. Combined with the rate limit, that is enough for Version 1.)
+    if (env.APP_SHARED_SECRET && request.headers.get('X-Spotted-Key') !== env.APP_SHARED_SECRET) {
+      return json({ error: 'Not allowed' }, 403);
+    }
+
     const url = new URL(request.url);
     const path = url.pathname.replace(/^\/v1/, '');
 

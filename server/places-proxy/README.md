@@ -20,9 +20,16 @@ because deploying needs your Cloudflare account.
    npx wrangler deploy
    ```
 4. Wrangler prints an address like `https://spotted-places-proxy.<you>.workers.dev`.
-5. In the app's `.env` file, **remove** `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` and add:
+5. (Optional, recommended) Add a shared secret, so random strangers can't use your proxy:
+   ```bash
+   npx wrangler secret put APP_SHARED_SECRET   # type any long random text, e.g. 30+ letters and numbers
+   ```
+   Then put the **same text** in the app as `EXPO_PUBLIC_PLACES_PROXY_SECRET` (step 6).
+   If you skip this, the proxy still works, it just accepts everyone.
+6. In the app's `.env` file, **remove** `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` and add:
    ```
    EXPO_PUBLIC_PLACES_PROXY_URL=https://spotted-places-proxy.<you>.workers.dev
+   EXPO_PUBLIC_PLACES_PROXY_SECRET=the-same-text-as-APP_SHARED_SECRET   # only if you did step 5
    ```
    Then restart with `npx expo start --dev-client`. (Builds on EAS also need this value: add it as an
    EAS environment variable.)
@@ -31,10 +38,12 @@ because deploying needs your Cloudflare account.
 
 Only `places:autocomplete`, `places:searchText` and place details. It rebuilds every request itself, so the
 app can't ask Google for anything else, and it forces the smallest field lists to keep costs down.
-It also limits each IP to 60 requests a minute (see `wrangler.toml`).
+It also limits each IP to 60 requests a minute (see `wrangler.toml`, which uses Cloudflare's current `[[ratelimits]]` setting).
+If `APP_SHARED_SECRET` is set, it also refuses any request that does not send the matching `X-Spotted-Key` header.
 
 ## Honest limits
 
-Anyone who finds the worker address can still call it, but only for place search and only slowly.
-If it is ever abused: lower the rate limit, or add a shared secret header, or move to signed
+The shared secret is also stored inside the app, so a determined person can extract it. It only keeps
+casual strangers out. Anyone who gets it can still call the worker, but only for place search and only slowly.
+If it is ever abused: change the secret (and ship a new app build), lower the rate limit, or move to signed
 requests when accounts arrive in Version 2.

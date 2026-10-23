@@ -11,9 +11,11 @@ import { DUBAI_BIAS, PlaceResult, PlaceSuggestion, SearchBias } from './types';
 //  3. Neither -> a small built-in list of Dubai places (free, no key).
 const API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
 const PROXY_URL = (process.env.EXPO_PUBLIC_PLACES_PROXY_URL ?? '').replace(/\/+$/, '');
+// Optional password for the proxy (server/places-proxy/README.md). Empty = the proxy has none.
+const PROXY_SECRET = process.env.EXPO_PUBLIC_PLACES_PROXY_SECRET ?? '';
 
 const backend: PlacesBackend | null = PROXY_URL
-  ? { baseUrl: `${PROXY_URL}/v1`, headers: {} }
+  ? { baseUrl: `${PROXY_URL}/v1`, headers: PROXY_SECRET ? { 'X-Spotted-Key': PROXY_SECRET } : {} }
   : API_KEY
     ? { baseUrl: 'https://places.googleapis.com/v1', headers: { 'X-Goog-Api-Key': API_KEY } }
     : null;
