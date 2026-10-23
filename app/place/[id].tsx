@@ -8,7 +8,7 @@ import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { CollectionPicker } from '@/src/components/CollectionPicker';
 import { Category, SavedPlace, deletePlace, getPlace, updatePlace } from '@/src/db';
-import { openLink } from '@/src/openLink';
+import { openReel } from '@/src/openLink';
 import { placeShareText } from '@/src/sharePlace';
 
 // Place detail / edit screen. You can change the category and the note.
@@ -211,7 +211,7 @@ export default function PlaceScreen() {
 
       {place.reelUrl ? (
         <Pressable
-          onPress={() => openLink(place.reelUrl!)}
+          onPress={() => openReel(place, () => setPlace({ ...place, reelUrl: undefined }))}
           accessibilityRole="button"
           accessibilityLabel="Open reel" // the ▶ symbol is only decoration
           style={[styles.secondaryButton, { borderColor: theme.outline }]}>

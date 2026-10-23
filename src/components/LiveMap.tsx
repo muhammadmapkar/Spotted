@@ -9,7 +9,7 @@ import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { SavedPlace, listPlaces } from '@/src/db';
 import { FilterChips, Filter } from '@/src/components/FilterChips';
-import { openDirections, openLink } from '@/src/openLink';
+import { openDirections, openReel } from '@/src/openLink';
 import { filterPlaces } from '@/src/placeFilters';
 
 // Where the map starts if there are no saved places yet: Dubai.
@@ -130,7 +130,13 @@ export function LiveMap() {
           <View style={styles.buttons} lightColor="transparent" darkColor="transparent">
             {selected.reelUrl ? (
               <Pressable
-                onPress={() => openLink(selected.reelUrl!)}
+                onPress={() =>
+                  openReel(selected, () => {
+                    // The link was removed: update the pin's data and the open card.
+                    setPlaces((all) => all.map((p) => (p.id === selected.id ? { ...p, reelUrl: undefined } : p)));
+                    setSelected({ ...selected, reelUrl: undefined });
+                  })
+                }
                 accessibilityRole="button"
                 accessibilityLabel="Open reel" // the ▶ symbol is only decoration
                 style={[styles.button, { borderColor: theme.outline }]}>

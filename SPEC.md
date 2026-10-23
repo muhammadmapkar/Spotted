@@ -25,6 +25,7 @@ Spotted lets users share a reel straight to the app, confirm which place it is, 
 - In Instagram, user taps **Share → Spotted** (or copies the reel link and pastes it in the app).
 - Spotted opens the **Add Place** screen with the reel link attached.
 - The app does **not** scrape or read Instagram content. The user confirms the place.
+- If a reel is shared while the welcome / permission screens are showing (first launch), the link is remembered and Add Place opens with it as soon as onboarding is finished.
 
 ### F1b. Place suggestions from a caption (built; added after Version 1 planning)
 Goal: save time. The app *suggests* the place, and the user always confirms.
@@ -56,7 +57,9 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 
 ### F4. Map
 - All saved places as pins, coloured by category.
+- **Filter chips** at the top: All / Food / Shopping / Fun (the same chips as My Places). The map zooms to the pins that are left. On Android without a Maps key, the list that replaces the map has the same chips.
 - Tap a pin → card with name, note, "Open reel", "Directions" (opens Google Maps / Apple Maps).
+- **"Open reel" that can't open** (broken link or deleted reel): a friendly message appears with the choice to **remove the link** from that place. The place itself stays saved. This works the same on the place screen and the map card.
 
 ### F5. Nearby reminders
 - When the user comes within the chosen radius (default **300 m**) of a saved place, show a local notification:
@@ -77,7 +80,7 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 - Links: privacy policy, contact support.
 
 ### F7. Onboarding
-- 3 short welcome screens: Save from reels → Confirm the place → Get reminded nearby.
+- 3 short welcome screens: Save from reels (Instagram or TikTok) → Confirm the place → Get reminded nearby.
 - Permission requests come **after** explaining why (location "Always/Allow all the time", notifications).
 - App still works (list + map) if the user refuses background location; reminders are simply off, with a friendly banner explaining how to turn them on.
 
@@ -187,8 +190,8 @@ interface Settings {
 
 ## 11. Secrets
 
-- **Place search key (Places API):** do NOT ship it inside the app. A key inside the app can be extracted, and Google's "restrict to this Android app" lock does not work for plain web requests. Keep it on the small proxy in `server/places-proxy` and put only the proxy address in `.env` as `EXPO_PUBLIC_PLACES_PROXY_URL`. (For your own testing you may still use `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`.)
-- **Maps SDK key (the map itself):** a separate key, restricted in Google Cloud to the app's package name (`com.spotted.app`) and to Maps SDK only.
+- **Place search key (Places API):** do NOT ship it inside the app. A key inside the app can be extracted, and Google's "restrict to this Android app" lock does not work for plain web requests. Keep it on the small proxy in `server/places-proxy` and put only the proxy address in `.env` as `EXPO_PUBLIC_PLACES_PROXY_URL`. The proxy can also check an optional shared secret (`APP_SHARED_SECRET` on the proxy, `EXPO_PUBLIC_PLACES_PROXY_SECRET` in the app, sent as the `X-Spotted-Key` header). It only keeps casual strangers out, because the value is also inside the app. (For your own testing you may still use `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`.)
+- **Maps SDK key (the map itself):** a separate key, restricted in Google Cloud to the app's package name (`com.spotted.app`) and to Maps SDK only. It is never written in a file: `app.config.ts` reads it from the `GOOGLE_MAPS_ANDROID_API_KEY` environment variable (an EAS environment variable for builds). `GOOGLE_MAPS_KEY_IN_BUILD` in `src/config.ts` is set to `true` only once the key is in the build.
 - **Never commit `.env`.**
 - Google Cloud budget alert set (e.g. USD 10/month).
 

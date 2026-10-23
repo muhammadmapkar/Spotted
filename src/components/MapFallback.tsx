@@ -8,7 +8,7 @@ import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { SavedPlace, listPlaces } from '@/src/db';
 import { FilterChips, Filter } from '@/src/components/FilterChips';
-import { openDirections, openLink } from '@/src/openLink';
+import { openDirections, openReel } from '@/src/openLink';
 import { filterPlaces } from '@/src/placeFilters';
 
 // Shown on the Map tab instead of a map when no Google Maps key is built into the app
@@ -75,7 +75,11 @@ export function MapFallback() {
               <View style={styles.buttons} lightColor="transparent" darkColor="transparent">
                 {item.reelUrl ? (
                   <Pressable
-                    onPress={() => openLink(item.reelUrl!)}
+                    onPress={() =>
+                      openReel(item, () =>
+                        setPlaces((all) => all.map((p) => (p.id === item.id ? { ...p, reelUrl: undefined } : p)))
+                      )
+                    }
                     accessibilityRole="button"
                     accessibilityLabel="Open reel" // the ▶ symbol is only decoration
                     style={[styles.button, { borderColor: theme.outline }]}>
