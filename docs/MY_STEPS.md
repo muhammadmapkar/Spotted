@@ -265,3 +265,91 @@ Google and Apple both need a **web link** to the policy.
 8. [ ] On day 7 and day 14 send the questions from `docs/TESTER_MESSAGE.md` and save the answers.
 9. [ ] After 14 days, Play Console **Dashboard → Apply for production**. Answer Google's questions about your test
    (how you found testers, what feedback you got, what you changed). Claude can help you write the answers from the pilot results.
+
+---
+
+## Phase 5: iPhone (no builds were made by Claude)
+
+You need a real iPhone (iOS 16 or newer is best) and a Mac is **not** required (EAS builds in the cloud).
+
+### 5A. Apple Developer Program (USD 99 a year)
+
+1. [ ] Go to <https://developer.apple.com/programs/enroll/> and sign in with your Apple ID
+   (turn on two-factor sign-in for it first: iPhone → Settings → your name → Sign-In & Security).
+2. [ ] Choose **Individual** (just you) or **Organization** (a company; needs a D-U-N-S number and takes longer).
+3. [ ] Pay **USD 99** for the year. Approval can take from a few hours to a few days. Apple may call or email you.
+4. [ ] Write down your **Team ID** (developer.apple.com → Account → Membership details).
+
+### 5B. Create the app in App Store Connect
+
+1. [ ] Go to <https://appstoreconnect.apple.com> → **Apps** → **+** → **New App**.
+2. [ ] Platform **iOS**. Name **Spotted**. Primary language English. Bundle ID: pick `com.spotted.app`
+   (if it is not in the list yet, do 5C first, then come back). SKU: `spotted-001` (any text). User access: **Full access**.
+3. [ ] Copy the **Apple ID number** of the app (App Store Connect → your app → App Information → "Apple ID", a number like 6738123456).
+   You need it for `eas submit`. Give it to Claude: "my App Store Connect app id is …" so it can be added to `eas.json`.
+
+### 5C. Make the iPhone build (uses your free build quota)
+
+1. [ ] Before building, look at the two iOS choices in `docs/STORE_LISTING.md` (iPad screenshots) and tell Claude if you want
+   `supportsTablet` changed to `false` (no iPad version).
+2. [ ] Run:
+   ```bash
+   eas build --profile production --platform ios
+   ```
+3. [ ] EAS asks you to **log in to your Apple account** (Apple ID, password, a code sent to your devices). It then asks to create
+   credentials. Answer **yes** to everything and let EAS manage them. It makes certificates and profiles for **two** things:
+   - the app `com.spotted.app`
+   - the **share extension** `com.spotted.app.ShareExtension` (this is what makes "Share → Spotted" appear)
+   and an **App Group** `group.com.spotted.app` that connects the two.
+4. [ ] If it stops with an error about the extension or the App Group, copy the **whole error** to Claude.
+5. [ ] When the build finishes (about 15 to 30 minutes) EAS shows a link.
+
+### 5D. TestFlight (the way to test on your iPhone)
+
+1. [ ] Upload the build:
+   ```bash
+   eas submit --platform ios
+   ```
+   Choose the build you just made. (It asks for your App Store Connect app ID from 5B.3. Or download the file and upload it with the
+   Apple **Transporter** app on a Mac.)
+2. [ ] Wait 10 to 30 minutes for "Processing" to finish: App Store Connect → your app → **TestFlight**.
+3. [ ] Answer the **export compliance** question if it appears: the app uses only standard HTTPS, so it is exempt ("No" to proprietary encryption).
+4. [ ] **Internal testing**: TestFlight tab → **Internal Testing** → **+** → make a group → add yourself (your Apple ID must be an
+   App Store Connect user: Users and Access → +). No Apple review is needed for internal testers.
+5. [ ] On your iPhone install the free **TestFlight** app from the App Store. Open the invite email on the iPhone → **Open in TestFlight** → **Install**.
+6. [ ] For other testers (**External testing**): add up to 10,000 people with a public link. The first build needs a short **Beta App Review** by Apple (about a day).
+
+### 5E. iPhone test list
+
+Do all tests in `docs/TEST_PLAN.md` on the iPhone. The wording is for Android. On iPhone:
+- Battery-saving steps do not apply. Instead check Settings → **Spotted** → **Location** is **Always**, **Precise Location** on, and **Background App Refresh** on.
+- iOS asks for location in two steps: first "Allow While Using App", and later it may ask again to change to "Always". If the second question never comes, go to
+  Settings → Spotted → Location → **Always**.
+
+Extra iPhone tests (tick when OK):
+1. [ ] **Share extension from Instagram:** in an Instagram reel tap the paper-plane → **Share to…** (or **More**) → **Spotted**. Spotted opens on Add place with the link.
+   If Spotted is not in the list, scroll the row of apps to the end, tap **More**, and turn Spotted on (then drag it to the top).
+2. [ ] **Share extension from TikTok:** Share → **More** (or the share-sheet icon) → **Spotted**.
+3. [ ] **Share from Safari:** open any web page, tap Share, choose **Spotted**.
+4. [ ] **Reel shared when Spotted was closed:** force-close Spotted, then share a reel. It should open on Add place.
+5. [ ] **Map:** shows Apple Maps with coloured pins (no key is needed on iPhone).
+6. [ ] **Walk-by reminder with the app closed** (same as test 6 in the test plan).
+7. [ ] **Nothing breaks if you choose "Don't Allow"** for location or notifications.
+
+### 5F. Real reel captions (so Claude can improve place-finding)
+
+1. [ ] Collect **about 20 real captions** of reels about places (Instagram and TikTok, Dubai and elsewhere).
+   In Instagram: open the reel → tap the caption → **Copy**. Paste each one into a text file or message to yourself.
+   Include the hard ones (places mentioned only with @tags, only in Arabic, only an emoji, no place at all).
+2. [ ] Paste them to Claude and say: *"Here are 20 real reel captions. Use them to improve `src/places/clues.ts` and add each as a test in `tests/clues.test.ts`."*
+   Write next to each one which place it should find (or "no place"). That is the answer key for the tests.
+
+### 5G. Fill in the App Store page and submit
+
+1. [ ] App Store Connect → your app → **App Store** tab → **iOS App** → paste the texts from `docs/STORE_LISTING.md`, Part 4.
+2. [ ] Add the screenshots (Part 1 list; iPhone sizes in Part 4).
+3. [ ] **App Privacy** → follow the answers in `docs/STORE_LISTING.md`, Part 4.
+4. [ ] **Age rating**: answer "None" to everything → 4+.
+5. [ ] Add the **Privacy Policy URL** and **Support URL**.
+6. [ ] Paste the **App Review notes** from `docs/STORE_LISTING.md` (very important: they explain why the app needs "Always" location).
+7. [ ] Choose the TestFlight build → **Add for Review** → **Submit for Review**. (Do this only after the Google Play pilot looks good, see ROADMAP Phase 6.)
