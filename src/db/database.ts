@@ -1,5 +1,3 @@
-import * as SQLite from 'expo-sqlite';
-
 // The few database actions we use. The real phone database fits this shape,
 // and so does the fake one we use in automatic tests.
 export interface Db {
@@ -70,6 +68,9 @@ let dbPromise: Promise<Db> | null = null;
 export function getDb(): Promise<Db> {
   if (!dbPromise) {
     dbPromise = (async () => {
+      // Loaded only now (not at the top of the file) so automatic tests can use a stand-in database
+      // without loading the phone's SQLite code.
+      const SQLite = await import('expo-sqlite');
       const db = (await SQLite.openDatabaseAsync('spotted.db')) as unknown as Db;
       await prepare(db);
       return db;
