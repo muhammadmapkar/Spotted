@@ -94,11 +94,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "3bc5968d-9f89-4752-9c9c-f91def153e27"
-      }
+      "router": {}
     },
-    "owner": "sarahnaziahmed-debug"
+    "owner": "muhammadmapkar"
   }
 }
