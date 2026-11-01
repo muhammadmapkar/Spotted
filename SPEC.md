@@ -98,6 +98,15 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 - The message has the place name, address, your note (if any), a Google Maps link, and the reel link (if any).
 - Uses React Native's built-in Share. Nothing is sent to our servers.
 
+### F10. Back up and restore (added after Version 1 planning)
+- Version 1 has no cloud, so this is how to keep places when changing phones.
+- Settings → **Back up my places** makes one file (`spotted-backup-YYYY-MM-DD.json`) with all places, collections and
+  settings, and opens the phone's share menu (Google Drive, email, WhatsApp...). Nothing is sent to our servers.
+- Settings → **Restore from a backup** lets the user pick that file.
+- Restoring **adds**; it never deletes. A place already on the phone (same id or same Google place) is skipped.
+  A collection with the same name is reused. Settings from the file replace the current ones.
+- A file that is not a Spotted backup is refused and nothing changes. Damaged places in a file are skipped.
+
 ## 5. Out of scope for Version 1 (later)
 
 - User accounts / login / cloud sync
@@ -208,6 +217,7 @@ interface Settings {
 - [ ] Pasting or sharing a TikTok/Instagram caption suggests the right place; the user confirms before anything is saved.
 - [ ] A place can be muted or marked "I've been here", and then never sends reminders; the daily limit works.
 - [ ] My Places search and sort, Share place, and the map filter chips work.
+- [ ] A backup file can be saved, and restoring it brings every place back without doubling any.
 - [ ] `npm test` and `npm run typecheck` pass.
 - [ ] No crashes in a 1-week test by 12+ testers.
 - [ ] Battery use acceptable after a full day.

@@ -156,6 +156,13 @@ Tick each box when the test passes. If a test fails, write what happened next to
 - **What should happen:** The list shrinks to matching places. **Nearest** puts the closest place first
   (only when location is allowed).
 
+### 20. [ ] Back up and restore
+- **What to do:** Save 3 places, one in a collection. Settings → **Back up my places** → save the file to Google Drive
+  (or email it to yourself). Then Settings → **Delete all my data**. Then Settings → **Restore from a backup** → pick the file.
+- **What should happen:** "Backup restored: 3 places added." The places, their notes, reel links and collection are back.
+  Restore the same file again: "0 places added, 3 skipped" (nothing is doubled). Picking a photo or other file shows
+  "Could not restore" and nothing changes.
+
 ---
 
 ## Turn off battery saving for Spotted

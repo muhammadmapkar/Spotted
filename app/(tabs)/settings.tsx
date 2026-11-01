@@ -5,6 +5,7 @@ import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch } from 'react
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { pickAndRestoreBackup, shareBackupFile } from '@/src/backupFile';
 import { PRIVACY_POLICY_URL, SUPPORT_EMAIL } from '@/src/config';
 import { DEFAULT_SETTINGS, Settings, deleteAllData, getSettings, listPlaces, saveSettings } from '@/src/db';
 import { cancelAllReminders, sendNearbyNotification } from '@/src/geofence/notify';
@@ -70,6 +71,51 @@ export default function SettingsScreen() {
               Alert.alert('Done', 'All your data has been deleted from this phone.');
             } catch {
               Alert.alert('Could not delete everything', 'Some data may still be on this phone. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // Back up: make a file with all places, collections and settings, and open the share menu.
+  const backUp = async () => {
+    try {
+      const places = await listPlaces();
+      if (places.length === 0) {
+        Alert.alert('Nothing to back up yet', 'Save a place first, then make a backup.');
+        return;
+      }
+      await shareBackupFile();
+    } catch {
+      Alert.alert('Could not make a backup', 'Please try again.');
+    }
+  };
+
+  // Restore: explain first, then let the user pick their backup file.
+  const restore = () => {
+    Alert.alert(
+      'Restore from a backup?',
+      'Pick your Spotted backup file. Its places are added to the ones on this phone (nothing is deleted), and its settings replace your current settings.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Pick file',
+          onPress: async () => {
+            try {
+              const result = await pickAndRestoreBackup();
+              if (!result) return; // the user closed the file picker
+              setSettings(await getSettings());
+              const skipped = result.placesSkipped
+                ? `\n${result.placesSkipped} skipped (already saved, or damaged in the file).`
+                : '';
+              Alert.alert('Backup restored', `${result.placesAdded} places added.${skipped}`);
+            } catch (error) {
+              const message = error instanceof Error ? error.message : '';
+              Alert.alert(
+                'Could not restore',
+                message.includes('Spotted') ? message : 'That file could not be read. Nothing was changed.'
+              );
             }
           },
         },
@@ -242,6 +288,16 @@ export default function SettingsScreen() {
       <View style={[styles.card, { backgroundColor: theme.card }]}>
         <LinkRow label="Manage collections" onPress={() => router.push('/collections' as never)} />
       </View>
+
+      {/* Back up / restore (there is no cloud in Version 1, so this is how to change phones) */}
+      <Text style={styles.sectionTitle}>Backup</Text>
+      <View style={[styles.card, { backgroundColor: theme.card }]}>
+        <LinkRow label="Back up my places" onPress={backUp} />
+        <LinkRow label="Restore from a backup" onPress={restore} />
+      </View>
+      <Text style={[styles.footer, { color: theme.mutedText }]}>
+        Keep the backup file somewhere safe, like Google Drive or your email.
+      </Text>
 
       {/* Privacy and help */}
       <Text style={styles.sectionTitle}>About</Text>
