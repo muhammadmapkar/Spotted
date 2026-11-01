@@ -2,23 +2,18 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Brightness from 'expo-brightness';
 import { useKeepAwake } from 'expo-keep-awake';
 import * as Location from 'expo-location';
-import { useLocalSearchParams } from 'expo-router';
+import * as Notifications from 'expo-notifications';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { PUBLIC_BASE } from '../../src/data';
+import { metres } from '../../src/geo';
 import { useStore } from '../../src/store';
 import { font, radius, space, useTheme } from '../../src/theme';
 import { Button, PlaceLogo, T } from '../../src/ui';
 
 const RADIUS_M = 200;
-
-function metres(a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }) {
-  const R = 6371000, rad = Math.PI / 180;
-  const dLat = (b.latitude - a.latitude) * rad, dLng = (b.longitude - a.longitude) * rad;
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.latitude * rad) * Math.cos(b.latitude * rad) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
 
 function OfferQR({ value }: { value: string }) {
   useKeepAwake();
@@ -38,7 +33,8 @@ function OfferQR({ value }: { value: string }) {
 export default function PlaceScreen() {
   const c = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { placeOf, visits, verifyVisit, handle } = useStore();
+  const router = useRouter();
+  const { placeOf, visits, verifyVisit, handle, toVisit, toggleToVisit } = useStore();
   const place = placeOf(id);
   const [receipt, setReceipt] = useState('');
   const [showReceipt, setShowReceipt] = useState(false);
@@ -70,6 +66,19 @@ export default function PlaceScreen() {
     }
   }
 
+  async function onToVisit() {
+    if (!place) return;
+    if (!toVisit.includes(place.id)) {
+      // Explain first, then ask: reminders need both location and notification permission.
+      const loc = await Location.requestForegroundPermissionsAsync();
+      const note = await Notifications.requestPermissionsAsync();
+      if (loc.status !== 'granted' || note.status !== 'granted') {
+        Alert.alert('Reminders are off', 'Saved to your to-visit list. Turn on location and notifications in Settings to get a reminder when you are nearby.');
+      }
+    }
+    toggleToVisit(place.id);
+  }
+
   function submitReceipt() {
     if (!place) return;
     // Phase 1: any 6+ character receipt number is accepted. The partner app will validate against the restaurant's POS later.
@@ -87,6 +96,12 @@ export default function PlaceScreen() {
           <T style={{ fontFamily: font.bold, fontSize: 24 }}>{place.name}</T>
           <T style={{ color: c.muted }}>{place.area}, {place.city}</T>
         </View>
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' }}>
+        <Button label={toVisit.includes(place.id) ? 'On my to-visit list' : 'Save to visit'} icon={toVisit.includes(place.id) ? 'bookmark' : 'bookmark-outline'} kind={toVisit.includes(place.id) ? 'primary' : 'ghost'} onPress={onToVisit} />
+        <Button label="Add to list" icon="list" kind="ghost" onPress={() => router.push({ pathname: '/lists', params: { addPlace: place.id } })} />
+        <Button label="Make sticker" icon="sparkles" kind="ghost" onPress={() => router.push(`/sticker/${place.id}`)} />
       </View>
 
       <View style={{ backgroundColor: c.surface, borderRadius: radius.md, padding: space.md, gap: space.sm }}>

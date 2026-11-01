@@ -9,7 +9,7 @@ import { T } from '../../src/ui';
 export default function Profile() {
   const c = useTheme();
   const router = useRouter();
-  const { handle, setHandle, tier, spots, visits } = useStore();
+  const { handle, setHandle, tier, spots, visits, streak } = useStore();
   const Row = ({ icon, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }) => (
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}
       style={{ minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: c.surface, borderRadius: radius.md, paddingHorizontal: space.md }}>
@@ -29,6 +29,10 @@ export default function Profile() {
       <Row icon="link" label="My Spotted page" onPress={() => router.push('/my-page')} />
       <Row icon="wallet" label="Rewards and referral code" onPress={() => router.push('/rewards')} />
       <Row icon="add-circle" label="Spot a new place" onPress={() => router.push('/spot-it')} />
+      <Row icon="trending-up" label="Trending this week" onPress={() => router.push('/trending')} />
+      <Row icon="list" label="My lists" onPress={() => router.push('/lists')} />
+      <Row icon="people" label="Group plans" onPress={() => router.push('/plans')} />
+      <Row icon="flame" label={`Streaks and levels (${streak} day streak)`} onPress={() => router.push('/progress')} />
     </ScrollView>
   );
 }

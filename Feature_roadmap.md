@@ -12,12 +12,12 @@ Spotted turns reels into real places, connecting creators, restaurants and their
 - [x] **Verified visits**: check-in or receipt confirmation to block fake spots
 
 ## Phase 2: Sharing and growth
-- [ ] "Spotted" badge / sticker for stories and reels
-- [ ] Shareable lists (e.g. "Best brunch in Bandra", "10 date-night spots")
-- [ ] Save-to-visit with nearby reminders
-- [ ] Streaks and levels: Newcomer, Local, Tastemaker
-- [ ] Group plans: send spots to friends and vote
-- [ ] Trending this week, by city and cuisine
+- [x] "Spotted" badge / sticker for stories and reels
+- [x] Shareable lists (e.g. "Best brunch in Bandra", "10 date-night spots")
+- [x] Save-to-visit with nearby reminders
+- [x] Streaks and levels: Newcomer, Local, Tastemaker
+- [x] Group plans: send spots to friends and vote
+- [x] Trending this week, by city and cuisine
 
 ## Phase 3: Restaurant tools
 - [ ] Claimed restaurant profile: menu, hours, booking or order link
