@@ -8,7 +8,10 @@ import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { CollectionPicker } from '@/src/components/CollectionPicker';
 import { Category, Rating, SavedPlace, deletePlace, getPlace, updatePlace } from '@/src/db';
+import { cancelTimedReminder, scheduleTimedReminder } from '@/src/geofence/notify';
 import { openReel } from '@/src/openLink';
+import { requestNotifications } from '@/src/permissions';
+import { formatReminderTime, hasUpcomingReminder, timeChoices } from '@/src/reminderTimes';
 import { placeShareText } from '@/src/sharePlace';
 
 // The two answers to "How was it?" after a visit.
@@ -73,6 +76,35 @@ export default function PlaceScreen() {
   };
 
   // Opens the phone's normal share sheet (WhatsApp, Messages, ...) with the place details.
+  // "Remind me at a time": set straight away (no need to press Save), so it can't be forgotten.
+  const setTimedReminder = async (date: Date) => {
+    if (!place) return;
+    try {
+      if (!(await requestNotifications())) {
+        Alert.alert('Notifications are off', 'Allow notifications for Spotted in your phone settings to get this reminder.');
+        return;
+      }
+      await cancelTimedReminder(place.remindNotificationId); // only one timed reminder per place
+      const notificationId = await scheduleTimedReminder(place, date);
+      const changes = { remindAt: date.toISOString(), remindNotificationId: notificationId };
+      await updatePlace(place.id, changes);
+      setPlace({ ...place, ...changes });
+    } catch {
+      Alert.alert('Could not set the reminder', 'Please try again.');
+    }
+  };
+
+  const clearTimedReminder = async () => {
+    if (!place) return;
+    try {
+      await cancelTimedReminder(place.remindNotificationId);
+      await updatePlace(place.id, { remindAt: undefined, remindNotificationId: undefined });
+      setPlace({ ...place, remindAt: undefined, remindNotificationId: undefined });
+    } catch {
+      Alert.alert('Could not cancel the reminder', 'Please try again.');
+    }
+  };
+
   const sharePlace = async () => {
     if (!place) return;
     try {
@@ -93,6 +125,7 @@ export default function PlaceScreen() {
           if (busy) return;
           setBusy(true);
           try {
+            await cancelTimedReminder(place?.remindNotificationId);
             await deletePlace(id);
             router.back();
           } catch {
@@ -204,6 +237,34 @@ export default function PlaceScreen() {
         </View>
       </View>
 
+      {/* Remind me at a time: ready-made choices, or the reminder that is already set */}
+      <Text style={styles.label}>Remind me at a time</Text>
+      {hasUpcomingReminder(place.remindAt, new Date()) ? (
+        <View style={[styles.switchCard, styles.timedRow, { backgroundColor: theme.card }]}>
+          <Text style={[styles.switchTitle, { flex: 1 }]}>⏰ {formatReminderTime(new Date(place.remindAt!))}</Text>
+          <Pressable
+            onPress={clearTimedReminder}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel the timed reminder"
+            style={styles.timedCancel}>
+            <Text style={{ color: theme.danger, fontWeight: '700' }}>Cancel</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <View style={styles.row}>
+          {timeChoices(new Date()).map((choice) => (
+            <Pressable
+              key={choice.label}
+              onPress={() => setTimedReminder(choice.date)}
+              accessibilityRole="button"
+              accessibilityLabel={`Remind me ${choice.label}`}
+              style={[styles.chip, { borderColor: theme.outline }]}>
+              <Text style={styles.chipText}>{choice.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
+
       {/* After a visit: a quick thumbs up or down. Tap the chosen one again to clear it. */}
       {visited ? (
         <>
@@ -298,6 +359,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chipText: { fontSize: 15, fontWeight: '600' },
+  timedRow: { flexDirection: 'row', alignItems: 'center', minHeight: 56 },
+  timedCancel: { minHeight: 44, minWidth: 64, alignItems: 'center', justifyContent: 'center' },
   switchCard: { borderRadius: 14, paddingHorizontal: 16, paddingVertical: 4 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64 },
   switchText: { flex: 1 },

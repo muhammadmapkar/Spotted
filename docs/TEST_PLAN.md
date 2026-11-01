@@ -185,6 +185,12 @@ Tick each box when the test passes. If a test fails, write what happened next to
 - **What should happen:** "3 reels added". My Places shows "📥 3 reels waiting to be sorted". After saving Reel 1
   and removing one, only 1 is left. Pasting the same links again says they were skipped.
 
+### 25. [ ] Remind me at a time
+- **What to do:** Open a place → **Remind me at a time** → tap **Tomorrow, 7 pm**. Check My Places. Then open the place
+  again, tap **Cancel**, and choose **This evening, 7 pm** (do this before 6:30 pm). Close the app and wait until 7 pm.
+- **What should happen:** The time shows on the place and in My Places ("⏰ ..."). At 7 pm the reminder "Time to try ..."
+  arrives, even with the app closed. Tapping it opens the place. After Cancel, nothing arrives for that time.
+
 ---
 
 ## Turn off battery saving for Spotted

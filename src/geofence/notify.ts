@@ -46,6 +46,30 @@ export async function cancelAllReminders(): Promise<void> {
   }
 }
 
+// "Remind me at a time": a reminder at a date the user chose. Tapping it opens the place.
+// Returns the phone's id for it, so it can be cancelled later.
+export async function scheduleTimedReminder(place: SavedPlace, date: Date): Promise<string> {
+  await ensureChannel();
+  return Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'Spotted ⏰',
+      body: `Time to try ${place.name}! You planned to go today.`,
+      data: { placeId: place.id },
+    },
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date, channelId: CHANNEL_ID },
+  });
+}
+
+// Cancel a timed reminder that has not gone off yet. Never throws.
+export async function cancelTimedReminder(notificationId: string | undefined): Promise<void> {
+  if (!notificationId) return;
+  try {
+    await Notifications.cancelScheduledNotificationAsync(notificationId);
+  } catch {
+    // Already gone off or already cancelled: fine.
+  }
+}
+
 // Show the "You're near ..." notification. Tapping it opens the place
 // (the place id travels inside the notification as `data`).
 // delaySeconds is only used for testing, so you have time to close the app.

@@ -4,7 +4,7 @@ import { makeId } from './ids';
 import { NewPlace, SavedPlace } from './types';
 
 // The database stores "nothing" as null; our app prefers undefined.
-type Row = Omit<SavedPlace, 'note' | 'reelUrl' | 'lastNotifiedAt' | 'collectionIds' | 'muted' | 'visitedAt' | 'snoozedUntil' | 'rating'> & {
+type Row = Omit<SavedPlace, 'note' | 'reelUrl' | 'lastNotifiedAt' | 'collectionIds' | 'muted' | 'visitedAt' | 'snoozedUntil' | 'rating' | 'remindAt' | 'remindNotificationId'> & {
   note: string | null;
   reelUrl: string | null;
   lastNotifiedAt: string | null;
@@ -12,6 +12,8 @@ type Row = Omit<SavedPlace, 'note' | 'reelUrl' | 'lastNotifiedAt' | 'collectionI
   visitedAt: string | null;
   snoozedUntil: string | null;
   rating: number | null;
+  remindAt: string | null;
+  remindNotificationId: string | null;
 };
 
 function toPlace(row: Row, collectionIds: string[]): SavedPlace {
@@ -24,6 +26,8 @@ function toPlace(row: Row, collectionIds: string[]): SavedPlace {
     visitedAt: row.visitedAt ?? undefined,
     snoozedUntil: row.snoozedUntil ?? undefined,
     rating: row.rating === 1 || row.rating === -1 ? row.rating : undefined,
+    remindAt: row.remindAt ?? undefined,
+    remindNotificationId: row.remindNotificationId ?? undefined,
     collectionIds,
   };
 }
@@ -107,7 +111,7 @@ export async function updatePlace(
   await db.runAsync(
     `UPDATE places SET googlePlaceId = ?, name = ?, address = ?, latitude = ?, longitude = ?,
        category = ?, note = ?, reelUrl = ?, lastNotifiedAt = ?, muted = ?, visitedAt = ?,
-       snoozedUntil = ?, rating = ? WHERE id = ?`,
+       snoozedUntil = ?, rating = ?, remindAt = ?, remindNotificationId = ? WHERE id = ?`,
     [
       p.googlePlaceId,
       p.name,
@@ -122,6 +126,8 @@ export async function updatePlace(
       p.visitedAt ?? null,
       p.snoozedUntil ?? null,
       p.rating ?? null,
+      p.remindAt ?? null,
+      p.remindNotificationId ?? null,
       id,
     ]
   );

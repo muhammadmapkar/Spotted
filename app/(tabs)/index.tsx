@@ -10,6 +10,7 @@ import { Filter, FilterChips } from '@/src/components/FilterChips';
 import { PlaceCard } from '@/src/components/PlaceCard';
 import { RemindersBanner } from '@/src/components/RemindersBanner';
 import { WeekendPlanner } from '@/src/components/WeekendPlanner';
+import { cancelTimedReminder } from '@/src/geofence/notify';
 import { distanceMeters } from '@/src/location/distance';
 import { useUserLocation } from '@/src/location/useUserLocation';
 import { Collection, SavedPlace, deletePlace, listCollections, listInbox, listPlaces } from '@/src/db';
@@ -60,6 +61,7 @@ export default function PlacesScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
+          await cancelTimedReminder(place.remindNotificationId);
           await deletePlace(place.id);
           await reload();
         },
