@@ -169,6 +169,10 @@ Tick each box when the test passes. If a test fails, write what happened next to
 - **What should happen:** Each time the reminder disappears and the app does **not** open. In My Places the place
   shows "⏸ Paused for now" after the first, and "✓ Been here" after the second.
 
+### 22. [ ] Rate a place
+- **What to do:** Open a place, turn on **I've been here**, tap **👍 Loved it**, save.
+- **What should happen:** My Places shows "✓ Been here · 👍 Loved it". Tapping 👍 again (then saving) clears it.
+
 ---
 
 ## Turn off battery saving for Spotted

@@ -2,6 +2,9 @@
 
 export type Category = 'food' | 'shopping' | 'fun';
 
+// After visiting: 1 = "Loved it" 👍, -1 = "Not for me" 👎. Not rated = left out.
+export type Rating = 1 | -1;
+
 // One of the user's own lists, like "Dubai brunch spots".
 export interface Collection {
   id: string;
@@ -25,11 +28,12 @@ export interface SavedPlace {
   muted: boolean; // true = never send "you're near" reminders for this place
   visitedAt?: string; // when the user marked "I've been here" (reminders stop after that)
   snoozedUntil?: string; // "Not now" on a reminder: no reminders for this place until this date
+  rating?: Rating; // after visiting: did the user like it?
   collectionIds: string[]; // the collections this place is in (can be empty)
 }
 
 // What the user types in when adding a place (id and dates are filled in for them).
-export type NewPlace = Omit<SavedPlace, 'id' | 'createdAt' | 'lastNotifiedAt' | 'collectionIds' | 'muted' | 'visitedAt' | 'snoozedUntil'> & {
+export type NewPlace = Omit<SavedPlace, 'id' | 'createdAt' | 'lastNotifiedAt' | 'collectionIds' | 'muted' | 'visitedAt' | 'snoozedUntil' | 'rating'> & {
   collectionIds?: string[];
 };
 

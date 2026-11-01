@@ -210,3 +210,14 @@ test('onboarding is remembered separately from the data', async () => {
   await setOnboardingDone();
   assert.equal(await getOnboardingDone(), true);
 });
+
+test('a visited place can be rated, and the rating can be cleared', async () => {
+  const saved = await addPlace(newPlace());
+  assert.equal(saved.rating, undefined);
+  await updatePlace(saved.id, { visitedAt: '2026-10-20T09:00:00.000Z', rating: 1 });
+  assert.equal((await getPlace(saved.id))?.rating, 1);
+  await updatePlace(saved.id, { rating: -1 });
+  assert.equal((await getPlace(saved.id))?.rating, -1);
+  await updatePlace(saved.id, { rating: undefined });
+  assert.equal((await getPlace(saved.id))?.rating, undefined);
+});

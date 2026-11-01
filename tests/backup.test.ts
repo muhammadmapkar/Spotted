@@ -35,7 +35,7 @@ test('a backup can be restored on an empty phone with everything kept', async ()
   const brunch = await addCollection('Brunch');
   const a = await addPlace(newPlace({ note: 'karak', reelUrl: 'https://www.instagram.com/reel/abc/', collectionIds: [brunch.id] }));
   await addPlace(newPlace({ googlePlaceId: 'g2', name: 'Dubai Mall', category: 'shopping' }));
-  await updatePlace(a.id, { muted: true, visitedAt: '2026-10-20T09:00:00.000Z' });
+  await updatePlace(a.id, { muted: true, visitedAt: '2026-10-20T09:00:00.000Z', rating: 1, snoozedUntil: '2026-11-01T00:00:00.000Z' });
   await saveSettings({ radiusMeters: 500, maxRemindersPerDay: 3 });
   const before = await listPlaces();
 

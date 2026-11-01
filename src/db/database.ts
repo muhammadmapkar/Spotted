@@ -23,7 +23,8 @@ const CREATE_TABLES = `
     lastNotifiedAt TEXT,
     muted INTEGER NOT NULL DEFAULT 0,
     visitedAt TEXT,
-    snoozedUntil TEXT
+    snoozedUntil TEXT,
+    rating INTEGER
   );
   CREATE TABLE IF NOT EXISTS settings (
     id INTEGER PRIMARY KEY NOT NULL CHECK (id = 1),
@@ -51,6 +52,7 @@ const ADDED_COLUMNS: { table: string; column: string; definition: string }[] = [
   { table: 'places', column: 'muted', definition: 'INTEGER NOT NULL DEFAULT 0' },
   { table: 'places', column: 'visitedAt', definition: 'TEXT' },
   { table: 'places', column: 'snoozedUntil', definition: 'TEXT' },
+  { table: 'places', column: 'rating', definition: 'INTEGER' },
 ];
 
 // Creates the tables and adds any missing columns. Safe to run every time.

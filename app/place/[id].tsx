@@ -7,9 +7,15 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { CollectionPicker } from '@/src/components/CollectionPicker';
-import { Category, SavedPlace, deletePlace, getPlace, updatePlace } from '@/src/db';
+import { Category, Rating, SavedPlace, deletePlace, getPlace, updatePlace } from '@/src/db';
 import { openReel } from '@/src/openLink';
 import { placeShareText } from '@/src/sharePlace';
+
+// The two answers to "How was it?" after a visit.
+const RATING_OPTIONS: { value: Rating; emoji: string; label: string }[] = [
+  { value: 1, emoji: '👍', label: 'Loved it' },
+  { value: -1, emoji: '👎', label: 'Not for me' },
+];
 
 // Place detail / edit screen. You can change the category and the note.
 export default function PlaceScreen() {
@@ -26,6 +32,7 @@ export default function PlaceScreen() {
   const [note, setNote] = useState('');
   const [muted, setMuted] = useState(false);
   const [visited, setVisited] = useState(false);
+  const [rating, setRating] = useState<Rating | undefined>(undefined);
 
   // Load the place. Used when the screen opens and by the "Try again" button.
   const load = useCallback(() => {
@@ -39,6 +46,7 @@ export default function PlaceScreen() {
         setCollectionIds(found.collectionIds);
         setMuted(found.muted);
         setVisited(Boolean(found.visitedAt));
+        setRating(found.rating);
       })
       .catch(() => setLoadFailed(true)); // show a friendly message instead of a blank screen
   }, [id]);
@@ -55,6 +63,7 @@ export default function PlaceScreen() {
         muted,
         // Keep the original date if it was already marked; set it now if newly marked; clear it if unmarked.
         visitedAt: visited ? (place?.visitedAt ?? new Date().toISOString()) : undefined,
+        rating: visited ? rating : undefined, // a rating only makes sense after a visit
       });
       router.back();
     } catch {
@@ -194,6 +203,37 @@ export default function PlaceScreen() {
           />
         </View>
       </View>
+
+      {/* After a visit: a quick thumbs up or down. Tap the chosen one again to clear it. */}
+      {visited ? (
+        <>
+          <Text style={styles.label}>How was it?</Text>
+          <View style={styles.row}>
+            {RATING_OPTIONS.map((option) => {
+              const selected = rating === option.value;
+              return (
+                <Pressable
+                  key={option.value}
+                  onPress={() => setRating(selected ? undefined : option.value)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={option.label}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: selected ? theme.tint : 'transparent',
+                      borderColor: selected ? theme.tint : theme.outline,
+                    },
+                  ]}>
+                  <Text style={[styles.chipText, { color: selected ? '#FFFFFF' : theme.text }]}>
+                    {option.emoji} {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </>
+      ) : null}
 
       <Text style={styles.label}>Collections</Text>
       <CollectionPicker selectedIds={collectionIds} onChange={setCollectionIds} />

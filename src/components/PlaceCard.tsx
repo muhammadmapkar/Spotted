@@ -52,7 +52,11 @@ export function PlaceCard({
         ) : null}
         {place.visitedAt || place.muted || isSnoozed(place, new Date()) ? (
           <Text style={[styles.distance, { color: theme.mutedText }]}>
-            {place.visitedAt ? '✓ Been here' : place.muted ? '🔕 Reminders off' : '⏸ Paused for now'}
+            {place.visitedAt
+              ? `✓ Been here${place.rating === 1 ? ' · 👍 Loved it' : place.rating === -1 ? ' · 👎 Not for me' : ''}`
+              : place.muted
+                ? '🔕 Reminders off'
+                : '⏸ Paused for now'}
           </Text>
         ) : null}
         {place.note ? (

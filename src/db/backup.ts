@@ -73,6 +73,7 @@ function readPlace(raw: unknown): SavedPlace | null {
     muted: p.muted === true,
     visitedAt: optionalText(p.visitedAt),
     snoozedUntil: optionalText(p.snoozedUntil),
+    rating: p.rating === 1 || p.rating === -1 ? p.rating : undefined,
     collectionIds: Array.isArray(p.collectionIds) ? p.collectionIds.filter(isText) : [],
   };
 }
@@ -172,8 +173,8 @@ export async function restoreBackup(text: string): Promise<RestoreResult> {
     }
     await db.runAsync(
       `INSERT INTO places (id, googlePlaceId, name, address, latitude, longitude, category, note, reelUrl,
-         createdAt, lastNotifiedAt, muted, visitedAt, snoozedUntil)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         createdAt, lastNotifiedAt, muted, visitedAt, snoozedUntil, rating)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         p.id,
         p.googlePlaceId,
@@ -189,6 +190,7 @@ export async function restoreBackup(text: string): Promise<RestoreResult> {
         p.muted ? 1 : 0,
         p.visitedAt ?? null,
         p.snoozedUntil ?? null,
+        p.rating ?? null,
       ]
     );
     for (const fileCollectionId of new Set(p.collectionIds)) {

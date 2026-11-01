@@ -101,6 +101,11 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 - The message has the place name, address, your note (if any), a Google Maps link, and the reel link (if any).
 - Uses React Native's built-in Share. Nothing is sent to our servers.
 
+### F11. Rate a place after visiting (added after Version 1 planning)
+- When **"I've been here"** is on, the place screen asks **"How was it?"**: 👍 **Loved it** or 👎 **Not for me**.
+- Tapping the chosen answer again clears it. Turning "I've been here" off clears the rating too.
+- My Places shows it next to "✓ Been here". The rating is kept in backups.
+
 ### F10. Back up and restore (added after Version 1 planning)
 - Version 1 has no cloud, so this is how to keep places when changing phones.
 - Settings → **Back up my places** makes one file (`spotted-backup-YYYY-MM-DD.json`) with all places, collections and
@@ -171,6 +176,7 @@ interface SavedPlace {
   muted: boolean;              // no reminders for this place
   visitedAt?: string;          // "I've been here" (reminders stop)
   snoozedUntil?: string;       // "Not now" on a reminder: paused until this date
+  rating?: 1 | -1;             // after visiting: 1 = loved it, -1 = not for me
   collectionIds: string[]; // the collections this place is in (can be empty)
 }
 
