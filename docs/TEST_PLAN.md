@@ -173,6 +173,12 @@ Tick each box when the test passes. If a test fails, write what happened next to
 - **What to do:** Open a place, turn on **I've been here**, tap **👍 Loved it**, save.
 - **What should happen:** My Places shows "✓ Been here · 👍 Loved it". Tapping 👍 again (then saving) clears it.
 
+### 23. [ ] Plan my weekend
+- **What to do:** Save 5+ places in different categories. Mark one "I've been here". My Places → **✨ Plan my weekend**.
+  Tap **Shuffle** a few times, then tap a place.
+- **What should happen:** 3 places appear, never the visited one, usually a mix of Food, Shopping and Fun.
+  Shuffle changes them. Tapping a place opens it.
+
 ---
 
 ## Turn off battery saving for Spotted

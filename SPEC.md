@@ -106,6 +106,12 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 - Tapping the chosen answer again clears it. Turning "I've been here" off clears the rating too.
 - My Places shows it next to "✓ Been here". The rating is kept in backups.
 
+### F12. Plan my weekend (added after Version 1 planning)
+- A **"✨ Plan my weekend"** button on My Places (shown when there is at least one place not visited yet).
+- It suggests **3 saved places you haven't been to**, picked from the 10 closest (or from all, without location),
+  mixing Food, Shopping and Fun when it can. Closest first.
+- **Shuffle** gives another 3; tapping a place opens it. All on the phone, no server.
+
 ### F10. Back up and restore (added after Version 1 planning)
 - Version 1 has no cloud, so this is how to keep places when changing phones.
 - Settings → **Back up my places** makes one file (`spotted-backup-YYYY-MM-DD.json`) with all places, collections and

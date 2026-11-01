@@ -9,6 +9,7 @@ import { CollectionFilter } from '@/src/components/CollectionFilter';
 import { Filter, FilterChips } from '@/src/components/FilterChips';
 import { PlaceCard } from '@/src/components/PlaceCard';
 import { RemindersBanner } from '@/src/components/RemindersBanner';
+import { WeekendPlanner } from '@/src/components/WeekendPlanner';
 import { distanceMeters } from '@/src/location/distance';
 import { useUserLocation } from '@/src/location/useUserLocation';
 import { Collection, SavedPlace, deletePlace, listCollections, listPlaces } from '@/src/db';
@@ -104,6 +105,9 @@ export default function PlacesScreen() {
         clearButtonMode="while-editing"
         style={[styles.search, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
       />
+
+      {/* "Plan my weekend": 3 saved places to try, close to you */}
+      <WeekendPlanner places={places} position={userLocation} onOpenPlace={openPlace} />
 
       <FilterChips selected={filter} onSelect={setFilter} />
       <CollectionFilter collections={collections} selected={collectionFilter} onSelect={setCollectionFilter} />
