@@ -4,3 +4,7 @@
 *.jpg
 *.jpeg
 *.png
+
+node_modules/
+.expo/
+dist/
