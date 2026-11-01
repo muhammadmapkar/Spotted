@@ -6,6 +6,7 @@ export * from './types';
 export * from './collections';
 export * from './places';
 export * from './settings';
+export * from './backup';
 
 // "Delete all my data": removes every saved place and collection, and resets settings to defaults.
 export async function deleteAllData(): Promise<void> {
