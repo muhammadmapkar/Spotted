@@ -1,8 +1,15 @@
+import { categoryFromTypes } from './categoryFromTypes';
 import { PlaceResult, PlaceSuggestion, SearchBias } from './types';
 
-const BASE_URL = 'https://places.googleapis.com/v1';
+// Where the app sends place searches. Two ways to set this up (see src/places/search.ts):
+//  - "proxy": our own tiny server holds the Google key (safe for store builds), or
+//  - "direct": the app holds the key itself (fine for testing, but the key can be extracted).
+export interface PlacesBackend {
+  baseUrl: string;
+  headers: Record<string, string>;
+}
 
-// Google Places search ("Places API (New)").
+// Google search ("Places API (New)").
 // A "session token" groups the typing and the final pick into one billed session.
 
 // Makes a random session token.
@@ -13,26 +20,27 @@ export function newSessionToken(): string {
   });
 }
 
+// "Prefer results near here" in the shape Google wants.
+function locationBias(bias: SearchBias) {
+  return {
+    circle: {
+      center: { latitude: bias.latitude, longitude: bias.longitude },
+      radius: Math.min(bias.radiusMeters, 50000),
+    },
+  };
+}
+
 // Suggest places for the text typed so far, preferring places near `bias`.
 export async function googleAutocomplete(
-  apiKey: string,
+  backend: PlacesBackend,
   query: string,
   bias: SearchBias,
   sessionToken: string
 ): Promise<PlaceSuggestion[]> {
-  const response = await fetch(`${BASE_URL}/places:autocomplete`, {
+  const response = await fetch(`${backend.baseUrl}/places:autocomplete`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': apiKey },
-    body: JSON.stringify({
-      input: query,
-      sessionToken,
-      locationBias: {
-        circle: {
-          center: { latitude: bias.latitude, longitude: bias.longitude },
-          radius: Math.min(bias.radiusMeters, 50000),
-        },
-      },
-    }),
+    headers: { 'Content-Type': 'application/json', ...backend.headers },
+    body: JSON.stringify({ input: query, sessionToken, locationBias: locationBias(bias) }),
   });
   if (!response.ok) throw new Error(`Google search failed (${response.status})`);
 
@@ -50,31 +58,68 @@ export async function googleAutocomplete(
   return suggestions;
 }
 
+// Turns one place from Google's answer into our own shape. Returns null if it has no position.
+function toPlaceResult(p: any, fallback?: PlaceSuggestion): PlaceResult | null {
+  if (!p?.location) return null;
+  const suggestedCategory = categoryFromTypes(p.types);
+  return {
+    googlePlaceId: p.id ?? fallback?.googlePlaceId ?? '',
+    name: p.displayName?.text ?? fallback?.name ?? 'Unknown place',
+    address: p.formattedAddress ?? fallback?.address ?? '',
+    latitude: p.location.latitude,
+    longitude: p.location.longitude,
+    // Pre-select Food / Shopping / Fun when Google's place type makes it clear (left out otherwise).
+    ...(suggestedCategory ? { suggestedCategory } : {}),
+  };
+}
+
 // Get the name, full address and map position of the place the user picked.
 export async function googlePlaceDetails(
-  apiKey: string,
+  backend: PlacesBackend,
   suggestion: PlaceSuggestion,
   sessionToken: string
 ): Promise<PlaceResult> {
   const response = await fetch(
-    `${BASE_URL}/places/${encodeURIComponent(suggestion.googlePlaceId)}?sessionToken=${sessionToken}`,
+    `${backend.baseUrl}/places/${encodeURIComponent(suggestion.googlePlaceId)}?sessionToken=${sessionToken}`,
     {
       headers: {
-        'X-Goog-Api-Key': apiKey,
+        ...backend.headers,
         // Only ask for the fields we need: it keeps the cost down.
-        'X-Goog-FieldMask': 'id,displayName,formattedAddress,location',
+        'X-Goog-FieldMask': 'id,displayName,formattedAddress,location,types',
       },
     }
   );
   if (!response.ok) throw new Error(`Google place lookup failed (${response.status})`);
 
+  const result = toPlaceResult(await response.json(), suggestion);
+  if (!result) throw new Error('Google did not return a location for this place');
+  return result;
+}
+
+// Search by a phrase taken from a caption (like "Arabian Tea House Al Fahidi").
+// Returns full places (with positions) so no second lookup is needed.
+export async function googleTextSearch(
+  backend: PlacesBackend,
+  text: string,
+  bias: SearchBias,
+  maxResults = 3
+): Promise<PlaceResult[]> {
+  const response = await fetch(`${backend.baseUrl}/places:searchText`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...backend.headers,
+      'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.types',
+    },
+    body: JSON.stringify({ textQuery: text, locationBias: locationBias(bias), maxResultCount: maxResults }),
+  });
+  if (!response.ok) throw new Error(`Google search failed (${response.status})`);
+
   const data = await response.json();
-  if (!data.location) throw new Error('Google did not return a location for this place');
-  return {
-    googlePlaceId: data.id ?? suggestion.googlePlaceId,
-    name: data.displayName?.text ?? suggestion.name,
-    address: data.formattedAddress ?? suggestion.address,
-    latitude: data.location.latitude,
-    longitude: data.location.longitude,
-  };
+  const found: PlaceResult[] = [];
+  for (const p of data.places ?? []) {
+    const result = toPlaceResult(p);
+    if (result && result.googlePlaceId) found.push(result);
+  }
+  return found;
 }

@@ -1,15 +1,17 @@
 import * as Location from 'expo-location';
+import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
 
 import { getLastAlertAt, setLastAlertAt } from '../db/alerts';
-import { getPlace, updatePlace } from '../db/places';
+import { getPlace, listPlaces, updatePlace } from '../db/places';
 import { placeById } from '../data/mock';
 import { distanceMeters } from '../location/distance';
 import { coordinatesOf } from '../place/placeData';
 import { getSettings } from '../db/settings';
-import { GEOFENCE_TASK, REFRESH_TASK } from './constants';
+import { handleReminderAction } from './actions';
+import { GEOFENCE_TASK, REFRESH_TASK, REMINDER_BUTTON_TASK } from './constants';
 import { parseVenueRegion } from './catalogue';
-import { sendNearbyNotification, sendVenueAlert } from './notify';
+import { dismissReminder, sendNearbyNotification, sendVenueAlert } from './notify';
 import { shouldNotify } from './rules';
 import { getPosition, syncGeofencing } from './sync';
 
@@ -28,14 +30,15 @@ TaskManager.defineTask(GEOFENCE_TASK, async ({ data, error }) => {
 
   try {
     const venueId = parseVenueRegion(region.identifier);
-    const settings = await getSettings();
+    const [settings, allPlaces] = await Promise.all([getSettings(), listPlaces()]);
     const now = new Date();
 
     // A saved Spotted place (from the Saved tab).
     if (venueId) {
       const venue = placeById(venueId);
       if (!venue) return;
-      if (!shouldNotify({ lastNotifiedAt: await getLastAlertAt(venueId) }, now, settings)) return;
+      // The daily limit also counts reminders already sent for places saved from reels.
+      if (!shouldNotify({ lastNotifiedAt: await getLastAlertAt(venueId) }, now, settings, allPlaces)) return;
       await setLastAlertAt(venueId, now.toISOString()); // write the time FIRST, so two quick events can never send two alerts
       const here = await getPosition();
       await sendVenueAlert(venue, here ? distanceMeters(here, coordinatesOf(venue)) : null);
@@ -45,7 +48,9 @@ TaskManager.defineTask(GEOFENCE_TASK, async ({ data, error }) => {
     // A place saved from a reel.
     const place = await getPlace(region.identifier);
     if (!place) return;
-    if (!shouldNotify(place, now, settings)) return; // reminders off, quiet hours, or notified in the last 24 h
+    // No reminder if: reminders off, place muted, visited or paused ("Not now"), quiet hours,
+    // this place notified in the last 24 h, or the daily limit is reached.
+    if (!shouldNotify(place, now, settings, allPlaces)) return;
 
     // Write down the time FIRST, so two quick events can never send two notifications.
     await updatePlace(place.id, { lastNotifiedAt: now.toISOString() });
@@ -61,3 +66,25 @@ TaskManager.defineTask(REFRESH_TASK, async ({ error }) => {
   if (error) return;
   await syncGeofencing();
 });
+
+// Job 3 (Android): you tapped "I've been here" or "Not now" on a reminder while Spotted was closed.
+// (When the app is open, src/geofence/GeofenceManager.tsx handles the tap instead.)
+TaskManager.defineTask<Notifications.NotificationTaskPayload>(REMINDER_BUTTON_TASK, async ({ data, error }) => {
+  if (error || !data || !('actionIdentifier' in data)) return;
+  try {
+    const request = data.notification.request;
+    const placeId = request.content.data?.placeId;
+    if (typeof placeId !== 'string') return;
+    if (await handleReminderAction(data.actionIdentifier, placeId)) {
+      await dismissReminder(request.identifier);
+    }
+  } catch {
+    // Never crash a background job.
+  }
+});
+// Not available everywhere (for example on the web or in tests): then the buttons still work while the app is open.
+try {
+  Notifications.registerTaskAsync(REMINDER_BUTTON_TASK).catch(() => {});
+} catch {
+  // Never crash while the app starts.
+}

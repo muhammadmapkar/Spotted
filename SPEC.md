@@ -25,8 +25,9 @@ Spotted lets users share a reel straight to the app, confirm which place it is, 
 - In Instagram, user taps **Share → Spotted** (or copies the reel link and pastes it in the app).
 - Spotted opens the **Add Place** screen with the reel link attached.
 - The app does **not** scrape or read Instagram content. The user confirms the place.
+- If a reel is shared while the welcome / permission screens are showing (first launch), the link is remembered and Add Place opens with it as soon as onboarding is finished.
 
-### F1b. Place suggestions from a caption (added after Version 1 planning)
+### F1b. Place suggestions from a caption (built; added after Version 1 planning)
 Goal: save time. The app *suggests* the place, and the user always confirms.
 - **TikTok link:** the app asks TikTok's official public **oEmbed** service for the post's caption (no login, no scraping).
 - **Instagram link:** there is no official way to read a post. The user copies the caption in Instagram and taps **Paste caption** in Add Place.
@@ -44,8 +45,11 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 - Optional: a short personal note (e.g. "try the pistachio croissant").
 - Reel link saved with the place (tap to reopen the reel).
 
-### F3. Saved places (list, in the Saved tab)
-- List of saved places, newest first.
+### F3. Places from reels (list, opened from the Saved tab)
+- List of saved places, newest first by default.
+- **Search box** above the list: finds places by name, area (address) or note. Several words must all match. Upper/lower case doesn't matter.
+- **Sort:** "Newest" (default) or "Nearest". "Nearest" only works when location is allowed (otherwise it is greyed out).
+- Search, the category chips and the collection chips all combine.
 - Filter chips: All / Food / Shopping / Fun.
 - A second row of chips filters by collection (shown only when the user has collections). Category and collection filters combine.
 - Each item shows name, area, category, distance from user (if location allowed).
@@ -53,28 +57,38 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 
 ### F4. Map
 - All saved places as pins, coloured by category.
+- **Filter chips** at the top: All / Food / Shopping / Fun (the same chips as My Places). The map zooms to the pins that are left. On Android without a Maps key, the list that replaces the map has the same chips.
 - Tap a pin → card with name, note, "Open reel", "Directions" (opens Google Maps / Apple Maps).
+- **"Open reel" that can't open** (broken link or deleted reel): a friendly message appears with the choice to **remove the link** from that place. The place itself stays saved. This works the same on the place screen and the map card.
 
 ### F5. Nearby reminders
 - When the user comes within the chosen radius (default **300 m**) of a saved place, show a local notification (no emoji):
   **Title:** "A place you saved is 1.2 km away" (the real distance; "A place you saved is nearby" if the distance is unknown)
   **Body:** "Saffron Lane · 5 influencers recommend it" (just the name when no influencer recommends it)
 - This works for the saved Spotted places (Saved tab) and for places saved from reels.
-- Tapping the notification opens that place: the Place page for a Spotted place.
+- Tapping the notification opens that place: the Place page for a Spotted place, the place's own page for a place saved from a reel.
 - If the app is open when an alert arrives, a banner slides down from the top instead of the phone's own banner (tap it to open the place; it goes away after 6.5 seconds).
+- A reminder for a place saved from a reel has two buttons: **"I've been here"** (marks it visited) and **"Not now"** (no reminders for that place for 7 days).
+- **Remind me at a time** (place page): this evening, tomorrow, Saturday or in a week. Title "Time to try a place you saved", body "{name} · you planned to go today".
 - Uses OS geofencing. OS limits: **iOS max 20 regions, Android max 100**. The app always monitors the **20 nearest** saved places and refreshes the set on significant location change.
 - No repeat notification for the same place within **24 hours**.
 - Respect **quiet hours** (default 22:00–08:00, no notifications).
+- **Daily limit:** at most 2 reminders in any 24 hours (setting: 1 / 2 / 3 / no limit), so a busy day doesn't spam the user.
+- **Per place:** on the place screen the user can turn reminders off for that place ("Remind me when I'm near") or mark **"I've been here"**. Muted and visited places are not watched and don't use up the 20 slots.
+- **Buttons on the reminder** (added after Version 1 planning): **"I've been here"** marks the place as visited, and
+  **"Not now"** pauses reminders for that place for **7 days**. Both work without opening the app (on Android, a
+  background job does it; on iPhone this still needs testing). The list shows "⏸ Paused for now" while paused.
 
 ### F6. Settings
 - Reminders on/off.
 - Radius: 200 m / 300 m / 500 m / 1 km.
 - Quiet hours on/off + times.
+- Most reminders per day: 1 / 2 / 3 / no limit (default 2).
 - "Delete all my data" button (with confirmation).
 - Links: privacy policy, contact support.
 
 ### F7. Onboarding
-- 3 short welcome screens: Save from reels → Confirm the place → Get reminded nearby.
+- 3 short welcome screens: Save from reels (Instagram or TikTok) → Confirm the place → Get reminded nearby.
 - Permission requests come **after** explaining why: location "while using the app" and notifications. Location "all the time" is asked ONLY when the user turns on "Nearby saved-place alerts" in Profile, after a clear explanation.
 - App still works (list + map) if the user refuses background location; reminders are simply off, with a friendly banner explaining how to turn them on.
 
@@ -95,6 +109,49 @@ Added from the redesign. There is **no server** in Version 1, so this is a demo 
 - **Manage collections** (from Settings): create, rename, delete. Deleting a collection never deletes the places in it.
 - Collection names: 1 to 40 characters, unique (ignoring upper/lower case).
 - Collections are personal and stay on the phone. Sharing them with friends is Version 2.
+
+### F9. Share a place with a friend
+- The place screen has a **Share place** button. It opens the phone's normal share sheet (WhatsApp, Messages, ...).
+- The message has the place name, address, your note (if any), a Google Maps link, and the reel link (if any).
+- Uses React Native's built-in Share. Nothing is sent to our servers.
+
+### F11. Rate a place after visiting (added after Version 1 planning)
+- When **"I've been here"** is on, the place screen asks **"How was it?"**: **Loved it** or **Not for me**.
+- Tapping the chosen answer again clears it. Turning "I've been here" off clears the rating too.
+- My Places shows it next to "✓ Been here". The rating is kept in backups.
+
+### F12. Plan my weekend (added after Version 1 planning)
+- A **"✨ Plan my weekend"** button on My Places (shown when there is at least one place not visited yet).
+- It suggests **3 saved places you haven't been to**, picked from the 10 closest (or from all, without location),
+  mixing Food, Shopping and Fun when it can. Closest first.
+- **Shuffle** gives another 3; tapping a place opens it. All on the phone, no server.
+
+### F13. Add many reels at once (added after Version 1 planning)
+- Add Place has a link **"Have lots of reels? Add them all at once"**. It opens **Add many reels**.
+- The user pastes any text with many Instagram/TikTok links. Every link is found, tidied and added to **Reels to sort**.
+  Links already waiting, or already saved on a place, are skipped.
+- Tapping a waiting reel opens Add Place with that link (with caption suggestions as in F1b). The user confirms the
+  place as usual; once it is saved, the reel leaves the list. A ✕ removes a reel without saving it.
+- Places from reels shows **"N reels waiting to be sorted"** while the list is not empty.
+- Stored on the phone (table `inbox`). "Delete all my data" empties it. Not part of backups.
+
+### F14. Remind me at a time (added after Version 1 planning)
+- The place screen has **"Remind me at a time"** with ready-made choices: **This evening, 7 pm** (only if at least
+  30 minutes away), **Tomorrow, 7 pm**, **Saturday, 11 am** (the next Saturday, never today), **In a week, 7 pm**.
+- Tapping one sets it straight away (no Save needed): a local notification **"Time to try {name}! You planned to go
+  today."** Tapping it opens the place. One timed reminder per place; **Cancel** removes it.
+- It is the user's own choice, so quiet hours and the daily limit don't apply. It also works without location.
+- The place screen shows "Sat 7 Nov, 11:00" while it is waiting. Deleting the place or all data cancels it.
+  Timed reminders are not restored from backups.
+
+### F10. Back up and restore (added after Version 1 planning)
+- Version 1 has no cloud, so this is how to keep places when changing phones.
+- Settings → **Back up my places** makes one file (`spotted-backup-YYYY-MM-DD.json`) with all places, collections and
+  settings, and opens the phone's share menu (Google Drive, email, WhatsApp...). Nothing is sent to our servers.
+- Settings → **Restore from a backup** lets the user pick that file.
+- Restoring **adds**; it never deletes. A place already on the phone (same id or same Google place) is skipped.
+  A collection with the same name is reused. Settings from the file replace the current ones.
+- A file that is not a Spotted backup is refused and nothing changes. Damaged places in a file are skipped.
 
 ## 5. Out of scope for Version 1 (later)
 
@@ -175,6 +232,12 @@ interface SavedPlace {
   reelUrl?: string;
   createdAt: string;     // ISO date
   lastNotifiedAt?: string;
+  muted: boolean;              // no reminders for this place
+  visitedAt?: string;          // "I've been here" (reminders stop)
+  snoozedUntil?: string;       // "Not now" on a reminder: paused until this date
+  rating?: 1 | -1;             // after visiting: 1 = loved it, -1 = not for me
+  remindAt?: string;           // "Remind me at a time": when it goes off
+  remindNotificationId?: string; // the phone's id for it, to cancel it
   collectionIds: string[]; // the collections this place is in (can be empty)
 }
 
@@ -191,6 +254,7 @@ interface Settings {
   quietHoursEnabled: boolean;  // default true
   quietStart: string;          // "22:00"
   quietEnd: string;            // "08:00"
+  maxRemindersPerDay: number;  // default 2; 0 = no limit
 }
 ```
 
@@ -221,8 +285,9 @@ The visual source of truth is the design prototype (`spotted-prototype-reference
 
 ## 11. Secrets
 
-- Google API key in `.env` as `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` — **never commit `.env`**.
-- Restrict the key in Google Cloud to the app's package name (`com.spotted.app`) and only the needed APIs.
+- **Place search key (Places API):** do NOT ship it inside the app. A key inside the app can be extracted, and Google's "restrict to this Android app" lock does not work for plain web requests. Keep it on the small proxy in `server/places-proxy` and put only the proxy address in `.env` as `EXPO_PUBLIC_PLACES_PROXY_URL`. The proxy can also check an optional shared secret (`APP_SHARED_SECRET` on the proxy, `EXPO_PUBLIC_PLACES_PROXY_SECRET` in the app, sent as the `X-Spotted-Key` header). It only keeps casual strangers out, because the value is also inside the app. (For your own testing you may still use `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`.)
+- **Maps SDK key (the map itself):** a separate key, restricted in Google Cloud to the app's package name (`com.spotted.app`) and to Maps SDK only. It is never written in a file: `app.config.ts` reads it from the `GOOGLE_MAPS_ANDROID_API_KEY` environment variable (an EAS environment variable for builds). `GOOGLE_MAPS_KEY_IN_BUILD` in `src/config.ts` is set to `true` only once the key is in the build.
+- **Never commit `.env`.**
 - Google Cloud budget alert set (e.g. USD 10/month).
 
 ## 12. Done means (acceptance checklist)
@@ -237,6 +302,11 @@ The visual source of truth is the design prototype (`spotted-prototype-reference
 - [ ] A place can be saved into collections; collections can be created, renamed, deleted; the filter works.
 - [ ] Pasting or sharing a TikTok/Instagram caption suggests the right place; the user confirms before anything is saved.
 - [ ] Sign in works: phone, code (123456 in the demo), details; the user stays signed in after a restart; Delete all my data signs out.
+- [ ] A place can be muted or marked "I've been here", and then never sends reminders; the daily limit works.
+- [ ] My Places search and sort, Share place, and the map filter chips work.
+- [ ] A backup file can be saved, and restoring it brings every place back without doubling any.
+- [ ] Reminder buttons, rating, Plan my weekend, Add many reels and Remind me at a time work (TEST_PLAN 21-25).
+- [ ] `npm test` and `npm run typecheck` pass.
 - [ ] No crashes in a 1-week test by 12+ testers.
 - [ ] Battery use acceptable after a full day.
 

@@ -9,6 +9,12 @@ export const MAX_WATCHED_PLACES = 20;
 // The same place never notifies twice within this time.
 export const REPEAT_HOURS = 24;
 
+// Places that can still send reminders: not muted, and not marked "I've been here".
+// Others are never watched, so they don't use up the 20 slots.
+export function remindablePlaces(places: SavedPlace[]): SavedPlace[] {
+  return places.filter((place) => !place.muted && !place.visitedAt);
+}
+
 // The places to watch: the 20 closest to the user.
 // If we don't know where the user is yet, we use the 20 newest instead.
 export function nearestPlaces(
@@ -54,6 +60,13 @@ export function isQuietTime(now: Date, settings: Settings): boolean {
     : current >= start || current < end; // overnight span, e.g. 22:00 to 08:00
 }
 
+// Did the user tap "Not now" on a reminder, and is that pause still running?
+export function isSnoozed(place: { snoozedUntil?: string }, now: Date): boolean {
+  if (!place.snoozedUntil) return false;
+  const until = new Date(place.snoozedUntil).getTime();
+  return !Number.isNaN(until) && now.getTime() < until;
+}
+
 // Has this place already notified within the last 24 hours?
 export function notifiedRecently(place: { lastNotifiedAt?: string }, now: Date): boolean {
   if (!place.lastNotifiedAt) return false;
@@ -62,11 +75,36 @@ export function notifiedRecently(place: { lastNotifiedAt?: string }, now: Date):
   return now.getTime() - last < REPEAT_HOURS * 60 * 60 * 1000;
 }
 
+// How many reminders (for any place) were sent in the last 24 hours?
+export function remindersInLast24h(places: { lastNotifiedAt?: string }[], now: Date): number {
+  return places.filter((place) => notifiedRecently(place, now)).length;
+}
+
 // The final decision: should we show a notification for this place right now?
-export function shouldNotify(place: { lastNotifiedAt?: string }, now: Date, settings: Settings): boolean {
+// What the rules need to know about one place. A place saved from a reel has all of these;
+// a saved Spotted place (from the Saved tab) only has lastNotifiedAt.
+export interface AlertState {
+  lastNotifiedAt?: string;
+  muted?: boolean;
+  visitedAt?: string;
+  snoozedUntil?: string;
+}
+
+// `allPlaces` is needed for the daily limit (it counts the reminders already sent).
+export function shouldNotify(
+  place: AlertState,
+  now: Date,
+  settings: Settings,
+  allPlaces: AlertState[] = []
+): boolean {
   if (!settings.remindersEnabled) return false;
+  if (place.muted || place.visitedAt) return false;
+  if (isSnoozed(place, now)) return false;
   if (isQuietTime(now, settings)) return false;
   if (notifiedRecently(place, now)) return false;
+  if (settings.maxRemindersPerDay > 0 && remindersInLast24h(allPlaces, now) >= settings.maxRemindersPerDay) {
+    return false;
+  }
   return true;
 }
 

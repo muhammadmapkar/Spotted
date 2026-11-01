@@ -1,11 +1,25 @@
 import { DEMO_PLACES } from './demoPlaces';
-import { googleAutocomplete, googlePlaceDetails } from './google';
+import { PlacesBackend, googleAutocomplete, googlePlaceDetails } from './google';
 import { DUBAI_BIAS, PlaceResult, PlaceSuggestion, SearchBias } from './types';
 
-// The Google key comes from the .env file (see .env.example). If it is empty,
-// the app uses a small built-in list of Dubai places instead (free, no key).
+// Where do place searches go? (See .env.example.)
+//  1. EXPO_PUBLIC_PLACES_PROXY_URL set -> our own small server (server/places-proxy) holds the
+//     Google key. USE THIS for builds you give to other people or put in a store.
+//  2. EXPO_PUBLIC_GOOGLE_MAPS_API_KEY set -> the app talks to Google directly. Fine for your own
+//     testing, but the key is inside the app and can be extracted by anyone who has it.
+//  3. Neither -> a small built-in list of Dubai places (free, no key).
 const API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
-export const SEARCH_IS_DEMO = API_KEY === '';
+const PROXY_URL = (process.env.EXPO_PUBLIC_PLACES_PROXY_URL ?? '').replace(/\/+$/, '');
+// Optional password for the proxy (server/places-proxy/README.md). Empty = the proxy has none.
+const PROXY_SECRET = process.env.EXPO_PUBLIC_PLACES_PROXY_SECRET ?? '';
+
+const backend: PlacesBackend | null = PROXY_URL
+  ? { baseUrl: `${PROXY_URL}/v1`, headers: PROXY_SECRET ? { 'X-Spotted-Key': PROXY_SECRET } : {} }
+  : API_KEY
+    ? { baseUrl: 'https://places.googleapis.com/v1', headers: { 'X-Goog-Api-Key': API_KEY } }
+    : null;
+
+export const SEARCH_IS_DEMO = backend === null;
 
 // Google needs at least this many letters before we search (saves money).
 const MIN_LETTERS = 3;
@@ -17,9 +31,9 @@ export async function searchPlaces(
   bias: SearchBias = DUBAI_BIAS
 ): Promise<PlaceSuggestion[]> {
   const text = query.trim();
-  if (SEARCH_IS_DEMO) return searchDemo(text);
+  if (!backend) return searchDemo(text);
   if (text.length < MIN_LETTERS) return [];
-  return googleAutocomplete(API_KEY, text, bias, sessionToken);
+  return googleAutocomplete(backend, text, bias, sessionToken);
 }
 
 // Get the full details (including map position) of a picked place.
@@ -27,12 +41,12 @@ export async function getPlaceDetails(
   suggestion: PlaceSuggestion,
   sessionToken: string
 ): Promise<PlaceResult> {
-  if (SEARCH_IS_DEMO) {
+  if (!backend) {
     const found = DEMO_PLACES.find((p) => p.googlePlaceId === suggestion.googlePlaceId);
     if (!found) throw new Error('Place not found');
     return found;
   }
-  return googlePlaceDetails(API_KEY, suggestion, sessionToken);
+  return googlePlaceDetails(backend, suggestion, sessionToken);
 }
 
 // Demo search: every word typed must appear in the name or address, in any order.

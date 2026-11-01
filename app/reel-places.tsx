@@ -1,6 +1,6 @@
 import { Stack, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, TextInput } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import { HeroIcon } from '@/src/components/ui/HeroIcon';
@@ -10,10 +10,12 @@ import { CollectionFilter } from '@/src/components/CollectionFilter';
 import { Filter, FilterChips } from '@/src/components/FilterChips';
 import { PlaceCard } from '@/src/components/PlaceCard';
 import { RemindersBanner } from '@/src/components/RemindersBanner';
+import { WeekendPlanner } from '@/src/components/WeekendPlanner';
+import { cancelTimedReminder } from '@/src/geofence/notify';
 import { distanceMeters } from '@/src/location/distance';
 import { useUserLocation } from '@/src/location/useUserLocation';
-import { Collection, SavedPlace, deletePlace, listCollections, listPlaces } from '@/src/db';
-import { filterPlaces } from '@/src/placeFilters';
+import { Collection, SavedPlace, deletePlace, listCollections, listInbox, listPlaces } from '@/src/db';
+import { PlaceSort, filterPlaces, searchSavedPlaces, sortPlaces } from '@/src/placeFilters';
 
 // The original list of places saved from reels: newest first, with filter chips on top.
 // It opens from the Saved tab, and has a Map button for the matching map (app/reel-map.tsx).
@@ -25,12 +27,16 @@ export default function PlacesScreen() {
   const [filter, setFilter] = useState<Filter>('all');
   const [collections, setCollections] = useState<Collection[]>([]);
   const [collectionFilter, setCollectionFilter] = useState<string>('all'); // 'all' or a collection id
+  const [search, setSearch] = useState(''); // what the user typed in the search box
+  const [sort, setSort] = useState<PlaceSort>('newest');
+  const [waitingReels, setWaitingReels] = useState(0); // reels in "Reels to sort"
 
   // Reload the list every time this screen is shown.
   const reload = useCallback(async () => {
     try {
-      const [loadedPlaces, loadedCollections] = await Promise.all([listPlaces(), listCollections()]);
+      const [loadedPlaces, loadedCollections, inbox] = await Promise.all([listPlaces(), listCollections(), listInbox()]);
       setPlaces(loadedPlaces);
+      setWaitingReels(inbox.length);
       setCollections(loadedCollections);
       // If the collection we were filtering by was deleted, go back to "All lists".
       setCollectionFilter((current) =>
@@ -57,6 +63,7 @@ export default function PlacesScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
+          await cancelTimedReminder(place.remindNotificationId);
           await deletePlace(place.id);
           await reload();
         },
@@ -72,8 +79,14 @@ export default function PlacesScreen() {
       { text: 'Cancel', style: 'cancel' },
     ]);
 
-  // Show places that match BOTH the category chip and the collection chip.
-  const visible = filterPlaces(places, filter, collectionFilter);
+  // Show places that match the category chip, the collection chip AND the search words,
+  // in the order the user chose. "Nearest" only works when we know where the user is.
+  const visible = sortPlaces(
+    searchSavedPlaces(filterPlaces(places, filter, collectionFilter), search),
+    sort,
+    userLocation
+  );
+  const canSortNearest = userLocation !== null;
 
   // Message shown when the list is empty.
   const emptyTitle = places.length === 0 ? 'No places yet' : 'No matching places';
@@ -98,12 +111,76 @@ export default function PlacesScreen() {
         }}
       />
       <RemindersBanner />
+
+      {/* Reels pasted in one go and not sorted yet */}
+      {waitingReels > 0 ? (
+        <Pressable
+          onPress={() => router.push('/import-links' as never)}
+          accessibilityRole="button"
+          style={[styles.inboxBanner, { backgroundColor: theme.card }]}>
+          <Text style={styles.inboxText}>
+            {waitingReels} {waitingReels === 1 ? 'reel' : 'reels'} waiting to be sorted
+          </Text>
+          <Text style={{ color: theme.tintText, fontWeight: '700' }}>Sort</Text>
+        </Pressable>
+      ) : null}
+
+      {/* Search box: name, area or note */}
+      <TextInput
+        value={search}
+        onChangeText={setSearch}
+        placeholder="Search name, area or note"
+        placeholderTextColor={theme.mutedText}
+        accessibilityLabel="Search your places by name, area or note"
+        returnKeyType="search"
+        autoCorrect={false}
+        clearButtonMode="while-editing"
+        style={[styles.search, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
+      />
+
+      {/* "Plan my weekend": 3 saved places to try, close to you */}
+      <WeekendPlanner places={places} position={userLocation} onOpenPlace={openPlace} />
+
       <FilterChips selected={filter} onSelect={setFilter} />
       <CollectionFilter collections={collections} selected={collectionFilter} onSelect={setCollectionFilter} />
+
+      {/* Sort: Newest / Nearest */}
+      <View style={styles.sortRow} lightColor="transparent" darkColor="transparent">
+        <Text style={[styles.sortLabel, { color: theme.mutedText }]}>Sort</Text>
+        {(['newest', 'nearest'] as PlaceSort[]).map((option) => {
+          const disabled = option === 'nearest' && !canSortNearest;
+          const selected = sort === option && !disabled;
+          return (
+            <Pressable
+              key={option}
+              disabled={disabled}
+              onPress={() => setSort(option)}
+              accessibilityRole="button"
+              accessibilityState={{ selected, disabled }}
+              accessibilityHint={disabled ? 'Allow location to sort by nearest' : undefined}
+              style={[
+                styles.sortChip,
+                {
+                  backgroundColor: selected ? theme.tintStrong : 'transparent',
+                  borderColor: selected ? theme.tintStrong : theme.outline,
+                  opacity: disabled ? 0.4 : 1,
+                },
+              ]}>
+              <Text style={[styles.sortText, { color: selected ? '#FFFFFF' : theme.text }]}>
+                {option === 'newest' ? 'Newest' : 'Nearest'}
+              </Text>
+            </Pressable>
+          );
+        })}
+        {!canSortNearest ? (
+          <Text style={[styles.sortHint, { color: theme.mutedText }]}>Allow location to sort by nearest</Text>
+        ) : null}
+      </View>
 
       <FlatList
         data={visible}
         keyExtractor={(place) => place.id}
+        keyboardShouldPersistTaps="handled"
         renderItem={({ item }) => (
           <PlaceCard
             place={item}
@@ -136,6 +213,31 @@ export default function PlacesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  search: {
+    minHeight: 48,
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    fontSize: 16,
+  },
+  inboxBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 52,
+    marginHorizontal: 16,
+    marginTop: 8,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+  },
+  inboxText: { fontSize: 15, fontWeight: '600', flexShrink: 1 },
+  sortRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
+  sortLabel: { fontSize: 14, fontWeight: '600' },
+  sortChip: { minHeight: 44, paddingHorizontal: 16, borderRadius: 22, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  sortText: { fontSize: 14, fontWeight: '600' },
+  sortHint: { fontSize: 12, flexShrink: 1 },
   list: { paddingHorizontal: 16, paddingBottom: 110, flexGrow: 1 },
   empty: { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 24 },
   emptyTitle: { fontSize: 20, fontWeight: '700', marginBottom: 8 },

@@ -16,7 +16,8 @@
         "NSLocationAlwaysUsageDescription": "Spotted uses your location to tell you when a place you saved is nearby, even when the app is closed. Your location stays on your phone.",
         "UIBackgroundModes": [
           "location"
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -69,6 +70,7 @@
           "locationAlwaysAndWhenInUsePermission": "Spotted uses your location to tell you when a place you saved is nearby, even when the app is closed. Your location stays on your phone.",
           "locationAlwaysPermission": "Spotted uses your location to tell you when a place you saved is nearby, even when the app is closed. Your location stays on your phone.",
           "locationWhenInUsePermission": "Spotted uses your location while the app is open, to show how far saved places are and to find places near you. Your location stays on your phone.",
+          "motionUsagePermission": "Your phone may use motion information to save battery while Spotted watches for saved places near you. Spotted does not read or store it.",
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": false
@@ -77,6 +79,7 @@
       [
         "expo-notifications",
         {
+          "icon": "./assets/images/notification-icon.png",
           "color": "#6A1FB0"
         }
       ],
@@ -86,7 +89,11 @@
           "androidIntentFilters": [
             "text/*"
           ],
-          "disableIOS": true
+          "iosActivationRules": {
+            "NSExtensionActivationSupportsWebURLWithMaxCount": 1,
+            "NSExtensionActivationSupportsWebPageWithMaxCount": 1,
+            "NSExtensionActivationSupportsText": true
+          }
         }
       ]
     ],
@@ -96,15 +103,32 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "3bc5968d-9f89-4752-9c9c-f91def153e27"
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "ShareExtension",
+                  "bundleIdentifier": "com.spotted.app.share-extension",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.spotted.app"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "02a504fa-29fc-40f8-8ccb-657b3654636a"
       }
     },
-    "owner": "sarahnaziahmed-debug",
+    "owner": "muhammadmapkar",
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/3bc5968d-9f89-4752-9c9c-f91def153e27"
+      "url": "https://u.expo.dev/02a504fa-29fc-40f8-8ccb-657b3654636a"
     }
   }
 }

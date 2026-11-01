@@ -9,7 +9,7 @@ import Colors from '@/constants/Colors';
 
 // The three welcome slides.
 const SLIDES = [
-  { icon: 'bookmark' as const, title: 'Save from reels', text: 'Found a great place on Instagram? Share the reel to Spotted, or paste its link.' },
+  { icon: 'bookmark' as const, title: 'Save from reels', text: 'Found a great place on Instagram or TikTok? Share the reel to Spotted, or paste its link.' },
   { icon: 'pin' as const, title: 'Confirm the place', text: 'Pick the exact place yourself, choose Food, Shopping or Fun, and add a note.' },
   { icon: 'bell' as const, title: 'Get reminded nearby', text: 'When you are close to a saved place, Spotted gives you a gentle nudge.' },
 ];

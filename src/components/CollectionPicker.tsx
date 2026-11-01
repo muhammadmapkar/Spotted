@@ -79,6 +79,7 @@ export function CollectionPicker({
         <Pressable
           onPress={() => setAdding(!adding)}
           accessibilityRole="button"
+          accessibilityLabel="New collection"
           style={[styles.chip, { borderColor: theme.outline, borderStyle: 'dashed' }]}>
           <Text style={[styles.chipText, { color: theme.text }]}>+ New collection</Text>
         </Pressable>

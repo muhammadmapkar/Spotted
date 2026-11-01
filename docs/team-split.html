@@ -1,0 +1,297 @@
+<title>Spotted Team Split</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: one reading column. Status summary, start-here steps, four person sections, then overlaps and the final step. */
+  :root {
+    --bg: #FBF8F7;
+    --surface: #FFFFFF;
+    --fg: #1F2430;
+    --muted: #5E6472;
+    --line: #E6E0DE;
+    --coral: #E8505B;
+    --coral-ink: #B8323D;
+    --coral-wash: #FCEBEC;
+    --p1: #E8505B;
+    --p2: #1E8F8A;
+    --p3: #7A4FC4;
+    --p4: #C47A12;
+    --good: #1E8F5A;
+    --good-wash: #E6F4EC;
+    --warn-wash: #FDF1DC;
+    --code-bg: #F2EDEB;
+    --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+    --body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171F; --surface: #1C2029; --fg: #EDEAE8; --muted: #A2A7B3; --line: #2D323E;
+      --coral: #F0626C; --coral-ink: #FF9AA1; --coral-wash: #3A2127;
+      --p1: #F0626C; --p2: #4FC3BC; --p3: #A98BEA; --p4: #E5A547;
+      --good: #5CC98F; --good-wash: #1C3027; --warn-wash: #352B18; --code-bg: #262B36;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171F; --surface: #1C2029; --fg: #EDEAE8; --muted: #A2A7B3; --line: #2D323E;
+    --coral: #F0626C; --coral-ink: #FF9AA1; --coral-wash: #3A2127;
+    --p1: #F0626C; --p2: #4FC3BC; --p3: #A98BEA; --p4: #E5A547;
+    --good: #5CC98F; --good-wash: #1C3027; --warn-wash: #352B18; --code-bg: #262B36;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: var(--body); font-size: 16px; line-height: 1.55;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 32px 64px;
+  }
+  main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 48px; }
+  h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.15; margin: 0; }
+  h1 { font-size: clamp(2rem, 6vw, 3rem); font-weight: 700; letter-spacing: -0.02em; }
+  h2 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; }
+  h3 { font-size: 1.05rem; font-weight: 700; }
+  p { margin: 0; }
+  code { font-family: var(--mono); font-size: 0.85em; background: var(--code-bg); padding: 0.1em 0.4em; border-radius: 4px; overflow-wrap: anywhere; }
+  .label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .lede { font-size: 1.15rem; color: var(--muted); max-width: 60ch; }
+  section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+  header { display: flex; flex-direction: column; gap: 16px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 0.9rem; color: var(--muted); }
+  .meta b { color: var(--fg); font-weight: 600; }
+
+  /* status */
+  .status { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .panel ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; }
+  .tag { align-self: flex-start; font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; }
+  .tag.done { background: var(--good-wash); color: var(--good); }
+  .tag.left { background: var(--coral-wash); color: var(--coral-ink); }
+
+  /* start here */
+  .callout { background: var(--warn-wash); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .callout ol { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 8px; }
+
+  /* people */
+  .person { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .person-head { display: flex; gap: 14px; align-items: center; }
+  .badge { flex: none; width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 1.2rem; color: #fff; background: var(--c); }
+  .person-head .label { color: var(--c); }
+  .person-head h3 { font-size: 1.3rem; }
+  .goal { color: var(--muted); }
+  .tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .tasks label { display: flex; gap: 12px; align-items: flex-start; padding: 8px; margin: 0 -8px; border-radius: 8px; cursor: pointer; }
+  .tasks label:hover { background: var(--bg); }
+  .tasks input { flex: none; width: 20px; height: 20px; margin-top: 2px; accent-color: var(--c); }
+  .tasks input:checked + span { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+  .tasks input:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px 24px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .facts > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .facts p { font-size: 0.95rem; }
+  .needs-none { color: var(--good); font-weight: 600; }
+
+  /* overlaps */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+  .final { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+  .final ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; }
+  footer { font-size: 0.85rem; color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+  <header>
+    <p class="label">Spotted · Version 1 · Android first</p>
+    <h1>Four people, four tracks, no waiting on each other</h1>
+    <p class="lede">The app's features are built. What is left is setup, real-world testing and store work. This page splits that work so each person can start today.</p>
+    <div class="meta">
+      <span><b>Checked:</b> typecheck clean, 21 tests pass</span>
+      <span><b>Not checked:</b> the app on a real phone</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="where">
+    <h2 id="where">Where the code stands</h2>
+    <div class="status">
+      <div class="panel">
+        <span class="tag done">Built</span>
+        <ul>
+          <li>Share a reel into the app (Android)</li>
+          <li>Caption place suggestions (TikTok automatic, Instagram paste)</li>
+          <li>My Places, Map, filters, Collections</li>
+          <li>Nearby reminders: 20 nearest places, quiet hours, 24-hour rule, daily limit, mute and "I've been here"</li>
+          <li>Settings, onboarding, delete all data</li>
+          <li>Places proxy written, privacy policy drafted, build profiles, 21 tests</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <span class="tag left">Left</span>
+        <ul>
+          <li>Proxy not deployed, no Google keys yet</li>
+          <li>Android map switched off until a Maps key is built in</li>
+          <li>Privacy policy has no web address</li>
+          <li>iPhone share extension never run on a real iPhone</li>
+          <li>None of the "Done means" boxes in <code>SPEC.md</code> are ticked</li>
+          <li>Nothing submitted to Google Play or the App Store</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="first">
+    <h2 id="first">Do this first</h2>
+    <div class="callout">
+      <ol>
+        <li><b>Merge the branch.</b> <code>improvements-round-1</code> is 2 commits ahead of <code>main</code>. Open a pull request into <code>main</code> so everyone starts from the same code.</li>
+        <li><b>Give everyone access.</b> Invite the team to GitHub and Expo. Builds run on the owner's Expo account, so ask the owner before starting one.</li>
+        <li><b>Check the account name.</b> <code>app.json</code> says the owner is <code>sarahnaziahmed-debug</code>, but the GitHub account is <code>sarahnazirahmed-debug</code>. One may be a typo.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="split">
+    <h2 id="split">The split</h2>
+    <p class="lede">Each person owns different files. Tick tasks as you go; ticks stay in your own browser only.</p>
+
+    <article class="person" style="--c: var(--p1)" aria-labelledby="p1">
+      <div class="person-head">
+        <div class="badge" aria-hidden="true">1</div>
+        <div><p class="label">Person 1</p><h3 id="p1">Keys, proxy and Android map</h3></div>
+      </div>
+      <p class="goal">Make real place search and the real map work for everyone, without putting a Google key inside the app.</p>
+      <ul class="tasks">
+        <li><label><input type="checkbox" id="t1-1"><span>Create a new Google key limited to <b>Places API (New)</b> and set a budget alert (about USD 10 a month).</span></label></li>
+        <li><label><input type="checkbox" id="t1-2"><span>Deploy the proxy by following <code>server/places-proxy/README.md</code> (Cloudflare account, <code>wrangler secret put</code>, <code>wrangler deploy</code>).</span></label></li>
+        <li><label><input type="checkbox" id="t1-3"><span>Add <code>EXPO_PUBLIC_PLACES_PROXY_URL</code> as an EAS environment variable.</span></label></li>
+        <li><label><input type="checkbox" id="t1-4"><span>Create a separate Maps SDK key, restricted to <code>com.spotted.app</code> and Maps only, and add it to the Android section of <code>app.json</code>.</span></label></li>
+        <li><label><input type="checkbox" id="t1-5"><span>Set <code>GOOGLE_MAPS_KEY_IN_BUILD = true</code> in <code>src/config.ts</code>, make a preview build, and confirm the Map tab opens a real map without crashing.</span></label></li>
+      </ul>
+      <div class="facts">
+        <div><p class="label">Owns</p><p><code>server/</code>, Android map settings in <code>app.json</code>, the map switch in <code>src/config.ts</code></p></div>
+        <div><p class="label">Needs from others</p><p class="needs-none">Nothing. Without the proxy the app uses its built-in Dubai demo list.</p></div>
+        <div><p class="label">Hands over</p><p>The proxy address, and a build where the map works. Person 2 uses them for the full pilot.</p></div>
+      </div>
+    </article>
+
+    <article class="person" style="--c: var(--p2)" aria-labelledby="p2">
+      <div class="person-head">
+        <div class="badge" aria-hidden="true">2</div>
+        <div><p class="label">Person 2</p><h3 id="p2">Android reliability and tester pilot</h3></div>
+      </div>
+      <p class="goal">Prove that reminders arrive on real phones, and run the 12+ tester week from the spec.</p>
+      <ul class="tasks">
+        <li><label><input type="checkbox" id="t2-1"><span>Walk past a saved place with the app closed and confirm the reminder arrives. Confirm no repeat within 24 hours.</span></label></li>
+        <li><label><input type="checkbox" id="t2-2"><span>Check quiet hours, the daily limit, mute and "I've been here".</span></label></li>
+        <li><label><input type="checkbox" id="t2-3"><span>Check the app when location or notifications are refused (reminders off, friendly banner, no crash).</span></label></li>
+        <li><label><input type="checkbox" id="t2-4"><span>Test on several phone brands (Samsung, Xiaomi and others). Battery saving often delays reminders.</span></label></li>
+        <li><label><input type="checkbox" id="t2-5"><span>Measure battery use over a full day.</span></label></li>
+        <li><label><input type="checkbox" id="t2-6"><span>Add tests for code that has none: collections, filters and the database.</span></label></li>
+        <li><label><input type="checkbox" id="t2-7"><span>Run the pilot from <code>docs/PILOT.md</code> and collect the day-7 and day-14 answers.</span></label></li>
+      </ul>
+      <div class="facts">
+        <div><p class="label">Owns</p><p><code>src/geofence</code>, <code>src/permissions</code>, <code>src/db</code>, <code>tests/</code></p></div>
+        <div><p class="label">Needs from others</p><p><b>Can start now</b> with the demo list. For the full pilot, wait for Person 1's proxy address and a build that includes it.</p></div>
+        <div><p class="label">Hands over</p><p>A tick-by-tick result for the "Done means" list in <code>SPEC.md</code>, plus a bug list.</p></div>
+      </div>
+    </article>
+
+    <article class="person" style="--c: var(--p3)" aria-labelledby="p3">
+      <div class="person-head">
+        <div class="badge" aria-hidden="true">3</div>
+        <div><p class="label">Person 3</p><h3 id="p3">iPhone and caption suggestions</h3></div>
+      </div>
+      <p class="goal">Get Spotted running and approved on iPhone, and make the place suggestions good enough that people keep saving.</p>
+      <ul class="tasks">
+        <li><label><input type="checkbox" id="t3-1"><span>Join the Apple Developer Program (USD 99 a year) and let EAS create credentials for both targets: the app and ShareExtension.</span></label></li>
+        <li><label><input type="checkbox" id="t3-2"><span>Make an iOS build and test Share → Spotted from Instagram, TikTok and Safari.</span></label></li>
+        <li><label><input type="checkbox" id="t3-3"><span>Check Apple Maps, background location and the 20-place limit on a real iPhone.</span></label></li>
+        <li><label><input type="checkbox" id="t3-4"><span>Prepare the App Store listing, the privacy answers, and review notes explaining why background location is needed.</span></label></li>
+        <li><label><input type="checkbox" id="t3-5"><span>Test caption suggestions on about 20 real reels, then improve <code>src/places/clues.ts</code> and add test cases for the misses.</span></label></li>
+      </ul>
+      <div class="facts">
+        <div><p class="label">Owns</p><p>The <code>ios</code> part of <code>app.json</code>, <code>src/share</code>, <code>src/places</code></p></div>
+        <div><p class="label">Needs from others</p><p class="needs-none">Nothing. iPhone work is separate from Android. Needs an iPhone.</p></div>
+        <div><p class="label">Hands over</p><p>Whether the iPhone share extension works, and a list of reels the suggestions missed.</p></div>
+      </div>
+    </article>
+
+    <article class="person" style="--c: var(--p4)" aria-labelledby="p4">
+      <div class="person-head">
+        <div class="badge" aria-hidden="true">4</div>
+        <div><p class="label">Person 4</p><h3 id="p4">Legal, Google Play and store listing</h3></div>
+      </div>
+      <p class="goal">Everything Google Play needs, ready before the app is.</p>
+      <ul class="tasks">
+        <li><label><input type="checkbox" id="t4-1"><span>Publish the privacy policy (draft is <code>docs/PRIVACY_POLICY.md</code>, GitHub Pages works) and put the address in <code>PRIVACY_POLICY_URL</code> in <code>src/config.ts</code>.</span></label></li>
+        <li><label><input type="checkbox" id="t4-2"><span>Replace the placeholder support email with a real one.</span></label></li>
+        <li><label><input type="checkbox" id="t4-3"><span>Create the Google Play Console account (USD 25 once).</span></label></li>
+        <li><label><input type="checkbox" id="t4-4"><span>Write the listing text. Make screenshots and the feature graphic.</span></label></li>
+        <li><label><input type="checkbox" id="t4-5"><span>Fill in the Data Safety form and the content rating.</span></label></li>
+        <li><label><input type="checkbox" id="t4-6"><span>Complete Google's background-location declaration. It usually needs a short demo video.</span></label></li>
+        <li><label><input type="checkbox" id="t4-7"><span>Set up a closed-testing track. New personal Play accounts may need 12 testers for 14 days before going live, so check this early.</span></label></li>
+      </ul>
+      <div class="facts">
+        <div><p class="label">Owns</p><p><code>docs/</code> and the privacy link in <code>src/config.ts</code></p></div>
+        <div><p class="label">Needs from others</p><p class="needs-none">Nothing to start. Screenshots look best once Person 1's map is on.</p></div>
+        <div><p class="label">Hands over</p><p>A live privacy policy address, a complete Play listing, and a ready test track.</p></div>
+      </div>
+    </article>
+  </section>
+
+  <section aria-labelledby="overlap">
+    <h2 id="overlap">Where two people touch the same file</h2>
+    <p class="lede">Only different lines or sections, so nobody blocks anybody. Pull before you commit.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>File</th><th>Who</th><th>What each changes</th></tr></thead>
+        <tbody>
+          <tr><td><code>src/config.ts</code></td><td>Person 1 and 4</td><td>1 changes the map switch. 4 changes the privacy policy address.</td></tr>
+          <tr><td><code>app.json</code></td><td>Person 1 and 3</td><td>1 edits the Android map key. 3 edits the iOS section.</td></tr>
+          <tr><td>Tester list</td><td>Person 2 and 4</td><td>Both need testers. Agree one shared list early so the same people count for the pilot and the Play test track.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="final">
+    <h2 id="final">The one step that waits for everyone</h2>
+    <div class="final">
+      <p>The final production build and store submission are done by the owner, after these are in:</p>
+      <ul>
+        <li>Person 1's proxy address and working map</li>
+        <li>Person 4's privacy policy link and Play listing</li>
+        <li>Person 2's test results</li>
+        <li>Person 3's iPhone results, for the App Store</li>
+      </ul>
+      <p>Until then, no one needs to wait for anyone else.</p>
+    </div>
+  </section>
+
+  <footer>Source of truth for features: <code>SPEC.md</code>. Rules for working in the code: <code>CLAUDE.md</code> and the README's "For developers joining the project".</footer>
+</main>
+
+<script>
+  // Remember ticked tasks in this browser only. Everything works without storage.
+  (function () {
+    var boxes = document.querySelectorAll('.tasks input[type="checkbox"]');
+    var key = 'spotted-team-split-ticks';
+    var saved = {};
+    try { saved = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) {}
+    boxes.forEach(function (box) {
+      if (saved[box.id]) box.checked = true;
+      box.addEventListener('change', function () {
+        saved[box.id] = box.checked;
+        try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) {}
+      });
+    });
+  })();
+</script>

@@ -5,6 +5,8 @@ import { AppState } from 'react-native';
 
 import { hrefForAlert } from '../alerts/links';
 import { onDataChanged } from '../db/changes';
+import { handleReminderAction } from './actions';
+import { dismissReminder } from './notify';
 import { syncGeofencing } from './sync';
 
 // Lives inside the app (renders nothing) and does two jobs:
@@ -45,7 +47,20 @@ export function GeofenceManager() {
     if (handled.current === identifier) return; // already opened
     handled.current = identifier;
 
-    // A saved Spotted place opens the Place page; a place saved from a reel opens its own page.
+    // One of the buttons ("I've been here" / "Not now") on a reminder for a place saved from a reel:
+    // do it, hide the reminder, stay where we are.
+    const placeId = content.data?.placeId;
+    if (lastResponse.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) {
+      if (typeof placeId === 'string') {
+        handleReminderAction(lastResponse.actionIdentifier, placeId)
+          .then((handledIt) => (handledIt ? dismissReminder(identifier) : undefined))
+          .catch(() => {});
+      }
+      return;
+    }
+
+    // The reminder itself was tapped. A saved Spotted place opens the Place page;
+    // a place saved from a reel opens its own page.
     const href = hrefForAlert(content.data);
     if (href) {
       // A tiny pause makes sure the app's screens are ready first.

@@ -6,6 +6,7 @@ import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { TapSwitch } from '@/src/components/ui/TapSwitch';
+import { pickAndRestoreBackup, shareBackupFile } from '@/src/backupFile';
 import { SUPPORT_EMAIL } from '@/src/config';
 import { resetSaved } from '@/src/state/saved';
 import { DEFAULT_SETTINGS, Settings, deleteAllData, getSettings, listPlaces, saveSettings } from '@/src/db';
@@ -25,6 +26,13 @@ const RADIUS_OPTIONS: { value: Settings['radiusMeters']; label: string }[] = [
   { value: 1000, label: '1 km' },
 ];
 
+const DAILY_LIMIT_OPTIONS: { value: number; label: string }[] = [
+  { value: 1, label: '1' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+  { value: 0, label: 'No limit' },
+];
+
 // The Settings tab: reminders, radius, quiet hours, delete data, and links.
 export default function SettingsScreen() {
   const theme = Colors[useColorScheme()];
@@ -41,9 +49,15 @@ export default function SettingsScreen() {
   );
 
   // Change one or more settings: show it straight away, and save it on the phone.
-  const change = (changes: Partial<Settings>) => {
+  // If saving fails, we put the screen back to what is really saved and tell the user.
+  const change = async (changes: Partial<Settings>) => {
     setSettings((current) => ({ ...current, ...changes }));
-    saveSettings(changes);
+    try {
+      await saveSettings(changes);
+    } catch {
+      setSettings(await getSettings().catch(() => DEFAULT_SETTINGS));
+      Alert.alert('Could not save', 'Your setting was not saved. Please try again.');
+    }
   };
 
   const confirmDeleteAll = () => {
@@ -56,12 +70,61 @@ export default function SettingsScreen() {
           text: 'Delete everything',
           style: 'destructive',
           onPress: async () => {
-            await deleteAllData();
-            resetSaved(); // the saved places on Home and the Saved tab go back to the starting list
-            await cancelAllReminders();
-            clearLocal(); // the saved profile is erased too, so the user is signed out
-            setSettings(await getSettings());
-            Alert.alert('Done', 'All your data has been deleted from this phone.');
+            try {
+              await deleteAllData();
+              resetSaved(); // the saved places on Home and the Saved tab go back to the starting list
+              await cancelAllReminders();
+              clearLocal(); // the saved profile is erased too, so the user is signed out
+              setSettings(await getSettings());
+              Alert.alert('Done', 'All your data has been deleted from this phone.');
+            } catch {
+              Alert.alert('Could not delete everything', 'Some data may still be on this phone. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // Back up: make a file with all places, collections and settings, and open the share menu.
+  const backUp = async () => {
+    try {
+      const places = await listPlaces();
+      if (places.length === 0) {
+        Alert.alert('Nothing to back up yet', 'Save a place first, then make a backup.');
+        return;
+      }
+      await shareBackupFile();
+    } catch {
+      Alert.alert('Could not make a backup', 'Please try again.');
+    }
+  };
+
+  // Restore: explain first, then let the user pick their backup file.
+  const restore = () => {
+    Alert.alert(
+      'Restore from a backup?',
+      'Pick your Spotted backup file. Its places are added to the ones on this phone (nothing is deleted), and its settings replace your current settings.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Pick file',
+          onPress: async () => {
+            try {
+              const result = await pickAndRestoreBackup();
+              if (!result) return; // the user closed the file picker
+              setSettings(await getSettings());
+              const skipped = result.placesSkipped
+                ? `\n${result.placesSkipped} skipped (already saved, or damaged in the file).`
+                : '';
+              Alert.alert('Backup restored', `${result.placesAdded} places added.${skipped}`);
+            } catch (error) {
+              const message = error instanceof Error ? error.message : '';
+              Alert.alert(
+                'Could not restore',
+                message.includes('Spotted') ? message : 'That file could not be read. Nothing was changed.'
+              );
+            }
           },
         },
       ]
@@ -80,22 +143,30 @@ export default function SettingsScreen() {
   // Testing helper: sends the "You're near ..." notification after 5 seconds,
   // so you have time to close the app and see the real thing arrive.
   const sendTestReminder = async () => {
-    const [place] = await listPlaces();
-    const [venueId] = await savedVenueIds();
-    const venue = placeById(venueId ?? '');
-    if (!place && !venue) {
-      Alert.alert('Save a place first', 'The test reminder uses one of your saved places.');
-      return;
+    try {
+      const [place] = await listPlaces();
+      const [venueId] = await savedVenueIds();
+      const venue = placeById(venueId ?? '');
+      if (!place && !venue) {
+        Alert.alert('Save a place first', 'The test reminder uses one of your saved places.');
+        return;
+      }
+      // Your newest place saved from a reel, or else the first saved Spotted place.
+      if (place) await sendNearbyNotification(place, 300, 5);
+      else if (venue) await sendVenueAlert(venue, 1200, 5);
+      Alert.alert('Test reminder', 'It arrives in 5 seconds. Close the app to see it like a real reminder, then tap it. (If you keep the app open, the banner slides down from the top.)');
+    } catch {
+      Alert.alert('Test reminder failed', 'Could not send the test reminder. Are notifications allowed for Spotted?');
     }
-    // Your newest place saved from a reel, or else the first saved Spotted place.
-    if (place) await sendNearbyNotification(place, 300, 5);
-    else if (venue) await sendVenueAlert(venue, 1200, 5);
-    Alert.alert('Test reminder', 'It arrives in 5 seconds. Close the app to see it like a real reminder, then tap it. (If you keep the app open, the banner slides down from the top.)');
   };
 
   // Testing helper: shows what the reminder system is doing right now.
   const showReminderStatus = async () => {
-    Alert.alert('Reminder status', await getReminderStatus());
+    try {
+      Alert.alert('Reminder status', await getReminderStatus());
+    } catch {
+      Alert.alert('Reminder status', 'Could not check the reminder status.');
+    }
   };
 
   return (
@@ -150,6 +221,38 @@ export default function SettingsScreen() {
         </View>
       </View>
 
+      {/* Daily limit */}
+      <Text style={styles.sectionTitle}>Most reminders per day</Text>
+      <View style={[styles.card, { backgroundColor: theme.card, opacity: remindersOff ? 0.5 : 1 }]}>
+        <View style={styles.chips} lightColor="transparent" darkColor="transparent">
+          {DAILY_LIMIT_OPTIONS.map((option) => {
+            const selected = option.value === settings.maxRemindersPerDay;
+            return (
+              <Pressable
+                key={option.value}
+                disabled={remindersOff}
+                onPress={() => change({ maxRemindersPerDay: option.value })}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: selected ? theme.tintStrong : 'transparent',
+                    borderColor: selected ? theme.tintStrong : theme.outline,
+                  },
+                ]}>
+                <Text style={[styles.chipText, { color: selected ? '#FFFFFF' : theme.text }]}>
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Text style={[styles.rowHint, { color: theme.mutedText, marginBottom: 8 }]}>
+          Stops Spotted from buzzing you again and again on a busy day.
+        </Text>
+      </View>
+
       {/* Quiet hours */}
       <Text style={styles.sectionTitle}>Quiet hours</Text>
       <View style={[styles.card, { backgroundColor: theme.card, opacity: remindersOff ? 0.5 : 1 }]}>
@@ -192,6 +295,16 @@ export default function SettingsScreen() {
       <View style={[styles.card, { backgroundColor: theme.card }]}>
         <LinkRow label="Manage collections" onPress={() => router.push('/collections' as never)} />
       </View>
+
+      {/* Back up / restore (there is no cloud in Version 1, so this is how to change phones) */}
+      <Text style={styles.sectionTitle}>Backup</Text>
+      <View style={[styles.card, { backgroundColor: theme.card }]}>
+        <LinkRow label="Back up my places" onPress={backUp} />
+        <LinkRow label="Restore from a backup" onPress={restore} />
+      </View>
+      <Text style={[styles.footer, { color: theme.mutedText }]}>
+        Keep the backup file somewhere safe, like Google Drive or your email.
+      </Text>
 
       {/* Privacy and help */}
       <Text style={styles.sectionTitle}>About</Text>
@@ -264,9 +377,15 @@ function TimeStepper({
 function LinkRow({ label, onPress }: { label: string; onPress: () => void }) {
   const theme = Colors[useColorScheme()];
   return (
-    <Pressable onPress={onPress} style={styles.linkRow} accessibilityRole="link">
+    <Pressable onPress={onPress} style={styles.linkRow} accessibilityRole="link" accessibilityLabel={label}>
       <Text style={styles.rowTitle}>{label}</Text>
-      <Text style={{ color: theme.mutedText, fontSize: 20 }}>›</Text>
+      {/* The › arrow is only decoration, so screen readers skip it. */}
+      <Text
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={{ color: theme.mutedText, fontSize: 20 }}>
+        ›
+      </Text>
     </Pressable>
   );
 }

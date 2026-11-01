@@ -6,6 +6,8 @@ import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { formatDistance } from '@/src/location/distance';
 import { SavedPlace } from '@/src/db';
+import { isSnoozed } from '@/src/geofence/rules';
+import { formatReminderTime, hasUpcomingReminder } from '@/src/reminderTimes';
 
 // One rounded card in the My Places list.
 // Tap = open the place. Long-press = show Edit / Delete choices.
@@ -48,6 +50,18 @@ export function PlaceCard({
         </Text>
         {distanceMeters !== undefined ? (
           <Text style={[styles.distance, { color: theme.tintText }]}>{formatDistance(distanceMeters)} away</Text>
+        ) : null}
+        {place.visitedAt || place.muted || isSnoozed(place, new Date()) ? (
+          <Text style={[styles.distance, { color: theme.mutedText }]}>
+            {place.visitedAt
+              ? `Been here${place.rating === 1 ? ' · Loved it' : place.rating === -1 ? ' · Not for me' : ''}`
+              : place.muted
+                ? 'Reminders off'
+                : 'Paused for now'}
+          </Text>
+        ) : null}
+        {hasUpcomingReminder(place.remindAt, new Date()) ? (
+          <Text style={[styles.distance, { color: theme.tintText }]}>Reminder: {formatReminderTime(new Date(place.remindAt!))}</Text>
         ) : null}
         {place.note ? (
           <Text style={[styles.note, { color: theme.mutedText }]} numberOfLines={2}>

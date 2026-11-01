@@ -13,6 +13,7 @@ See **[SPEC.md](./SPEC.md)** for what the app does and **[CLAUDE.md](./CLAUDE.md
 - A free [Expo](https://expo.dev) account
 - An Android phone (iPhone later)
 - A Google Cloud API key with **Places API** and **Maps SDK for Android/iOS** turned on
+  (for anything you share with others, keep the Places key on the small proxy in `server/places-proxy`, see below)
 - Git and a GitHub account
 
 ## First-time setup
@@ -51,6 +52,22 @@ eas build --profile development --platform android
 
 Install the build on your phone from the link EAS gives you, then run `npx expo start --dev-client`.
 
+## Test on a phone with a standalone APK
+
+A "preview" build is a normal app (an `.apk` file) that works on its own, with no computer running.
+Use it for real-life tests like walking past a saved place and waiting for the reminder.
+
+```bash
+eas build --profile preview --platform android
+```
+
+Open the link EAS gives you on the phone to install it (Android asks you to allow installs from your browser).
+- Add `EXPO_PUBLIC_PLACES_PROXY_URL` as an EAS environment variable, or the APK uses the demo list of Dubai places.
+  (`.env` is not uploaded to EAS.)
+- The "Testing" buttons in Settings are hidden in this build.
+- On the phone: allow location "all the time" and turn off battery saving for Spotted.
+- This uses one of the free monthly builds. A preview APK cannot be uploaded to Google Play (use `production`).
+
 ## Build for the stores
 
 ```bash
@@ -62,6 +79,15 @@ eas submit --platform android
 eas build --profile production --platform ios
 eas submit --platform ios
 ```
+
+### Sharing from Instagram on iPhone
+
+The iPhone share extension (Share → Spotted) is switched on in `app.json`. A test run of `expo prebuild`
+created the extension correctly, but it has **not been tried on a real iPhone yet**. Notes:
+- You need the Apple Developer Program (USD 99 / year). EAS will ask for credentials for **two** targets:
+  the app and "ShareExtension". Let EAS create them.
+- Do not commit the `ios/` or `android/` folders that `expo prebuild` makes; EAS rebuilds them.
+- Native change = a new development build is needed.
 
 ## For developers joining the project
 
@@ -86,6 +112,8 @@ Welcome! Read **SPEC.md** (what we build) and **CLAUDE.md** (the rules) first. T
    npm run check        # type-check + all automatic tests
    npx expo-doctor      # project health check
    ```
+   (`npm test` checks the reminder rules, link handling and caption reading. GitHub also runs
+   the first two automatically on every pull request.)
 
 ### How we work together
 - **Never work directly on `main`.** Make a branch for each task:
@@ -152,6 +180,8 @@ A good habit: when you fix a bug, first write a test that fails because of it.
   app's entry file and imports `src/geofence/tasks` first. Do not move that import.
 - **Native packages** (anything with native code, like maps, location, notifications) need a **new
   development build** after you add them. JavaScript-only changes do not.
+- **The Google key.** Never put the Places key inside the app for builds other people use. Use the
+  proxy in `server/places-proxy` (its README explains the 10-minute setup) and set `EXPO_PUBLIC_PLACES_PROXY_URL`.
 - **Never scrape Instagram or TikTok, and never read comments.** Use official public services or text the
   user pastes. This is a store and platform rule, not just a preference.
 - Reminder rules (quiet hours, 24-hour repeat, nearest 20 places) live in `src/geofence/rules.ts`.
@@ -206,6 +236,7 @@ spotted/
 │   ├── location/             # Distance helpers
 │   ├── onboarding/           # First-launch state
 │   └── components/           # Shared UI pieces (icons/ = the Spotted line icons, PlaceLogo)
+├── server/places-proxy/      # Tiny Cloudflare Worker that keeps the Google key off the phone
 ├── tests/                    # Automatic tests (run with `npm test`) and their helpers
 ├── docs/PRIVACY_POLICY.md    # Draft privacy policy (publish it, then link it in src/config.ts)
 ├── eas.json                  # Build settings for Expo's cloud builds
@@ -215,7 +246,9 @@ spotted/
 ## Notes
 
 - **No Google key yet?** The app still works: Add Place searches a small built-in list of Dubai places.
-  Put a key in `.env` and the real Google search switches on by itself.
+  Set `EXPO_PUBLIC_PLACES_PROXY_URL` (or, for your own testing only, a Google key) in `.env` and real search switches on by itself.
+- **Caption suggestions.** In Add Place, "Find the place from the caption" suggests places. TikTok links are read
+  automatically (TikTok's official oEmbed service); for Instagram, paste the caption. You always confirm.
 - **Expo Go vs development build.** Expo Go is fine for screens, list, search and storage. Sharing from
   Instagram and background reminders only work in a **development build** (see above).
 - **Menu PDFs.** A place with a `menuPdfUrl` shows that PDF inside the app (`react-native-webview`; on Android it is wrapped in Google's free document viewer, because Android's web view cannot show PDFs by itself). Places without one show the items like a paper menu. The sample places have no PDF yet.

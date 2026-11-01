@@ -8,20 +8,27 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { CollectionPicker } from '@/src/components/CollectionPicker';
-import { Category, addPlace, listPlaces } from '@/src/db';
+import { Category, addPlace, listPlaces, removeFromInbox, updatePlace } from '@/src/db';
 import { newSessionToken } from '@/src/places/google';
 import { suggestFromCaption } from '@/src/places/fromCaption';
 import { SEARCH_IS_DEMO, getPlaceDetails, searchPlaces } from '@/src/places/search';
 import { useUserLocation } from '@/src/location/useUserLocation';
 import { reelLinkFromText } from '@/src/share/links';
+import { fetchTikTokCaption, isTikTokUrl } from '@/src/share/tiktok';
 import { DUBAI_BIAS, PlaceResult, PlaceSuggestion } from '@/src/places/types';
+
+function reelUrlIsTikTok(url: string | undefined): boolean {
+  const link = url ? reelLinkFromText(url) : null;
+  return Boolean(link && isTikTokUrl(link));
+}
 
 // Add Place: 1) search and pick the place, 2) choose category + note, then save.
 export default function AddPlaceScreen() {
   const theme = Colors[useColorScheme()];
   const router = useRouter();
   // When a reel is shared to Spotted, its link arrives here as ?reelUrl=...
-  const params = useLocalSearchParams<{ reelUrl?: string }>();
+  // When it comes from "Reels to sort", inboxId says which one (it leaves that list once saved).
+  const params = useLocalSearchParams<{ reelUrl?: string; inboxId?: string }>();
   const userLocation = useUserLocation();
   // Prefer results near the user. Without location, prefer central Dubai.
   const lat = userLocation?.latitude;
@@ -32,11 +39,12 @@ export default function AddPlaceScreen() {
   const [searchError, setSearchError] = useState(false);
   const [loadingPlace, setLoadingPlace] = useState(false);
   // The "paste the caption" helper
-  const [captionOpen, setCaptionOpen] = useState(false);
+  const [captionOpen, setCaptionOpen] = useState(Boolean(params.reelUrl)); // open straight away for a shared reel
   const [caption, setCaption] = useState('');
   const [captionBusy, setCaptionBusy] = useState(false);
   const [captionResults, setCaptionResults] = useState<PlaceSuggestion[] | null>(null); // null = not searched yet
   const [captionError, setCaptionError] = useState(false);
+  const [readingCaption, setReadingCaption] = useState(false); // fetching a TikTok caption
   // One token per search session: Google bills the typing + final pick as one.
   const sessionToken = useRef(newSessionToken());
   const [selected, setSelected] = useState<PlaceResult | null>(null);
@@ -49,6 +57,26 @@ export default function AddPlaceScreen() {
   // Prefer results near the user. Without location, prefer central Dubai.
   const currentBias = () =>
     lat !== undefined && lon !== undefined ? { latitude: lat, longitude: lon, radiusMeters: 50000 } : DUBAI_BIAS;
+
+  // A TikTok link: ask TikTok's official public service for the caption, then look for the place in it.
+  // (Instagram has no official way, so there the user pastes the caption.)
+  useEffect(() => {
+    const link = params.reelUrl ? reelLinkFromText(params.reelUrl) : null;
+    if (!link || !isTikTokUrl(link)) return;
+    let cancelled = false;
+    setReadingCaption(true);
+    fetchTikTokCaption(link).then((text) => {
+      if (cancelled) return;
+      setReadingCaption(false);
+      if (text) {
+        setCaption(text);
+        findFromCaption(text);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [params.reelUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Search when the user pauses typing (waiting a moment saves Google requests).
 
@@ -71,14 +99,18 @@ export default function AddPlaceScreen() {
     };
   }, [query, lat, lon]);
 
-  // The user tapped a result: fetch its full details (map position) then show the form.
+  // The place is known (with its map position): show the form to finish saving it.
+  const selectPlace = (place: PlaceResult) => {
+    setSelected(place);
+    if (place.suggestedCategory) setCategory(place.suggestedCategory);
+    sessionToken.current = newSessionToken(); // the search session is over, start a new one
+  };
+
+  // The user tapped a search result: fetch its full details (map position) then show the form.
   const choose = async (suggestion: PlaceSuggestion) => {
     setLoadingPlace(true);
     try {
-      const place = await getPlaceDetails(suggestion, sessionToken.current);
-      setSelected(place);
-      if (place.suggestedCategory) setCategory(place.suggestedCategory);
-      sessionToken.current = newSessionToken(); // the session is over, start a new one
+      selectPlace(await getPlaceDetails(suggestion, sessionToken.current));
     } catch {
       Alert.alert('Could not load this place', 'Check your internet connection and try again.');
     } finally {
@@ -86,14 +118,14 @@ export default function AddPlaceScreen() {
     }
   };
 
-  // The user pasted a caption: find the place it is about, and show the best matches to tap.
-  // Only short place-name clues are searched. The rest of the caption never leaves the phone.
-  const findFromCaption = async () => {
-    if (captionBusy || !caption.trim()) return;
+  // The user pasted a caption (or TikTok gave us one): find the place it is about, and show the best
+  // matches to tap. Only short place-name clues are searched. The rest of the caption never leaves the phone.
+  const findFromCaption = async (text: string = caption) => {
+    if (captionBusy || !text.trim()) return;
     setCaptionBusy(true);
     setCaptionError(false);
     try {
-      const { suggestions } = await suggestFromCaption(caption, (q) =>
+      const { suggestions } = await suggestFromCaption(text, (q) =>
         searchPlaces(q, sessionToken.current, currentBias())
       );
       setCaptionResults(suggestions);
@@ -116,6 +148,12 @@ export default function AddPlaceScreen() {
     </Pressable>
   );
 
+  // Done with this reel: take it off "Reels to sort" (if it came from there) and go back.
+  const finish = async () => {
+    if (params.inboxId) await removeFromInbox(params.inboxId).catch(() => {});
+    router.back();
+  };
+
   const save = async () => {
     if (!selected || saving) return;
 
@@ -127,10 +165,24 @@ export default function AddPlaceScreen() {
       return;
     }
 
-    // Don't save the same place twice.
-    const existing = await listPlaces();
-    if (existing.some((p) => p.googlePlaceId === selected.googlePlaceId)) {
-      Alert.alert('Already saved', `"${selected.name}" is already in your places.`);
+    // Don't save the same place twice. But if this is a NEW reel for a place you already have,
+    // offer to keep the new reel link on it.
+    const existing = (await listPlaces()).find((p) => p.googlePlaceId === selected.googlePlaceId);
+    if (existing) {
+      if (link && link !== existing.reelUrl) {
+        Alert.alert('Already saved', `"${selected.name}" is already in your places. Use this reel link for it instead?`, [
+          { text: 'No, keep as it is', style: 'cancel', onPress: finish },
+          {
+            text: 'Use this reel',
+            onPress: async () => {
+              await updatePlace(existing.id, { reelUrl: link });
+              await finish();
+            },
+          },
+        ]);
+      } else {
+        Alert.alert('Already saved', `"${selected.name}" is already in your places.`);
+      }
       return;
     }
 
@@ -147,7 +199,7 @@ export default function AddPlaceScreen() {
         reelUrl: link ?? undefined,
         collectionIds,
       });
-      router.back();
+      await finish();
     } catch {
       setSaving(false);
       Alert.alert('Could not save', 'Something went wrong. Please try again.');
@@ -163,6 +215,15 @@ export default function AddPlaceScreen() {
 
       {!selected ? (
         <>
+          {/* Many reels saved up? Paste them all at once and sort them later. */}
+          {!params.reelUrl ? (
+            <Pressable
+              onPress={() => router.replace('/import-links' as never)}
+              accessibilityRole="button"
+              style={styles.importLink}>
+              <Text style={{ color: theme.tintText, fontWeight: '600' }}>Have lots of reels? Add them all at once</Text>
+            </Pressable>
+          ) : null}
           {params.reelUrl ? (
             <View style={[styles.attached, { backgroundColor: theme.card }]}>
               <Text style={{ fontWeight: '600' }}>Reel link attached</Text>
@@ -201,13 +262,20 @@ export default function AddPlaceScreen() {
               <TextInput
                 value={caption}
                 onChangeText={setCaption}
-                placeholder="Paste the caption here (press and hold, then Paste)"
+                placeholder={
+                  reelUrlIsTikTok(params.reelUrl)
+                    ? 'We read the TikTok caption for you'
+                    : 'Paste the caption here (press and hold, then Paste)'
+                }
                 placeholderTextColor={theme.mutedText}
                 multiline
                 style={[styles.input, styles.captionInput, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
               />
+              {readingCaption ? (
+                <Text style={[styles.hint, { color: theme.mutedText }]}>Reading the TikTok caption…</Text>
+              ) : null}
               <Pressable accessibilityRole="button"
-                onPress={findFromCaption}
+                onPress={() => findFromCaption()}
                 disabled={captionBusy || !caption.trim()}
                 style={[styles.findButton, { backgroundColor: theme.tintStrong, opacity: captionBusy || !caption.trim() ? 0.5 : 1 }]}>
                 <Text style={styles.findButtonText}>{captionBusy ? 'Looking…' : 'Find the place'}</Text>
@@ -348,6 +416,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: '600', marginTop: 16, marginBottom: 8 },
   hint: { fontSize: 13, marginTop: 8, marginBottom: 8 },
   input: { minHeight: 52, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, fontSize: 16 },
+  importLink: { minHeight: 44, justifyContent: 'center', marginTop: 8 },
   noteInput: { minHeight: 96, paddingTop: 12, textAlignVertical: 'top' },
   result: { borderRadius: 14, padding: 16, marginTop: 8, minHeight: 64, justifyContent: 'center' },
   resultName: { fontSize: 17, fontWeight: '700' },

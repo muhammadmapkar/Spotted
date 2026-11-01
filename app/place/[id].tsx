@@ -1,15 +1,26 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Share, StyleSheet } from 'react-native';
 
 import { Text, TextInput, View } from '@/components/Themed';
 import { Icon } from '@/src/components/icons/Icon';
+import { TapSwitch } from '@/src/components/ui/TapSwitch';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { CollectionPicker } from '@/src/components/CollectionPicker';
-import { Category, SavedPlace, deletePlace, getPlace, updatePlace } from '@/src/db';
-import { openLink } from '@/src/openLink';
+import { Category, Rating, SavedPlace, deletePlace, getPlace, updatePlace } from '@/src/db';
+import { cancelTimedReminder, scheduleTimedReminder } from '@/src/geofence/notify';
+import { openReel } from '@/src/openLink';
+import { requestNotifications } from '@/src/permissions';
+import { formatReminderTime, hasUpcomingReminder, timeChoices } from '@/src/reminderTimes';
+import { placeShareText } from '@/src/sharePlace';
+
+// The two answers to "How was it?" after a visit.
+const RATING_OPTIONS: { value: Rating; label: string }[] = [
+  { value: 1, label: 'Loved it' },
+  { value: -1, label: 'Not for me' },
+];
 
 // Place detail / edit screen. You can change the category and the note.
 export default function PlaceScreen() {
@@ -19,24 +30,91 @@ export default function PlaceScreen() {
 
   const [place, setPlace] = useState<SavedPlace | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false); // loading hit an error (not the same as "not found")
+  const [busy, setBusy] = useState(false); // true while saving or deleting, so a double tap does nothing
   const [category, setCategory] = useState<Category>('food');
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [note, setNote] = useState('');
+  const [muted, setMuted] = useState(false);
+  const [visited, setVisited] = useState(false);
+  const [rating, setRating] = useState<Rating | undefined>(undefined);
 
-  // Load the place when the screen opens.
-  useEffect(() => {
-    getPlace(id).then((found) => {
-      if (!found) return setNotFound(true);
-      setPlace(found);
-      setCategory(found.category);
-      setNote(found.note ?? '');
-      setCollectionIds(found.collectionIds);
-    });
+  // Load the place. Used when the screen opens and by the "Try again" button.
+  const load = useCallback(() => {
+    setLoadFailed(false);
+    getPlace(id)
+      .then((found) => {
+        if (!found) return setNotFound(true);
+        setPlace(found);
+        setCategory(found.category);
+        setNote(found.note ?? '');
+        setCollectionIds(found.collectionIds);
+        setMuted(found.muted);
+        setVisited(Boolean(found.visitedAt));
+        setRating(found.rating);
+      })
+      .catch(() => setLoadFailed(true)); // show a friendly message instead of a blank screen
   }, [id]);
+  useEffect(load, [load]);
 
   const save = async () => {
-    await updatePlace(id, { category, note: note.trim() || undefined, collectionIds });
-    router.back();
+    if (busy) return;
+    setBusy(true);
+    try {
+      await updatePlace(id, {
+        category,
+        note: note.trim() || undefined,
+        collectionIds,
+        muted,
+        // Keep the original date if it was already marked; set it now if newly marked; clear it if unmarked.
+        visitedAt: visited ? (place?.visitedAt ?? new Date().toISOString()) : undefined,
+        rating: visited ? rating : undefined, // a rating only makes sense after a visit
+      });
+      router.back();
+    } catch {
+      setBusy(false);
+      Alert.alert('Could not save', 'Your changes were not saved. Please try again.');
+    }
+  };
+
+  // Opens the phone's normal share sheet (WhatsApp, Messages, ...) with the place details.
+  // "Remind me at a time": set straight away (no need to press Save), so it can't be forgotten.
+  const setTimedReminder = async (date: Date) => {
+    if (!place) return;
+    try {
+      if (!(await requestNotifications())) {
+        Alert.alert('Notifications are off', 'Allow notifications for Spotted in your phone settings to get this reminder.');
+        return;
+      }
+      await cancelTimedReminder(place.remindNotificationId); // only one timed reminder per place
+      const notificationId = await scheduleTimedReminder(place, date);
+      const changes = { remindAt: date.toISOString(), remindNotificationId: notificationId };
+      await updatePlace(place.id, changes);
+      setPlace({ ...place, ...changes });
+    } catch {
+      Alert.alert('Could not set the reminder', 'Please try again.');
+    }
+  };
+
+  const clearTimedReminder = async () => {
+    if (!place) return;
+    try {
+      await cancelTimedReminder(place.remindNotificationId);
+      await updatePlace(place.id, { remindAt: undefined, remindNotificationId: undefined });
+      setPlace({ ...place, remindAt: undefined, remindNotificationId: undefined });
+    } catch {
+      Alert.alert('Could not cancel the reminder', 'Please try again.');
+    }
+  };
+
+  const sharePlace = async () => {
+    if (!place) return;
+    try {
+      // Share what is saved. If the user typed a new note but has not saved it yet, use that note.
+      await Share.share({ message: placeShareText({ ...place, note: note.trim() || undefined }) });
+    } catch {
+      Alert.alert('Could not share', 'Your phone could not open the share menu. Please try again.');
+    }
   };
 
   const confirmDelete = () => {
@@ -46,8 +124,16 @@ export default function PlaceScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          await deletePlace(id);
-          router.back();
+          if (busy) return;
+          setBusy(true);
+          try {
+            await cancelTimedReminder(place?.remindNotificationId);
+            await deletePlace(id);
+            router.back();
+          } catch {
+            setBusy(false);
+            Alert.alert('Could not delete', 'This place was not deleted. Please try again.');
+          }
         },
       },
     ]);
@@ -61,7 +147,30 @@ export default function PlaceScreen() {
       </View>
     );
   }
-  if (!place) return <View style={styles.center} />; // still loading
+  if (loadFailed) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.title}>Could not open this place</Text>
+        <Text style={{ color: theme.mutedText, marginBottom: 16, textAlign: 'center' }}>
+          Something went wrong while loading it. Please try again.
+        </Text>
+        <Pressable
+          onPress={load}
+          accessibilityRole="button"
+          style={[styles.saveButton, styles.retryButton, { backgroundColor: theme.tint }]}>
+          <Text style={styles.saveText}>Try again</Text>
+        </Pressable>
+      </View>
+    );
+  }
+  if (!place) {
+    // Still loading: show a spinner instead of a blank screen.
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={theme.tint} accessibilityLabel="Loading place" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -98,6 +207,92 @@ export default function PlaceScreen() {
         })}
       </View>
 
+      <Text style={styles.label}>Reminders for this place</Text>
+      <View style={[styles.switchCard, { backgroundColor: theme.card }]}>
+        <View style={styles.switchRow} lightColor="transparent" darkColor="transparent">
+          <View style={styles.switchText} lightColor="transparent" darkColor="transparent">
+            <Text style={styles.switchTitle}>Remind me when I'm near</Text>
+            <Text style={[styles.switchHint, { color: theme.mutedText }]}>
+              Turn off for places you pass all the time.
+            </Text>
+          </View>
+          <TapSwitch
+            value={!muted}
+            onValueChange={(on) => setMuted(!on)}
+            label="Remind me when I'm near this place"
+            trackColor={{ true: theme.tint }}
+          />
+        </View>
+        <View style={styles.switchRow} lightColor="transparent" darkColor="transparent">
+          <View style={styles.switchText} lightColor="transparent" darkColor="transparent">
+            <Text style={styles.switchTitle}>I've been here</Text>
+            <Text style={[styles.switchHint, { color: theme.mutedText }]}>
+              Spotted stops reminding you about this place.
+            </Text>
+          </View>
+          <TapSwitch value={visited} onValueChange={setVisited} label="I've been here" trackColor={{ true: theme.tint }} />
+        </View>
+      </View>
+
+      {/* Remind me at a time: ready-made choices, or the reminder that is already set */}
+      <Text style={styles.label}>Remind me at a time</Text>
+      {hasUpcomingReminder(place.remindAt, new Date()) ? (
+        <View style={[styles.switchCard, styles.timedRow, { backgroundColor: theme.card }]}>
+          <Text style={[styles.switchTitle, { flex: 1 }]}>{formatReminderTime(new Date(place.remindAt!))}</Text>
+          <Pressable
+            onPress={clearTimedReminder}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel the timed reminder"
+            style={styles.timedCancel}>
+            <Text style={{ color: theme.danger, fontWeight: '700' }}>Cancel</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <View style={styles.row}>
+          {timeChoices(new Date()).map((choice) => (
+            <Pressable
+              key={choice.label}
+              onPress={() => setTimedReminder(choice.date)}
+              accessibilityRole="button"
+              accessibilityLabel={`Remind me ${choice.label}`}
+              style={[styles.chip, { borderColor: theme.outline }]}>
+              <Text style={styles.chipText}>{choice.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
+
+      {/* After a visit: a quick thumbs up or down. Tap the chosen one again to clear it. */}
+      {visited ? (
+        <>
+          <Text style={styles.label}>How was it?</Text>
+          <View style={styles.row}>
+            {RATING_OPTIONS.map((option) => {
+              const selected = rating === option.value;
+              return (
+                <Pressable
+                  key={option.value}
+                  onPress={() => setRating(selected ? undefined : option.value)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={option.label}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: selected ? theme.tint : 'transparent',
+                      borderColor: selected ? theme.tint : theme.outline,
+                    },
+                  ]}>
+                  <Text style={[styles.chipText, { color: selected ? '#FFFFFF' : theme.text }]}>
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </>
+      ) : null}
+
       <Text style={styles.label}>Collections</Text>
       <CollectionPicker selectedIds={collectionIds} onChange={setCollectionIds} />
 
@@ -113,16 +308,30 @@ export default function PlaceScreen() {
       />
 
       {place.reelUrl ? (
-        <Pressable accessibilityRole="button"
-          onPress={() => openLink(place.reelUrl!)}
+        <Pressable
+          onPress={() => openReel(place, () => setPlace({ ...place, reelUrl: undefined }))}
+          accessibilityRole="button"
+          accessibilityLabel="Open reel"
           style={[styles.secondaryButton, { borderColor: theme.outline }]}>
           <Icon name="play" size={16} color={theme.text} />
           <Text style={styles.secondaryText}>Open reel</Text>
         </Pressable>
       ) : null}
 
-      <Pressable accessibilityRole="button" onPress={save} style={[styles.saveButton, { backgroundColor: theme.tint }]}>
-        <Text style={styles.saveText}>Save changes</Text>
+      <Pressable
+        onPress={sharePlace}
+        accessibilityRole="button"
+        accessibilityLabel="Share this place"
+        style={[styles.secondaryButton, { borderColor: theme.outline }]}>
+        <Text style={styles.secondaryText}>Share place</Text>
+      </Pressable>
+
+      <Pressable
+        onPress={save}
+        disabled={busy}
+        accessibilityRole="button"
+        style={[styles.saveButton, { backgroundColor: theme.tint, opacity: busy ? 0.6 : 1 }]}>
+        <Text style={styles.saveText}>{busy ? 'Saving…' : 'Save changes'}</Text>
       </Pressable>
 
       <Pressable accessibilityRole="button" onPress={confirmDelete} style={styles.deleteButton}>
@@ -148,6 +357,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chipText: { fontSize: 15, fontWeight: '600' },
+  timedRow: { flexDirection: 'row', alignItems: 'center', minHeight: 56 },
+  timedCancel: { minHeight: 44, minWidth: 64, alignItems: 'center', justifyContent: 'center' },
+  switchCard: { borderRadius: 14, paddingHorizontal: 16, paddingVertical: 4 },
+  switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64 },
+  switchText: { flex: 1 },
+  switchTitle: { fontSize: 16, fontWeight: '600' },
+  switchHint: { fontSize: 13, marginTop: 2 },
   input: {
     minHeight: 96,
     borderWidth: 1,
@@ -172,6 +388,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 24,
   },
+  retryButton: { alignSelf: 'stretch', paddingHorizontal: 24, marginTop: 8 },
   saveText: { color: '#FFFFFF', fontSize: 19, fontWeight: '700' },
   deleteButton: { minHeight: 52, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
   deleteText: { fontSize: 16, fontWeight: '600' },

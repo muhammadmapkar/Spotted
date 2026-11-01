@@ -1,5 +1,3 @@
-import * as SQLite from 'expo-sqlite';
-
 // The few database actions we use. The real phone database fits this shape,
 // and so does the fake one we use in automatic tests.
 export interface Db {
@@ -22,7 +20,13 @@ const CREATE_TABLES = `
     note TEXT,
     reelUrl TEXT,
     createdAt TEXT NOT NULL,
-    lastNotifiedAt TEXT
+    lastNotifiedAt TEXT,
+    muted INTEGER NOT NULL DEFAULT 0,
+    visitedAt TEXT,
+    snoozedUntil TEXT,
+    rating INTEGER,
+    remindAt TEXT,
+    remindNotificationId TEXT
   );
   CREATE TABLE IF NOT EXISTS settings (
     id INTEGER PRIMARY KEY NOT NULL CHECK (id = 1),
@@ -44,11 +48,38 @@ const CREATE_TABLES = `
     email TEXT NOT NULL,
     createdAt TEXT NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS inbox (
+    id TEXT PRIMARY KEY NOT NULL,
+    url TEXT NOT NULL,
+    addedAt TEXT NOT NULL
+  );
   CREATE TABLE IF NOT EXISTS meta (
     key TEXT PRIMARY KEY NOT NULL,
     value TEXT NOT NULL
   );
 `;
+
+// Columns added after the first release. Phones that already have the database get them here,
+// because CREATE TABLE IF NOT EXISTS above never changes a table that already exists.
+const ADDED_COLUMNS: { table: string; column: string; definition: string }[] = [
+  { table: 'places', column: 'muted', definition: 'INTEGER NOT NULL DEFAULT 0' },
+  { table: 'places', column: 'visitedAt', definition: 'TEXT' },
+  { table: 'places', column: 'snoozedUntil', definition: 'TEXT' },
+  { table: 'places', column: 'rating', definition: 'INTEGER' },
+  { table: 'places', column: 'remindAt', definition: 'TEXT' },
+  { table: 'places', column: 'remindNotificationId', definition: 'TEXT' },
+];
+
+// Creates the tables and adds any missing columns. Safe to run every time.
+async function prepare(db: Db): Promise<void> {
+  await db.execAsync(CREATE_TABLES);
+  for (const { table, column, definition } of ADDED_COLUMNS) {
+    const columns = await db.getAllAsync<{ name: string }>(`PRAGMA table_info(${table})`);
+    if (!columns.some((c) => c.name === column)) {
+      await db.execAsync(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+    }
+  }
+}
 
 let dbPromise: Promise<Db> | null = null;
 
@@ -56,9 +87,12 @@ let dbPromise: Promise<Db> | null = null;
 export function getDb(): Promise<Db> {
   if (!dbPromise) {
     dbPromise = (async () => {
-      const db = await SQLite.openDatabaseAsync('spotted.db');
-      await db.execAsync(CREATE_TABLES);
-      return db as unknown as Db;
+      // Loaded only now (not at the top of the file) so automatic tests can use a stand-in database
+      // without loading the phone's SQLite code.
+      const SQLite = await import('expo-sqlite');
+      const db = (await SQLite.openDatabaseAsync('spotted.db')) as unknown as Db;
+      await prepare(db);
+      return db;
     })();
   }
   return dbPromise;
@@ -66,6 +100,6 @@ export function getDb(): Promise<Db> {
 
 // Only for automatic tests: use a stand-in database instead of the phone's.
 export async function useTestDatabase(db: Db): Promise<void> {
-  await db.execAsync(CREATE_TABLES);
+  await prepare(db);
   dbPromise = Promise.resolve(db);
 }

@@ -78,7 +78,7 @@ test('Google search: right request, location bias, and reading the answer', asyn
   const details = await getPlaceDetails(found[0], 'tok');
   assert.deepStrictEqual(details, { googlePlaceId: 'ChIJ1', name: 'Cafe One', address: 'Street 1, Jumeirah, Dubai', latitude: 25.1, longitude: 55.2 });
   assert.ok(calls[1].url.includes('sessionToken=tok'));
-  assert.equal(calls[1].options.headers['X-Goog-FieldMask'], 'id,displayName,formattedAddress,location');
+  assert.equal(calls[1].options.headers['X-Goog-FieldMask'], 'id,displayName,formattedAddress,location,types'); // types: to pre-select Food / Shopping / Fun
 
   await assert.rejects(getPlaceDetails({ googlePlaceId: 'NOLOC', name: 'x', address: '' }, 't'), /location/);
   await assert.rejects(getPlaceDetails({ googlePlaceId: 'BAD', name: 'x', address: '' }, 't'), /403/);

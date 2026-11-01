@@ -220,11 +220,13 @@ function RootLayoutNav({ signedIn, onboardingDone }: { signedIn: boolean; onboar
           <Stack.Screen name="reel-map" options={{ title: 'Reel places map' }} />
           <Stack.Screen name="collections" options={{ title: 'Collections' }} />
           <Stack.Screen name="add-place" options={{ title: 'Add place', presentation: 'modal' }} />
+          <Stack.Screen name="import-links" options={{ title: 'Add many reels' }} />
         </Stack.Protected>
       </Stack>
 
-      {/* Opens Add Place when a reel is shared to Spotted (once signed in and past onboarding) */}
-      {stage === 'app' ? <ShareIntentHandler /> : null}
+      {/* Opens Add Place when a reel is shared to Spotted. A reel shared before the app is ready
+          (splash, sign-in or the welcome screens) is remembered and opened as soon as it is. */}
+      <ShareIntentHandler onboardingDone={stage === 'app'} />
 
       {/* Watches your saved places and opens one when you tap a reminder */}
       {stage === 'app' ? <GeofenceManager /> : null}

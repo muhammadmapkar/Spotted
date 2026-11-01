@@ -1,0 +1,10 @@
+{
+  // Type check for the automatic tests. They run in Node, not on the phone.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["./**/*.ts", "../src/**/*.ts"],
+  "exclude": ["../node_modules"]
+}

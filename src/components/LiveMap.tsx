@@ -9,7 +9,9 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { SavedPlace, listPlaces } from '@/src/db';
-import { openDirections, openLink } from '@/src/openLink';
+import { FilterChips, Filter } from '@/src/components/FilterChips';
+import { openDirections, openReel } from '@/src/openLink';
+import { filterPlaces } from '@/src/placeFilters';
 
 // Where the map starts if there are no saved places yet: Dubai.
 const DUBAI = { latitude: 25.2048, longitude: 55.2708, latitudeDelta: 0.25, longitudeDelta: 0.25 };
@@ -36,6 +38,19 @@ export function LiveMap() {
   const mapRef = useRef<MapView>(null);
   const [places, setPlaces] = useState<SavedPlace[]>([]);
   const [selected, setSelected] = useState<SavedPlace | null>(null);
+  const [filter, setFilter] = useState<Filter>('all'); // All / Food / Shopping / Fun
+
+  // Zoom the map so all the given places are visible.
+  const fitTo = useCallback((shown: SavedPlace[]) => {
+    if (shown.length === 0) return;
+    // Wait a moment so the map is ready before moving the camera.
+    setTimeout(() => {
+      mapRef.current?.fitToCoordinates(
+        shown.map((p) => ({ latitude: p.latitude, longitude: p.longitude })),
+        { edgePadding: { top: 120, right: 60, bottom: 200, left: 60 }, animated: true }
+      );
+    }, 300);
+  }, []);
 
   // Reload places every time this tab is shown, then zoom to fit all pins.
   useFocusEffect(
@@ -43,18 +58,19 @@ export function LiveMap() {
       listPlaces().then((all) => {
         setPlaces(all);
         setSelected(null);
-        if (all.length > 0) {
-          // Wait a moment so the map is ready before moving the camera.
-          setTimeout(() => {
-            mapRef.current?.fitToCoordinates(
-              all.map((p) => ({ latitude: p.latitude, longitude: p.longitude })),
-              { edgePadding: { top: 80, right: 60, bottom: 200, left: 60 }, animated: true }
-            );
-          }, 300);
-        }
+        fitTo(filterPlaces(all, filter, 'all'));
       }).catch(() => setPlaces([])); // if loading fails, show an empty map instead of crashing
-    }, [])
+    }, [fitTo, filter])
   );
+
+  // Only the places that match the chip at the top (the same filter as My Places).
+  const visible = filterPlaces(places, filter, 'all');
+
+  const chooseFilter = (next: Filter) => {
+    setFilter(next);
+    setSelected(null); // the open card may belong to a pin that is now hidden
+    fitTo(filterPlaces(places, next, 'all'));
+  };
 
   return (
     <View style={styles.container}>
@@ -66,7 +82,7 @@ export function LiveMap() {
         customMapStyle={scheme === 'dark' ? DARK_MAP_STYLE : undefined}
         onPress={() => setSelected(null)} // tap the empty map to close the card
         toolbarEnabled={false}>
-        {places.map((place) => (
+        {visible.map((place) => (
           <Marker
             key={place.id}
             coordinate={{ latitude: place.latitude, longitude: place.longitude }}
@@ -79,10 +95,18 @@ export function LiveMap() {
         ))}
       </MapView>
 
-      {places.length === 0 ? (
+      <View style={styles.chips} lightColor="transparent" darkColor="transparent">
+        <FilterChips selected={filter} onSelect={chooseFilter} />
+      </View>
+
+      {visible.length === 0 ? (
         <View style={[styles.banner, { backgroundColor: theme.card }]}>
-          <Text style={styles.bannerTitle}>No places on the map yet</Text>
-          <Text style={{ color: theme.mutedText }}>Save a place and it will show up here as a pin.</Text>
+          <Text style={styles.bannerTitle}>{places.length === 0 ? 'No places on the map yet' : 'No matching places'}</Text>
+          <Text style={{ color: theme.mutedText }}>
+            {places.length === 0
+              ? 'Save a place and it will show up here as a pin.'
+              : 'Nothing saved in this group yet. Try another chip.'}
+          </Text>
         </View>
       ) : null}
 
@@ -106,8 +130,16 @@ export function LiveMap() {
 
           <View style={styles.buttons} lightColor="transparent" darkColor="transparent">
             {selected.reelUrl ? (
-              <Pressable accessibilityRole="button"
-                onPress={() => openLink(selected.reelUrl!)}
+              <Pressable
+                onPress={() =>
+                  openReel(selected, () => {
+                    // The link was removed: update the pin's data and the open card.
+                    setPlaces((all) => all.map((p) => (p.id === selected.id ? { ...p, reelUrl: undefined } : p)));
+                    setSelected({ ...selected, reelUrl: undefined });
+                  })
+                }
+                accessibilityRole="button"
+                accessibilityLabel="Open reel"
                 style={[styles.button, { borderColor: theme.outline }]}>
                 <Icon name="play" size={16} color={theme.text} />
                 <Text style={styles.buttonText}>Open reel</Text>
@@ -131,7 +163,8 @@ export function LiveMap() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  banner: { position: 'absolute', top: 16, left: 16, right: 16, borderRadius: 14, padding: 16 },
+  chips: { position: 'absolute', top: 0, left: 0, right: 0 },
+  banner: { position: 'absolute', top: 76, left: 16, right: 16, borderRadius: 14, padding: 16 },
   bannerTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
   card: {
     position: 'absolute',
