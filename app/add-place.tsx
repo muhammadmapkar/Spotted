@@ -7,7 +7,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { CollectionPicker } from '@/src/components/CollectionPicker';
-import { Category, addPlace, listPlaces, updatePlace } from '@/src/db';
+import { Category, addPlace, listPlaces, removeFromInbox, updatePlace } from '@/src/db';
 import { newSessionToken } from '@/src/places/google';
 import { SEARCH_IS_DEMO, getPlaceDetails, searchPlaces, suggestPlacesFromCaption } from '@/src/places/search';
 import { useUserLocation } from '@/src/location/useUserLocation';
@@ -25,7 +25,8 @@ export default function AddPlaceScreen() {
   const theme = Colors[useColorScheme()];
   const router = useRouter();
   // When a reel is shared to Spotted, its link arrives here as ?reelUrl=...
-  const params = useLocalSearchParams<{ reelUrl?: string }>();
+  // When it comes from "Reels to sort", inboxId says which one (it leaves that list once saved).
+  const params = useLocalSearchParams<{ reelUrl?: string; inboxId?: string }>();
   const userLocation = useUserLocation();
   // Prefer results near the user. Without location, prefer central Dubai.
   const lat = userLocation?.latitude;
@@ -135,6 +136,12 @@ export default function AddPlaceScreen() {
     }
   };
 
+  // Done with this reel: take it off "Reels to sort" (if it came from there) and go back.
+  const finish = async () => {
+    if (params.inboxId) await removeFromInbox(params.inboxId).catch(() => {});
+    router.back();
+  };
+
   const save = async () => {
     if (!selected || saving) return;
 
@@ -152,12 +159,12 @@ export default function AddPlaceScreen() {
     if (existing) {
       if (link && link !== existing.reelUrl) {
         Alert.alert('Already saved', `"${selected.name}" is already in your places. Use this reel link for it instead?`, [
-          { text: 'No, keep as it is', style: 'cancel', onPress: () => router.back() },
+          { text: 'No, keep as it is', style: 'cancel', onPress: finish },
           {
             text: 'Use this reel',
             onPress: async () => {
               await updatePlace(existing.id, { reelUrl: link });
-              router.back();
+              await finish();
             },
           },
         ]);
@@ -180,7 +187,7 @@ export default function AddPlaceScreen() {
         reelUrl: link ?? undefined,
         collectionIds,
       });
-      router.back();
+      await finish();
     } catch {
       setSaving(false);
       Alert.alert('Could not save', 'Something went wrong. Please try again.');
@@ -196,6 +203,15 @@ export default function AddPlaceScreen() {
 
       {!selected ? (
         <>
+          {/* Many reels saved up? Paste them all at once and sort them later. */}
+          {!params.reelUrl ? (
+            <Pressable
+              onPress={() => router.replace('/import-links' as never)}
+              accessibilityRole="button"
+              style={styles.captionToggle}>
+              <Text style={{ color: theme.tintText, fontWeight: '600' }}>📥 Have lots of reels? Add them all at once</Text>
+            </Pressable>
+          ) : null}
           {params.reelUrl ? (
             <View style={[styles.attached, { backgroundColor: theme.card }]}>
               <Text style={{ fontWeight: '600' }}>🔗 Reel link attached</Text>

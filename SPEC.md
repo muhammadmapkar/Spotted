@@ -112,6 +112,15 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
   mixing Food, Shopping and Fun when it can. Closest first.
 - **Shuffle** gives another 3; tapping a place opens it. All on the phone, no server.
 
+### F13. Add many reels at once (added after Version 1 planning)
+- Add Place has a link **"📥 Have lots of reels? Add them all at once"**. It opens **Add many reels**.
+- The user pastes any text with many Instagram/TikTok links. Every link is found, tidied and added to **Reels to sort**.
+  Links already waiting, or already saved on a place, are skipped.
+- Tapping a waiting reel opens Add Place with that link (with caption suggestions as in F1b). The user confirms the
+  place as usual; once it is saved, the reel leaves the list. A ✕ removes a reel without saving it.
+- My Places shows **"📥 N reels waiting to be sorted"** while the list is not empty.
+- Stored on the phone (table `inbox`). "Delete all my data" empties it. Not part of backups.
+
 ### F10. Back up and restore (added after Version 1 planning)
 - Version 1 has no cloud, so this is how to keep places when changing phones.
 - Settings → **Back up my places** makes one file (`spotted-backup-YYYY-MM-DD.json`) with all places, collections and

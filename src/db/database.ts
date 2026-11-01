@@ -40,6 +40,11 @@ const CREATE_TABLES = `
     collectionId TEXT NOT NULL,
     PRIMARY KEY (placeId, collectionId)
   );
+  CREATE TABLE IF NOT EXISTS inbox (
+    id TEXT PRIMARY KEY NOT NULL,
+    url TEXT NOT NULL,
+    addedAt TEXT NOT NULL
+  );
   CREATE TABLE IF NOT EXISTS meta (
     key TEXT PRIMARY KEY NOT NULL,
     value TEXT NOT NULL

@@ -179,6 +179,12 @@ Tick each box when the test passes. If a test fails, write what happened next to
 - **What should happen:** 3 places appear, never the visited one, usually a mix of Food, Shopping and Fun.
   Shuffle changes them. Tapping a place opens it.
 
+### 24. [ ] Add many reels at once
+- **What to do:** Copy 3 reel links into one note. My Places → **+** → **📥 Have lots of reels?** → paste → **Add 3 links**.
+  Go back to My Places. Then tap the banner, tap **Reel 1**, choose its place and save. Tap ✕ on another.
+- **What should happen:** "3 reels added". My Places shows "📥 3 reels waiting to be sorted". After saving Reel 1
+  and removing one, only 1 is left. Pasting the same links again says they were skipped.
+
 ---
 
 ## Turn off battery saving for Spotted
