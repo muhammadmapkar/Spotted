@@ -6,6 +6,7 @@ import Colors from '@/constants/Colors';
 import { CATEGORIES } from '@/src/categories';
 import { formatDistance } from '@/src/location/distance';
 import { SavedPlace } from '@/src/db';
+import { isSnoozed } from '@/src/geofence/rules';
 
 // One rounded card in the My Places list.
 // Tap = open the place. Long-press = show Edit / Delete choices.
@@ -49,9 +50,9 @@ export function PlaceCard({
         {distanceMeters !== undefined ? (
           <Text style={[styles.distance, { color: theme.tintText }]}>{formatDistance(distanceMeters)} away</Text>
         ) : null}
-        {place.visitedAt || place.muted ? (
+        {place.visitedAt || place.muted || isSnoozed(place, new Date()) ? (
           <Text style={[styles.distance, { color: theme.mutedText }]}>
-            {place.visitedAt ? '✓ Been here' : '🔕 Reminders off'}
+            {place.visitedAt ? '✓ Been here' : place.muted ? '🔕 Reminders off' : '⏸ Paused for now'}
           </Text>
         ) : null}
         {place.note ? (

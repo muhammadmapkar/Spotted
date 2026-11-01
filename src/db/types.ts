@@ -24,11 +24,12 @@ export interface SavedPlace {
   lastNotifiedAt?: string; // when we last sent a "you're near" notification
   muted: boolean; // true = never send "you're near" reminders for this place
   visitedAt?: string; // when the user marked "I've been here" (reminders stop after that)
+  snoozedUntil?: string; // "Not now" on a reminder: no reminders for this place until this date
   collectionIds: string[]; // the collections this place is in (can be empty)
 }
 
 // What the user types in when adding a place (id and dates are filled in for them).
-export type NewPlace = Omit<SavedPlace, 'id' | 'createdAt' | 'lastNotifiedAt' | 'collectionIds' | 'muted' | 'visitedAt'> & {
+export type NewPlace = Omit<SavedPlace, 'id' | 'createdAt' | 'lastNotifiedAt' | 'collectionIds' | 'muted' | 'visitedAt' | 'snoozedUntil'> & {
   collectionIds?: string[];
 };
 

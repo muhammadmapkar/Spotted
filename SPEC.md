@@ -70,6 +70,9 @@ Goal: save time. The app *suggests* the place, and the user always confirms.
 - Respect **quiet hours** (default 22:00–08:00, no notifications).
 - **Daily limit:** at most 2 reminders in any 24 hours (setting: 1 / 2 / 3 / no limit), so a busy day doesn't spam the user.
 - **Per place:** on the place screen the user can turn reminders off for that place ("Remind me when I'm near") or mark **"I've been here"**. Muted and visited places are not watched and don't use up the 20 slots.
+- **Buttons on the reminder** (added after Version 1 planning): **"I've been here"** marks the place as visited, and
+  **"Not now"** pauses reminders for that place for **7 days**. Both work without opening the app (on Android, a
+  background job does it; on iPhone this still needs testing). The list shows "⏸ Paused for now" while paused.
 
 ### F6. Settings
 - Reminders on/off.
@@ -167,6 +170,7 @@ interface SavedPlace {
   lastNotifiedAt?: string;
   muted: boolean;              // no reminders for this place
   visitedAt?: string;          // "I've been here" (reminders stop)
+  snoozedUntil?: string;       // "Not now" on a reminder: paused until this date
   collectionIds: string[]; // the collections this place is in (can be empty)
 }
 

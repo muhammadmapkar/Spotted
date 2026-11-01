@@ -1,10 +1,12 @@
 import * as Location from 'expo-location';
+import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
 
 import { getPlace, listPlaces, updatePlace } from '../db/places';
 import { getSettings } from '../db/settings';
-import { GEOFENCE_TASK, REFRESH_TASK } from './constants';
-import { sendNearbyNotification } from './notify';
+import { handleReminderAction } from './actions';
+import { GEOFENCE_TASK, REFRESH_TASK, REMINDER_BUTTON_TASK } from './constants';
+import { dismissReminder, sendNearbyNotification } from './notify';
 import { shouldNotify } from './rules';
 import { syncGeofencing } from './sync';
 
@@ -42,4 +44,23 @@ TaskManager.defineTask(GEOFENCE_TASK, async ({ data, error }) => {
 TaskManager.defineTask(REFRESH_TASK, async ({ error }) => {
   if (error) return;
   await syncGeofencing();
+});
+
+// Job 3 (Android): you tapped "I've been here" or "Not now" on a reminder while Spotted was closed.
+// (When the app is open, src/geofence/GeofenceManager.tsx handles the tap instead.)
+TaskManager.defineTask<Notifications.NotificationTaskPayload>(REMINDER_BUTTON_TASK, async ({ data, error }) => {
+  if (error || !data || !('actionIdentifier' in data)) return;
+  try {
+    const request = data.notification.request;
+    const placeId = request.content.data?.placeId;
+    if (typeof placeId !== 'string') return;
+    if (await handleReminderAction(data.actionIdentifier, placeId)) {
+      await dismissReminder(request.identifier);
+    }
+  } catch {
+    // Never crash a background job.
+  }
+});
+Notifications.registerTaskAsync(REMINDER_BUTTON_TASK).catch(() => {
+  // Not available (for example on the web): the buttons still work while the app is open.
 });

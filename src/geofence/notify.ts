@@ -2,17 +2,36 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { SavedPlace } from '../db/types';
+import { ACTION_NOT_NOW, ACTION_VISITED, NEARBY_CATEGORY } from './actions';
 import { notificationBody } from './rules';
 
 const CHANNEL_ID = 'default';
 
 // Android needs a "channel" before it will show notifications.
+// We also register the two reminder buttons. They work without opening the app.
 async function ensureChannel(): Promise<void> {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
       name: 'Nearby reminders',
       importance: Notifications.AndroidImportance.DEFAULT,
     });
+  }
+  try {
+    await Notifications.setNotificationCategoryAsync(NEARBY_CATEGORY, [
+      { identifier: ACTION_VISITED, buttonTitle: "I've been here", options: { opensAppToForeground: false } },
+      { identifier: ACTION_NOT_NOW, buttonTitle: 'Not now', options: { opensAppToForeground: false } },
+    ]);
+  } catch {
+    // Buttons are a nice extra. The reminder still shows without them.
+  }
+}
+
+// Hide one reminder (used after a button on it was tapped). Never throws.
+export async function dismissReminder(notificationId: string): Promise<void> {
+  try {
+    await Notifications.dismissNotificationAsync(notificationId);
+  } catch {
+    // Already gone: fine.
   }
 }
 
@@ -37,6 +56,7 @@ export async function sendNearbyNotification(place: SavedPlace, delaySeconds = 0
       title: 'Spotted',
       body: notificationBody(place),
       data: { placeId: place.id },
+      categoryIdentifier: NEARBY_CATEGORY, // shows the "I've been here" and "Not now" buttons
     },
     trigger:
       delaySeconds > 0

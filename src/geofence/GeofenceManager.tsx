@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 
 import { onDataChanged } from '../db/changes';
+import { handleReminderAction } from './actions';
+import { dismissReminder } from './notify';
 import { syncGeofencing } from './sync';
 
 // Lives inside the app (renders nothing) and does two jobs:
@@ -45,7 +47,18 @@ export function GeofenceManager() {
     handled.current = identifier;
 
     const placeId = content.data?.placeId;
-    if (typeof placeId === 'string') {
+    if (typeof placeId !== 'string') return;
+
+    // One of the buttons ("I've been here" / "Not now"): do it, hide the reminder, stay where we are.
+    if (lastResponse.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) {
+      handleReminderAction(lastResponse.actionIdentifier, placeId)
+        .then((handledIt) => (handledIt ? dismissReminder(identifier) : undefined))
+        .catch(() => {});
+      return;
+    }
+
+    // The reminder itself was tapped: open the place.
+    {
       // A tiny pause makes sure the app's screens are ready first.
       setTimeout(() => router.push(`/place/${placeId}` as never), 250);
     }

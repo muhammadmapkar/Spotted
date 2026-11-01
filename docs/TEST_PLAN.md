@@ -163,6 +163,12 @@ Tick each box when the test passes. If a test fails, write what happened next to
   Restore the same file again: "0 places added, 3 skipped" (nothing is doubled). Picking a photo or other file shows
   "Could not restore" and nothing changes.
 
+### 21. [ ] Buttons on the reminder
+- **What to do:** Save a place. Settings → **Testing: send a test reminder**, close the app. When it arrives, pull it
+  down and tap **Not now**. Open My Places. Then send another test reminder and tap **I've been here**.
+- **What should happen:** Each time the reminder disappears and the app does **not** open. In My Places the place
+  shows "⏸ Paused for now" after the first, and "✓ Been here" after the second.
+
 ---
 
 ## Turn off battery saving for Spotted

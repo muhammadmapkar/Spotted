@@ -46,6 +46,13 @@ export function isQuietTime(now: Date, settings: Settings): boolean {
     : current >= start || current < end; // overnight span, e.g. 22:00 to 08:00
 }
 
+// Did the user tap "Not now" on a reminder, and is that pause still running?
+export function isSnoozed(place: SavedPlace, now: Date): boolean {
+  if (!place.snoozedUntil) return false;
+  const until = new Date(place.snoozedUntil).getTime();
+  return !Number.isNaN(until) && now.getTime() < until;
+}
+
 // Has this place already notified within the last 24 hours?
 export function notifiedRecently(place: SavedPlace, now: Date): boolean {
   if (!place.lastNotifiedAt) return false;
@@ -69,6 +76,7 @@ export function shouldNotify(
 ): boolean {
   if (!settings.remindersEnabled) return false;
   if (place.muted || place.visitedAt) return false;
+  if (isSnoozed(place, now)) return false;
   if (isQuietTime(now, settings)) return false;
   if (notifiedRecently(place, now)) return false;
   if (settings.maxRemindersPerDay > 0 && remindersInLast24h(allPlaces, now) >= settings.maxRemindersPerDay) {
