@@ -4,12 +4,16 @@ import { makeId } from './ids';
 import { NewPlace, SavedPlace } from './types';
 
 // The database stores "nothing" as null; our app prefers undefined.
-type Row = Omit<SavedPlace, 'note' | 'reelUrl' | 'lastNotifiedAt' | 'collectionIds' | 'muted' | 'visitedAt'> & {
+type Row = Omit<SavedPlace, 'note' | 'reelUrl' | 'lastNotifiedAt' | 'collectionIds' | 'muted' | 'visitedAt' | 'snoozedUntil' | 'rating' | 'remindAt' | 'remindNotificationId'> & {
   note: string | null;
   reelUrl: string | null;
   lastNotifiedAt: string | null;
   muted: number; // 0 or 1
   visitedAt: string | null;
+  snoozedUntil: string | null;
+  rating: number | null;
+  remindAt: string | null;
+  remindNotificationId: string | null;
 };
 
 function toPlace(row: Row, collectionIds: string[]): SavedPlace {
@@ -20,6 +24,10 @@ function toPlace(row: Row, collectionIds: string[]): SavedPlace {
     lastNotifiedAt: row.lastNotifiedAt ?? undefined,
     muted: row.muted === 1,
     visitedAt: row.visitedAt ?? undefined,
+    snoozedUntil: row.snoozedUntil ?? undefined,
+    rating: row.rating === 1 || row.rating === -1 ? row.rating : undefined,
+    remindAt: row.remindAt ?? undefined,
+    remindNotificationId: row.remindNotificationId ?? undefined,
     collectionIds,
   };
 }
@@ -102,7 +110,8 @@ export async function updatePlace(
   const db = await getDb();
   await db.runAsync(
     `UPDATE places SET googlePlaceId = ?, name = ?, address = ?, latitude = ?, longitude = ?,
-       category = ?, note = ?, reelUrl = ?, lastNotifiedAt = ?, muted = ?, visitedAt = ? WHERE id = ?`,
+       category = ?, note = ?, reelUrl = ?, lastNotifiedAt = ?, muted = ?, visitedAt = ?,
+       snoozedUntil = ?, rating = ?, remindAt = ?, remindNotificationId = ? WHERE id = ?`,
     [
       p.googlePlaceId,
       p.name,
@@ -115,6 +124,10 @@ export async function updatePlace(
       p.lastNotifiedAt ?? null,
       p.muted ? 1 : 0,
       p.visitedAt ?? null,
+      p.snoozedUntil ?? null,
+      p.rating ?? null,
+      p.remindAt ?? null,
+      p.remindNotificationId ?? null,
       id,
     ]
   );

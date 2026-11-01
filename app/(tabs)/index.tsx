@@ -9,9 +9,11 @@ import { CollectionFilter } from '@/src/components/CollectionFilter';
 import { Filter, FilterChips } from '@/src/components/FilterChips';
 import { PlaceCard } from '@/src/components/PlaceCard';
 import { RemindersBanner } from '@/src/components/RemindersBanner';
+import { WeekendPlanner } from '@/src/components/WeekendPlanner';
+import { cancelTimedReminder } from '@/src/geofence/notify';
 import { distanceMeters } from '@/src/location/distance';
 import { useUserLocation } from '@/src/location/useUserLocation';
-import { Collection, SavedPlace, deletePlace, listCollections, listPlaces } from '@/src/db';
+import { Collection, SavedPlace, deletePlace, listCollections, listInbox, listPlaces } from '@/src/db';
 import { PlaceSort, filterPlaces, searchSavedPlaces, sortPlaces } from '@/src/placeFilters';
 
 // The home screen: all saved places, newest first, with filter chips on top.
@@ -25,12 +27,14 @@ export default function PlacesScreen() {
   const [collectionFilter, setCollectionFilter] = useState<string>('all'); // 'all' or a collection id
   const [search, setSearch] = useState(''); // what the user typed in the search box
   const [sort, setSort] = useState<PlaceSort>('newest');
+  const [waitingReels, setWaitingReels] = useState(0); // reels in "Reels to sort"
 
   // Reload the list every time this screen is shown.
   const reload = useCallback(async () => {
     try {
-      const [loadedPlaces, loadedCollections] = await Promise.all([listPlaces(), listCollections()]);
+      const [loadedPlaces, loadedCollections, inbox] = await Promise.all([listPlaces(), listCollections(), listInbox()]);
       setPlaces(loadedPlaces);
+      setWaitingReels(inbox.length);
       setCollections(loadedCollections);
       // If the collection we were filtering by was deleted, go back to "All lists".
       setCollectionFilter((current) =>
@@ -57,6 +61,7 @@ export default function PlacesScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
+          await cancelTimedReminder(place.remindNotificationId);
           await deletePlace(place.id);
           await reload();
         },
@@ -92,6 +97,19 @@ export default function PlacesScreen() {
     <View style={styles.container}>
       <RemindersBanner />
 
+      {/* Reels pasted in one go and not sorted yet */}
+      {waitingReels > 0 ? (
+        <Pressable
+          onPress={() => router.push('/import-links' as never)}
+          accessibilityRole="button"
+          style={[styles.inboxBanner, { backgroundColor: theme.card }]}>
+          <Text style={styles.inboxText}>
+            📥 {waitingReels} {waitingReels === 1 ? 'reel' : 'reels'} waiting to be sorted
+          </Text>
+          <Text style={{ color: theme.tintText, fontWeight: '700' }}>Sort</Text>
+        </Pressable>
+      ) : null}
+
       {/* Search box: name, area or note */}
       <TextInput
         value={search}
@@ -104,6 +122,9 @@ export default function PlacesScreen() {
         clearButtonMode="while-editing"
         style={[styles.search, { color: theme.text, borderColor: theme.outline, backgroundColor: theme.card }]}
       />
+
+      {/* "Plan my weekend": 3 saved places to try, close to you */}
+      <WeekendPlanner places={places} position={userLocation} onOpenPlace={openPlace} />
 
       <FilterChips selected={filter} onSelect={setFilter} />
       <CollectionFilter collections={collections} selected={collectionFilter} onSelect={setCollectionFilter} />
@@ -186,6 +207,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 16,
   },
+  inboxBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 52,
+    marginHorizontal: 16,
+    marginTop: 8,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+  },
+  inboxText: { fontSize: 15, fontWeight: '600', flexShrink: 1 },
   sortRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
   sortLabel: { fontSize: 14, fontWeight: '600' },
   sortChip: { minHeight: 44, paddingHorizontal: 16, borderRadius: 22, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },

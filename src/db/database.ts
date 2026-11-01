@@ -22,7 +22,11 @@ const CREATE_TABLES = `
     createdAt TEXT NOT NULL,
     lastNotifiedAt TEXT,
     muted INTEGER NOT NULL DEFAULT 0,
-    visitedAt TEXT
+    visitedAt TEXT,
+    snoozedUntil TEXT,
+    rating INTEGER,
+    remindAt TEXT,
+    remindNotificationId TEXT
   );
   CREATE TABLE IF NOT EXISTS settings (
     id INTEGER PRIMARY KEY NOT NULL CHECK (id = 1),
@@ -38,6 +42,11 @@ const CREATE_TABLES = `
     collectionId TEXT NOT NULL,
     PRIMARY KEY (placeId, collectionId)
   );
+  CREATE TABLE IF NOT EXISTS inbox (
+    id TEXT PRIMARY KEY NOT NULL,
+    url TEXT NOT NULL,
+    addedAt TEXT NOT NULL
+  );
   CREATE TABLE IF NOT EXISTS meta (
     key TEXT PRIMARY KEY NOT NULL,
     value TEXT NOT NULL
@@ -49,6 +58,10 @@ const CREATE_TABLES = `
 const ADDED_COLUMNS: { table: string; column: string; definition: string }[] = [
   { table: 'places', column: 'muted', definition: 'INTEGER NOT NULL DEFAULT 0' },
   { table: 'places', column: 'visitedAt', definition: 'TEXT' },
+  { table: 'places', column: 'snoozedUntil', definition: 'TEXT' },
+  { table: 'places', column: 'rating', definition: 'INTEGER' },
+  { table: 'places', column: 'remindAt', definition: 'TEXT' },
+  { table: 'places', column: 'remindNotificationId', definition: 'TEXT' },
 ];
 
 // Creates the tables and adds any missing columns. Safe to run every time.

@@ -129,6 +129,7 @@ function RootLayoutNav({ onboardingDone }: { onboardingDone: boolean }) {
           <Stack.Screen name="place/[id]" options={{ title: 'Place' }} />
           <Stack.Screen name="collections" options={{ title: 'Collections' }} />
           <Stack.Screen name="add-place" options={{ title: 'Add place', presentation: 'modal' }} />
+          <Stack.Screen name="import-links" options={{ title: 'Add many reels' }} />
         </Stack.Protected>
       </Stack>
 

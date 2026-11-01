@@ -20,3 +20,11 @@ export function reelLinkFromText(text: string): string | null {
   const url = extractFirstUrl(text);
   return url ? cleanReelUrl(url) : null;
 }
+
+// Finds EVERY web link in some text (for "Add many reels at once"), tidied and without repeats.
+// "reel 1: https://instagram.com/reel/A/?igsh=1  reel 2: https://vm.tiktok.com/B/" -> both links
+export function extractAllReelLinks(text: string): string[] {
+  const found = text.match(/https?:\/\/[^\s<>"']+/gi) ?? [];
+  const links = found.map((url) => cleanReelUrl(url.replace(/[).,;!?]+$/, '')));
+  return [...new Set(links)];
+}

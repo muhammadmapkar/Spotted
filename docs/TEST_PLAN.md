@@ -156,6 +156,41 @@ Tick each box when the test passes. If a test fails, write what happened next to
 - **What should happen:** The list shrinks to matching places. **Nearest** puts the closest place first
   (only when location is allowed).
 
+### 20. [ ] Back up and restore
+- **What to do:** Save 3 places, one in a collection. Settings → **Back up my places** → save the file to Google Drive
+  (or email it to yourself). Then Settings → **Delete all my data**. Then Settings → **Restore from a backup** → pick the file.
+- **What should happen:** "Backup restored: 3 places added." The places, their notes, reel links and collection are back.
+  Restore the same file again: "0 places added, 3 skipped" (nothing is doubled). Picking a photo or other file shows
+  "Could not restore" and nothing changes.
+
+### 21. [ ] Buttons on the reminder
+- **What to do:** Save a place. Settings → **Testing: send a test reminder**, close the app. When it arrives, pull it
+  down and tap **Not now**. Open My Places. Then send another test reminder and tap **I've been here**.
+- **What should happen:** Each time the reminder disappears and the app does **not** open. In My Places the place
+  shows "⏸ Paused for now" after the first, and "✓ Been here" after the second.
+
+### 22. [ ] Rate a place
+- **What to do:** Open a place, turn on **I've been here**, tap **👍 Loved it**, save.
+- **What should happen:** My Places shows "✓ Been here · 👍 Loved it". Tapping 👍 again (then saving) clears it.
+
+### 23. [ ] Plan my weekend
+- **What to do:** Save 5+ places in different categories. Mark one "I've been here". My Places → **✨ Plan my weekend**.
+  Tap **Shuffle** a few times, then tap a place.
+- **What should happen:** 3 places appear, never the visited one, usually a mix of Food, Shopping and Fun.
+  Shuffle changes them. Tapping a place opens it.
+
+### 24. [ ] Add many reels at once
+- **What to do:** Copy 3 reel links into one note. My Places → **+** → **📥 Have lots of reels?** → paste → **Add 3 links**.
+  Go back to My Places. Then tap the banner, tap **Reel 1**, choose its place and save. Tap ✕ on another.
+- **What should happen:** "3 reels added". My Places shows "📥 3 reels waiting to be sorted". After saving Reel 1
+  and removing one, only 1 is left. Pasting the same links again says they were skipped.
+
+### 25. [ ] Remind me at a time
+- **What to do:** Open a place → **Remind me at a time** → tap **Tomorrow, 7 pm**. Check My Places. Then open the place
+  again, tap **Cancel**, and choose **This evening, 7 pm** (do this before 6:30 pm). Close the app and wait until 7 pm.
+- **What should happen:** The time shows on the place and in My Places ("⏰ ..."). At 7 pm the reminder "Time to try ..."
+  arrives, even with the app closed. Tapping it opens the place. After Cancel, nothing arrives for that time.
+
 ---
 
 ## Turn off battery saving for Spotted
